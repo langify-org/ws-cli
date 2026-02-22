@@ -2,6 +2,11 @@
 name = "ws"
 version = "0.1.0"
 edition = "2021"
+description = "A CLI tool for git bare clone + worktree workflow"
+license = "MIT"
+repository = "https://github.com/langify-org/ws-cli"
+homepage = "https://langify-org.github.io/ws-cli/"
+readme = "README.md"
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
@@ -10,3 +15,7 @@ petname = "2"
 inquire = "0.7"
 rust-i18n = "3"
 sys-locale = "0.3"
+
+[profile.dist]
+inherits = "release"
+lto = "thin"

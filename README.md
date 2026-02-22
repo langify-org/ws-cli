@@ -23,6 +23,12 @@ See the **[ws documentation](https://langify-org.github.io/ws-cli/)** for detail
 ## Installation
 
 ```bash
+# Shell installer (macOS / Linux)
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/langify-org/ws-cli/releases/latest/download/ws-installer.sh | sh
+
+# Homebrew
+brew install langify-org/tap/ws
+
 # Nix flake
 nix run github:langify-org/ws-cli
 
