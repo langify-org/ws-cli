@@ -7,7 +7,7 @@ cli:
     about: "创建裸仓库（省略 URL 则创建空裸仓库）"
     url: "远程 URL（省略则创建空裸仓库）"
   new:
-    about: "创建 worktree 并在 VSCode 中打开"
+    about: "创建 worktree"
     name: "工作区名称（省略则自动生成）"
     directory: "worktree 路径 (默认: ../<name>)"
     branch: "分支名 (默认: 与名称相同)"
@@ -70,7 +70,6 @@ worktree:
   worktree_add_git_failed: "git worktree add 失败"
   dir_canonicalize_failed: "目录规范化失败: %{dir}"
   applying_store_files: "正在从 store 应用文件..."
-  vscode_launch_failed: "启动 VSCode 失败"
   worktree_remove_failed: "执行 git worktree remove 失败"
   worktree_remove_git_failed: "git worktree remove 失败"
 

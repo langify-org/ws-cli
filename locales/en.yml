@@ -7,7 +7,7 @@ cli:
     about: "Create a bare repository (omit URL for empty bare repo)"
     url: "Remote URL (omit for empty bare repository)"
   new:
-    about: "Create a worktree and open in VSCode"
+    about: "Create a new worktree"
     name: "Workspace name (auto-generated if omitted)"
     directory: "Worktree path (default: ../<name>)"
     branch: "Branch name (default: same as name)"
@@ -70,7 +70,6 @@ worktree:
   worktree_add_git_failed: "git worktree add failed"
   dir_canonicalize_failed: "Failed to canonicalize directory: %{dir}"
   applying_store_files: "Applying files from store..."
-  vscode_launch_failed: "Failed to launch VSCode"
   worktree_remove_failed: "Failed to execute git worktree remove"
   worktree_remove_git_failed: "git worktree remove failed"
 

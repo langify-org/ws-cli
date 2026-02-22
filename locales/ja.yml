@@ -7,7 +7,7 @@ cli:
     about: "bare リポジトリを作成する（URL 省略で空の bare リポジトリ）"
     url: "リモート URL（省略で空の bare リポジトリを作成）"
   new:
-    about: "worktree を作成して VSCode で開く"
+    about: "worktree を作成する"
     name: "ワークスペース名（省略で自動生成）"
     directory: "worktree を作成するパス (default: ../<name>)"
     branch: "ブランチ名 (default: name と同じ)"
@@ -70,7 +70,6 @@ worktree:
   worktree_add_git_failed: "git worktree add が失敗しました"
   dir_canonicalize_failed: "ディレクトリの正規化に失敗: %{dir}"
   applying_store_files: "store からファイルを適用中..."
-  vscode_launch_failed: "VSCode の起動に失敗しました"
   worktree_remove_failed: "git worktree remove の実行に失敗しました"
   worktree_remove_git_failed: "git worktree remove が失敗しました"
 

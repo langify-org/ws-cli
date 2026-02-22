@@ -119,11 +119,6 @@ pub(crate) fn cmd_new(cmd: &NewCmd) -> Result<()> {
         }
     }
 
-    Command::new("code")
-        .arg(&directory)
-        .status()
-        .context(t!("worktree.vscode_launch_failed").to_string())?;
-
     Ok(())
 }
 
