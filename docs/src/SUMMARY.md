@@ -12,9 +12,9 @@
 - [bare clone + worktree パターン](concepts/bare-worktree.md)
 - [共有ストア](concepts/shared-store.md)
 
-# コマンドリファレンス
+# リファレンス
 
-- [ws clone](commands/clone.md)
+- [ws clone](commands/ws-clone.md)
 - [ws new](commands/new.md)
 - [ws rm](commands/rm.md)
 - [ws list](commands/list.md)
