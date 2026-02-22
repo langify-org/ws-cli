@@ -10,7 +10,6 @@ Git worktree is a powerful feature that lets you work on multiple branches simul
 
 - **Tedious bare clone initialization** — After `git clone --bare`, you need to manually add worktrees
 - **Managing gitignored files** — Files like `.envrc`, `.mcp.json`, and `.env.local` are outside git, so you must manually copy or link them every time you create a new worktree
-- **Inconsistent directory structure** — Each team member ends up with a different layout
 
 ws solves these problems and makes worktree-based development seamless.
 
