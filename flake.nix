@@ -45,6 +45,7 @@
               nativeBuildInputs = [ pkgs.mdbook ];
               buildPhase = ''
                 mdbook build -d $out
+                mdbook build ja -d $out/ja
               '';
               dontInstall = true;
             };

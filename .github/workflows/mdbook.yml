@@ -23,7 +23,10 @@ jobs:
       - uses: peaceiris/actions-mdbook@v2
         with:
           mdbook-version: 'latest'
-      - run: mdbook build docs
+      - run: |
+          mdbook build docs
+          mdbook build docs/ja
+          mv docs/ja/book docs/book/ja
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/book

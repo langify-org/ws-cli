@@ -1,23 +1,23 @@
 # Summary
 
-[はじめに](README.md)
+[Introduction](README.md)
 
-# 導入
+# Getting Started
 
-- [インストール](getting-started/installation.md)
-- [クイックスタート](getting-started/quick-start.md)
+- [Installation](getting-started/installation.md)
+- [Quick Start](getting-started/quick-start.md)
 
-# コンセプト
+# Concepts
 
-- [bare clone + worktree パターン](concepts/bare-worktree.md)
-- [共有ストア](concepts/shared-store.md)
+- [Bare Clone + Worktree Pattern](concepts/bare-worktree.md)
+- [Shared Store](concepts/shared-store.md)
 
-# リファレンス
+# Reference
 
 - [ws clone](commands/ws-clone.md)
 - [ws new](commands/new.md)
 - [ws rm](commands/rm.md)
 - [ws list](commands/list.md)
 - [ws status](commands/status.md)
-- [ws i (インタラクティブ)](commands/interactive.md)
+- [ws i (Interactive)](commands/interactive.md)
 - [ws shared](commands/shared.md)

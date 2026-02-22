@@ -1,54 +1,54 @@
 # ws new
 
-worktree を作成して VSCode で開きます。
+Create a worktree and open it in VSCode.
 
-## 使い方
+## Usage
 
 ```bash
 ws new [name] [options]
 ```
 
-## 引数
+## Arguments
 
-| 引数 | 必須 | 説明 |
-|------|------|------|
-| `name` | いいえ | ワークスペース名。省略するとランダムな名前を自動生成（例: `gentle-happy-fox`） |
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `name` | No | Workspace name. Auto-generates a random name if omitted (e.g., `gentle-happy-fox`) |
 
-## オプション
+## Options
 
-| オプション | 短縮 | 説明 |
-|-----------|------|------|
-| `--directory <path>` | `-d` | worktree を作成するパス（デフォルト: `../<name>` または `<name>`） |
-| `--branch <branch>` | | ブランチ名を明示的に指定（デフォルト: name と同じ） |
-| `--from <ref>` | | 新規ブランチの起点（デフォルト: HEAD） |
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--directory <path>` | `-d` | Path for the worktree (default: `../<name>` or `<name>`) |
+| `--branch <branch>` | | Explicit branch name (default: same as name) |
+| `--from <ref>` | | Starting point for the new branch (default: HEAD) |
 
-## 動作
+## Behavior
 
-1. 同名のブランチが既に存在する場合は、そのブランチをチェックアウトして worktree を作成
-2. ブランチが存在しない場合は、`--from` で指定した起点（デフォルト: HEAD）から新規ブランチを作成
-3. HEAD が無効（空の bare リポジトリ等）かつ `--from` 未指定の場合は、orphan ブランチで作成
-4. 共有ストア（store）が存在する場合、追跡ファイルを自動配布
-5. 完了後に VSCode (`code`) を起動
+1. If a branch with the same name already exists, checks it out and creates the worktree
+2. If the branch doesn't exist, creates a new branch from `--from` (default: HEAD)
+3. If HEAD is invalid (e.g., empty bare repo) and `--from` is not specified, creates an orphan branch
+4. If a shared store exists, tracked files are automatically distributed
+5. Launches VSCode (`code`) on completion
 
-### worktree の作成先
+### Worktree location
 
-- **bare 構成**（`.bare/` が存在）: カレントディレクトリ直下に `<name>/` を作成
-- **通常構成**（`.git/` 内で実行）: 親ディレクトリに `../<name>` を作成
+- **Bare setup** (`.bare/` exists): creates `<name>/` in the current directory
+- **Normal setup** (inside `.git/`): creates `../<name>` in the parent directory
 
-`-d` オプションで任意のパスに変更できます。
+Use the `-d` option to specify a custom path.
 
-## 例
+## Examples
 
 ```bash
-# 基本的な worktree 作成
+# Basic worktree creation
 ws new main
 
-# main ブランチから分岐
+# Branch from main
 ws new feature/awesome --from main
 
-# ブランチ名とディレクトリを明示指定
+# Explicit branch name and directory
 ws new my-work --branch feature/my-work -d ../my-work-dir
 
-# ランダムな名前で作成
+# Random name
 ws new
 ```

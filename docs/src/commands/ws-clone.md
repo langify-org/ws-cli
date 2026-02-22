@@ -1,41 +1,41 @@
 # ws clone
 
-bare リポジトリを作成します。
+Create a bare repository.
 
-## 使い方
+## Usage
 
 ```bash
 ws clone [url]
 ```
 
-## 引数
+## Arguments
 
-| 引数 | 必須 | 説明 |
-|------|------|------|
-| `url` | いいえ | リモート URL。省略すると空の bare リポジトリを作成 |
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `url` | No | Remote URL. If omitted, creates an empty bare repository |
 
-## 動作
+## Behavior
 
-カレントディレクトリに `.bare/` ディレクトリを作成します。
+Creates a `.bare/` directory in the current directory.
 
-- URL を指定した場合: `git clone --bare <url> .bare` を実行
-- URL を省略した場合: `git init --bare .bare` を実行
+- With a URL: runs `git clone --bare <url> .bare`
+- Without a URL: runs `git init --bare .bare`
 
-`.bare` が既に存在する場合はエラーになります。
+Fails with an error if `.bare` already exists.
 
-## 例
+## Examples
 
-### リモートリポジトリを bare clone
+### Bare clone a remote repository
 
 ```bash
 mkdir my-project && cd my-project
 ws clone https://github.com/example/repo.git
 ```
 
-### 空の bare リポジトリを作成
+### Create an empty bare repository
 
 ```bash
 mkdir my-project && cd my-project
 ws clone
-ws new master    # orphan ブランチで worktree を作成
+ws new master    # Create a worktree with an orphan branch
 ```

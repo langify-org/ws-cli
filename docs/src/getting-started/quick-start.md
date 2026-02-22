@@ -1,73 +1,73 @@
-# クイックスタート
+# Quick Start
 
-## bare 構成（推奨）
+## Bare setup (Recommended)
 
-### 1. bare clone
+### 1. Bare clone
 
 ```bash
 mkdir my-project && cd my-project
 ws clone https://github.com/example/repo.git
 ```
 
-`.bare/` ディレクトリに bare リポジトリが作成されます。
+A bare repository is created in the `.bare/` directory.
 
-### 2. worktree を作成
+### 2. Create a worktree
 
 ```bash
 ws new main
 ```
 
-`main` ブランチの worktree が作成され、VSCode が自動的に開きます。
+A worktree for the `main` branch is created and VSCode opens automatically.
 
-### 3. 機能ブランチで作業
+### 3. Work on a feature branch
 
 ```bash
 ws new feature/foo --from main
 ```
 
-`main` から分岐した `feature/foo` ブランチの worktree が作成されます。
+A worktree for a new `feature/foo` branch is created, branching from `main`.
 
-### 結果のディレクトリ構造
+### Resulting directory structure
 
 ```
 my-project/
-├── .bare/                         # bare リポジトリ
-│   └── worktree-store/            # shared 機能の store（任意）
-├── main/                          # worktree
-└── feature-foo/                   # worktree
+├── .bare/                         # Bare repository
+│   └── worktree-store/            # Shared store (optional)
+├── main/                          # Worktree
+└── feature-foo/                   # Worktree
 ```
 
-## 通常構成
+## Normal setup
 
-既存の `git clone` リポジトリ内でも `ws new` が使えます。worktree はリポジトリの親ディレクトリに作成されます。
+You can also use `ws new` inside an existing `git clone` repository. Worktrees are created in the parent directory of the repository.
 
 ```
 parent/
-├── my-project/                    # 通常の git リポジトリ（.git/ あり）
-└── feature-foo/                   # worktree（../<name> に作成される）
+├── my-project/                    # Normal git repository (with .git/)
+└── feature-foo/                   # Worktree (created at ../<name>)
 ```
 
-## URL なしの bare 構成
+## Bare setup without a URL
 
-リモートなしで新規プロジェクトを始める場合:
+To start a new project without a remote:
 
 ```bash
 mkdir my-project && cd my-project
-ws clone                            # 空の bare リポジトリを作成
-ws new master                      # orphan ブランチで worktree を作成
+ws clone                            # Create an empty bare repository
+ws new master                      # Create a worktree with an orphan branch
 ```
 
-## 共有ファイルのセットアップ
+## Setting up shared files
 
-worktree 間で `.envrc` や `.mcp.json` を共有したい場合:
+To share `.envrc` or `.mcp.json` across worktrees:
 
 ```bash
-# worktree 内で実行
+# Run inside a worktree
 ws shared track -s symlink .envrc
 ws shared track -s symlink .mcp.json
 ws shared track -s copy .env.local
 ```
 
-以降、`ws new` で新しい worktree を作成するたびに、これらのファイルが自動的に配布されます。
+From now on, every time you create a new worktree with `ws new`, these files are automatically distributed.
 
-詳しくは[共有ストア](../concepts/shared-store.md)を参照してください。
+See [Shared Store](../concepts/shared-store.md) for more details.

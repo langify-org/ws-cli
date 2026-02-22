@@ -1,26 +1,26 @@
 # ws status
 
-worktree 一覧と共有ファイルの状態を統合表示します。
+Display an integrated view of worktrees and shared file status.
 
-## 使い方
+## Usage
 
 ```bash
 ws status
 ```
 
-## 動作
+## Behavior
 
-以下の2つのセクションを表示します:
+Displays two sections:
 
-### Workspaces セクション
+### Workspaces section
 
-全 worktree の一覧を表示します。現在の worktree には `*` マーカーが付きます。共有ストアが存在する場合、追跡ファイル数も表示されます。
+Lists all worktrees. The current worktree is marked with `*`. If a shared store exists, the number of tracked files is also shown.
 
-### Shared files セクション
+### Shared files section
 
-共有ストアが存在し、追跡ファイルがある場合に表示されます。各ファイルの strategy と状態を一覧します。
+Shown only when a shared store exists and files are being tracked. Lists each file's strategy and status.
 
-## 出力例
+## Example output
 
 ```
 Workspaces:
@@ -35,13 +35,13 @@ Shared files:
   copy     .env.local                               MODIFIED
 ```
 
-## ステータスの意味
+## Status values
 
-| ステータス | 意味 |
-|-----------|------|
-| `OK` | 正常 |
-| `MISSING` | worktree にファイルがない |
-| `MISSING(store)` | store にファイルがない |
-| `MODIFIED` | copy ファイルの内容が store と異なる |
-| `NOT_LINK` | symlink であるべきファイルが通常ファイルになっている |
-| `WRONG_LINK` | symlink のリンク先が store のファイルと異なる |
+| Status | Meaning |
+|--------|---------|
+| `OK` | Normal |
+| `MISSING` | File is missing from the worktree |
+| `MISSING(store)` | File is missing from the store |
+| `MODIFIED` | Copy file differs from the store |
+| `NOT_LINK` | File that should be a symlink is a regular file |
+| `WRONG_LINK` | Symlink points to the wrong target |

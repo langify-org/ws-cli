@@ -1,22 +1,22 @@
-# インストール
+# Installation
 
-## Nix flake（推奨）
+## Nix flake (Recommended)
 
-ws は Nix flake として提供されています。
+ws is available as a Nix flake.
 
-### 直接実行
+### Run directly
 
 ```bash
 nix run github:langify-org/ws-cli
 ```
 
-### プロファイルにインストール
+### Install to profile
 
 ```bash
 nix profile install github:langify-org/ws-cli
 ```
 
-### flake.nix の入力に追加
+### Add as a flake input
 
 ```nix
 {
@@ -24,32 +24,32 @@ nix profile install github:langify-org/ws-cli
     ws-cli.url = "github:langify-org/ws-cli";
   };
 
-  # outputs で ws-cli.packages.${system}.default を参照
+  # Reference ws-cli.packages.${system}.default in outputs
 }
 ```
 
 ## cargo install
 
-Rust ツールチェインがインストール済みであれば、cargo から直接ビルドできます。
+If you have the Rust toolchain installed, you can build directly with cargo.
 
 ```bash
 cargo install --git https://github.com/langify-org/ws-cli.git
 ```
 
-## ソースからビルド
+## Build from source
 
 ```bash
 git clone https://github.com/langify-org/ws-cli.git
 cd ws-cli
 cargo build --release
-# ./target/release/ws を PATH の通った場所にコピー
+# Copy ./target/release/ws to a directory in your PATH
 ```
 
-## 依存関係
+## Dependencies
 
-ws は以下の外部コマンドを利用します:
+ws uses the following external commands:
 
-| コマンド | 必須 | 用途 |
-|---------|------|------|
-| `git` | はい | worktree 操作全般 |
-| `code` | いいえ | `ws new` での VSCode 自動起動 |
+| Command | Required | Purpose |
+|---------|----------|---------|
+| `git` | Yes | All worktree operations |
+| `code` | No | Auto-launch VSCode with `ws new` |

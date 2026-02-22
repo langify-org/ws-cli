@@ -1,15 +1,15 @@
-# ws - workspace (git worktree) マネージャー
+# ws - workspace (git worktree) manager
 
-git bare clone + worktree パターンでの開発を支援する CLI ツール。
+A CLI tool that streamlines development with the git bare clone + worktree pattern.
 
-## 特徴
+## Features
 
-- **bare clone + worktree の一括セットアップ** — `ws clone` → `ws new` で開発開始
-- **共有ストア** — gitignored ファイルを worktree 間で自動共有
-- **VSCode 連携** — worktree 作成後に自動で VSCode を起動
-- **インタラクティブモード** — 対話的なコマンド選択
+- **One-step bare clone + worktree setup** — Get started with `ws clone` then `ws new`
+- **Shared store** — Automatically share gitignored files across worktrees
+- **VSCode integration** — Automatically opens VSCode after creating a worktree
+- **Interactive mode** — Build and run commands interactively
 
-## クイックスタート
+## Quick Start
 
 ```bash
 ws clone https://github.com/example/repo.git
@@ -17,11 +17,11 @@ ws new main
 ws new feature/awesome --from main
 ```
 
-## ドキュメント
+## Documentation
 
-詳細なドキュメントは **[ws ドキュメント](https://langify-org.github.io/ws-cli/)** を参照してください。
+See the **[ws documentation](https://langify-org.github.io/ws-cli/)** for details.
 
-## インストール
+## Installation
 
 ```bash
 # Nix flake
@@ -31,6 +31,6 @@ nix run github:langify-org/ws-cli
 cargo install --git https://github.com/langify-org/ws-cli.git
 ```
 
-## ライセンス
+## License
 
 MIT

@@ -1,12 +1,12 @@
-# bare clone + worktree パターン
+# Bare Clone + Worktree Pattern
 
-## 概要
+## Overview
 
-git bare clone + worktree パターンは、1つの bare リポジトリに対して複数の worktree を並列に配置する開発スタイルです。通常の `git clone` とは異なり、作業ディレクトリを持たない bare リポジトリを中心に据え、各ブランチを独立したディレクトリとして展開します。
+The bare clone + worktree pattern is a development style where multiple worktrees are laid out alongside a single bare repository. Unlike a normal `git clone`, this approach uses a bare repository (with no working directory) as the central hub, and each branch is checked out as an independent directory.
 
-## 通常の clone との違い
+## Comparison with a normal clone
 
-### 通常の clone
+### Normal clone
 
 ```
 my-project/
@@ -15,64 +15,64 @@ my-project/
 └── ...
 ```
 
-1つのディレクトリ = 1つのブランチ。ブランチを切り替えるには `git checkout` / `git switch` が必要で、未コミットの変更があると切り替えできません。
+One directory = one branch. Switching branches requires `git checkout` / `git switch`, and you can't switch if there are uncommitted changes.
 
-### bare clone + worktree
+### Bare clone + worktree
 
 ```
 my-project/
-├── .bare/              # bare リポジトリ（作業ディレクトリなし）
-├── main/               # main ブランチの worktree
+├── .bare/              # Bare repository (no working directory)
+├── main/               # Worktree for the main branch
 │   ├── src/
 │   └── ...
-└── feature-foo/        # feature/foo ブランチの worktree
+└── feature-foo/        # Worktree for the feature/foo branch
     ├── src/
     └── ...
 ```
 
-複数のブランチを同時に開けるため、以下のメリットがあります:
+Having multiple branches open at once offers several advantages:
 
-- **ブランチ切り替え不要** — 各ブランチが独立したディレクトリ
-- **並行作業が容易** — レビュー中のブランチを開いたまま別の作業ができる
-- **ビルドキャッシュの保持** — ブランチごとに `target/` や `node_modules/` が独立
+- **No branch switching needed** — Each branch lives in its own directory
+- **Easy parallel work** — Keep a branch open for review while working on something else
+- **Preserved build caches** — Each branch has independent `target/`, `node_modules/`, etc.
 
-## ws での運用
+## Using ws
 
-### bare リポジトリの作成
+### Creating a bare repository
 
 ```bash
 mkdir my-project && cd my-project
 ws clone https://github.com/example/repo.git
 ```
 
-`ws clone` は内部で `git clone --bare <url> .bare` を実行します。
+`ws clone` runs `git clone --bare <url> .bare` internally.
 
-### worktree の作成
+### Creating worktrees
 
 ```bash
-ws new main                        # 既存ブランチをチェックアウト
-ws new feature/foo --from main     # main から新規ブランチを作成
+ws new main                        # Check out an existing branch
+ws new feature/foo --from main     # Create a new branch from main
 ```
 
-`ws new` は内部で `git worktree add` を実行し、完了後に VSCode を起動します。
+`ws new` runs `git worktree add` internally and launches VSCode on completion.
 
-### worktree の削除
+### Removing worktrees
 
 ```bash
 ws rm feature-foo
 ```
 
-`ws rm` は `git worktree remove` を実行します。
+`ws rm` runs `git worktree remove` internally.
 
-## worktree の命名規則
+## Worktree naming convention
 
-`ws new` に渡す名前がそのまま worktree のディレクトリ名とブランチ名になります。ディレクトリ名では `/` が `-` に変換されるため:
+The name passed to `ws new` becomes both the worktree directory name and the branch name. In directory names, `/` is converted to `-`:
 
-| 名前 | ディレクトリ | ブランチ |
-|------|------------|---------|
+| Name | Directory | Branch |
+|------|-----------|--------|
 | `main` | `main/` | `main` |
 | `feature/foo` | `feature-foo/` | `feature/foo` |
 
-`--branch` オプションでブランチ名を明示的に変更できます。
+Use the `--branch` option to explicitly set a different branch name.
 
-名前を省略した場合は、ランダムな名前（例: `gentle-happy-fox`）が自動生成されます。
+If you omit the name, a random name is generated automatically (e.g., `gentle-happy-fox`).

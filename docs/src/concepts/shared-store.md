@@ -1,24 +1,24 @@
-# 共有ストア
+# Shared Store
 
-## 概要
+## Overview
 
-共有ストア（shared store）は、worktree 間で gitignored ファイルを一元管理する仕組みです。`.envrc`, `.mcp.json`, `.env.local` など git 管理外のファイルを store に登録しておくことで、新しい worktree 作成時に自動的に配布されます。
+The shared store is a mechanism for centrally managing gitignored files across worktrees. By registering files like `.envrc`, `.mcp.json`, and `.env.local` in the store, they are automatically distributed when new worktrees are created.
 
-## store の構造
+## Store structure
 
-store は `<git-common-dir>/worktree-store/` に作成されます。bare 構成の場合は `.bare/worktree-store/` です。
+The store is located at `<git-common-dir>/worktree-store/`. In a bare setup, this is `.bare/worktree-store/`.
 
 ```
 .bare/worktree-store/
-├── manifest         # "strategy:filepath" の行形式
-├── .mcp.json        # マスターコピー
-├── .envrc           # マスターコピー
-└── .env.local       # マスターコピー
+├── manifest         # Line format: "strategy:filepath"
+├── .mcp.json        # Master copy
+├── .envrc           # Master copy
+└── .env.local       # Master copy
 ```
 
-### manifest
+### Manifest
 
-manifest はテキストファイルで、追跡するファイルとその strategy を1行ずつ記録します。
+The manifest is a text file that records each tracked file and its strategy, one per line.
 
 ```
 symlink:.envrc
@@ -26,50 +26,50 @@ symlink:.mcp.json
 copy:.env.local
 ```
 
-## strategy
+## Strategies
 
-共有ストアは2つの strategy（配布戦略）をサポートしています。
+The shared store supports two distribution strategies.
 
 ### symlink
 
-store 内のファイルへのシンボリックリンクを worktree に作成します。
+Creates symbolic links in worktrees pointing to the file in the store.
 
 ```bash
 ws shared track -s symlink .envrc
 ```
 
-- **全 worktree で同じ内容を共有** — store のファイルを編集すると全 worktree に反映される
-- `track` 実行時に既存ファイルは store に移動され、シンボリックリンクに置き換えられる
+- **All worktrees share the same content** — Editing the store file is reflected across all worktrees
+- On `track`, the existing file is moved to the store and replaced with a symbolic link
 
-**用途:** `.envrc`, `.mcp.json` など、全 worktree で共通の設定ファイル
+**Use for:** `.envrc`, `.mcp.json`, and other config files shared across all worktrees
 
 ### copy
 
-store からファイルを worktree にコピーします。
+Copies files from the store into worktrees.
 
 ```bash
 ws shared track -s copy .env.local
 ```
 
-- **worktree ごとにカスタマイズ可能** — コピー後は各 worktree で独立して編集できる
-- `ws shared push` で変更を store に書き戻し、`ws shared pull` で store から取得
+- **Each worktree can be customized independently** — After copying, each worktree can edit the file freely
+- Use `ws shared push` to write changes back to the store, and `ws shared pull` to fetch from the store
 
-**用途:** `.env.local` など、worktree ごとに異なる値が必要なファイル
+**Use for:** `.env.local` and other files that need different values per worktree
 
-### strategy の比較
+### Strategy comparison
 
 | | symlink | copy |
 |---|---------|------|
-| 配布方法 | シンボリックリンク | ファイルコピー |
-| 内容の共有 | 全 worktree で同一 | worktree ごとに独立 |
-| 更新の反映 | 即座（リンク先が同じ） | `push` / `pull` が必要 |
-| 用途 | 共通の設定ファイル | 環境ごとに異なるファイル |
+| Distribution method | Symbolic link | File copy |
+| Content sharing | Identical across all worktrees | Independent per worktree |
+| Update propagation | Instant (same link target) | Requires `push` / `pull` |
+| Use case | Common config files | Environment-specific files |
 
-## ワークフロー
+## Workflow
 
-### 初回セットアップ
+### Initial setup
 
-worktree 内で追跡したいファイルを登録します。
+Register files you want to track from inside a worktree.
 
 ```bash
 ws shared track -s symlink .envrc
@@ -77,43 +77,43 @@ ws shared track -s symlink .mcp.json
 ws shared track -s copy .env.local
 ```
 
-初回の `ws shared track` 実行時に store が自動的に初期化されます。
+The store is automatically initialized on the first `ws shared track` invocation.
 
-### 新しい worktree の作成
+### Creating new worktrees
 
-`ws new` 実行時に store から自動的にファイルが配布されます。
+When you run `ws new`, tracked files are automatically distributed from the store.
 
 ```bash
 ws new feature/bar
-# → store から .envrc (symlink), .mcp.json (symlink), .env.local (copy) が配布される
+# → .envrc (symlink), .mcp.json (symlink), .env.local (copy) are distributed from the store
 ```
 
-### 状態の確認
+### Checking status
 
 ```bash
 ws shared status
 ```
 
-各ファイルの状態を表示します:
+Displays the status of each tracked file:
 
-| ステータス | 意味 |
-|-----------|------|
-| `OK` | 正常 |
-| `MISSING` | worktree にファイルがない |
-| `MISSING(store)` | store にファイルがない |
-| `MODIFIED` | copy ファイルが store と異なる |
-| `NOT_LINK` | symlink であるべきファイルが通常ファイル |
-| `WRONG_LINK` | symlink のリンク先が store と異なる |
+| Status | Meaning |
+|--------|---------|
+| `OK` | Normal |
+| `MISSING` | File is missing from the worktree |
+| `MISSING(store)` | File is missing from the store |
+| `MODIFIED` | Copy file differs from the store |
+| `NOT_LINK` | File that should be a symlink is a regular file |
+| `WRONG_LINK` | Symlink points to the wrong target |
 
-### copy ファイルの同期
+### Syncing copy files
 
 ```bash
-# worktree の変更を store に反映
+# Push worktree changes to the store
 ws shared push
-ws shared push .env.local          # 特定ファイルのみ
+ws shared push .env.local          # Specific file only
 
-# store から worktree に配布
+# Pull from store to worktree
 ws shared pull
-ws shared pull .envrc              # 特定ファイルのみ
-ws shared pull -f                  # 既存ファイルを上書き
+ws shared pull .envrc              # Specific file only
+ws shared pull -f                  # Overwrite existing files
 ```

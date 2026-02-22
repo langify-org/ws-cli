@@ -1,44 +1,44 @@
 # ws shared
 
-worktree 間で共有したい gitignored ファイルを一元管理します。
+Centrally manage gitignored files shared across worktrees.
 
-## サブコマンド
+## Subcommands
 
-| サブコマンド | 説明 |
-|-------------|------|
-| [`ws shared track`](#ws-shared-track) | ファイルを store に登録 |
-| [`ws shared status`](#ws-shared-status) | 共有ファイルの状態表示 |
-| [`ws shared push`](#ws-shared-push) | copy ファイルの変更を store に反映 |
-| [`ws shared pull`](#ws-shared-pull) | store から追跡ファイルを配布 |
+| Subcommand | Description |
+|------------|-------------|
+| [`ws shared track`](#ws-shared-track) | Register a file in the store |
+| [`ws shared status`](#ws-shared-status) | Show shared file status |
+| [`ws shared push`](#ws-shared-push) | Push copy file changes to the store |
+| [`ws shared pull`](#ws-shared-pull) | Distribute tracked files from the store |
 
-共有ストアの詳しい仕組みについては[共有ストア](../concepts/shared-store.md)を参照してください。
+For details on how the shared store works, see [Shared Store](../concepts/shared-store.md).
 
 ---
 
 ## ws shared track
 
-ファイルを store に登録して追跡を開始します。
+Register a file in the store and start tracking it.
 
-### 使い方
+### Usage
 
 ```bash
 ws shared track -s <strategy> <file>
 ```
 
-### 引数・オプション
+### Arguments and options
 
-| 名前 | 必須 | 説明 |
-|------|------|------|
-| `file` | はい | 追跡するファイルパス |
-| `-s <strategy>` | はい | `symlink` または `copy` |
+| Name | Required | Description |
+|------|----------|-------------|
+| `file` | Yes | File path to track |
+| `-s <strategy>` | Yes | `symlink` or `copy` |
 
-### 動作
+### Behavior
 
-1. ファイルを store にコピー
-2. manifest に `strategy:filepath` を追記
-3. strategy が `symlink` の場合、元ファイルを削除して store へのシンボリックリンクに置換
+1. Copies the file to the store
+2. Appends `strategy:filepath` to the manifest
+3. If the strategy is `symlink`, deletes the original file and replaces it with a symbolic link to the store
 
-### 例
+### Examples
 
 ```bash
 ws shared track -s symlink .envrc
@@ -49,15 +49,15 @@ ws shared track -s copy .env.local
 
 ## ws shared status
 
-共有ファイルの状態を一覧表示します。
+Display the status of all shared files.
 
-### 使い方
+### Usage
 
 ```bash
 ws shared status
 ```
 
-### 出力例
+### Example output
 
 ```
 Store: /Users/user/my-project/.bare/worktree-store
@@ -73,56 +73,56 @@ copy     .env.local                               MODIFIED
 
 ## ws shared push
 
-copy strategy で追跡しているファイルの変更を store に反映します。
+Push changes to copy-tracked files back to the store.
 
-### 使い方
+### Usage
 
 ```bash
 ws shared push [file]
 ```
 
-### 引数
+### Arguments
 
-| 引数 | 必須 | 説明 |
-|------|------|------|
-| `file` | いいえ | ファイルパス。省略すると全 copy ファイルを対象 |
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `file` | No | File path. If omitted, pushes all copy files |
 
-### 例
+### Examples
 
 ```bash
-ws shared push              # 全 copy ファイルを push
-ws shared push .env.local   # 特定ファイルのみ
+ws shared push              # Push all copy files
+ws shared push .env.local   # Specific file only
 ```
 
 ---
 
 ## ws shared pull
 
-store から追跡ファイルを現在の worktree に配布します。
+Distribute tracked files from the store to the current worktree.
 
-### 使い方
+### Usage
 
 ```bash
 ws shared pull [file] [-f]
 ```
 
-### 引数・オプション
+### Arguments and options
 
-| 名前 | 必須 | 説明 |
-|------|------|------|
-| `file` | いいえ | ファイルパス。省略すると全追跡ファイルを対象 |
-| `-f` | いいえ | 既存ファイルを上書きして配布 |
+| Name | Required | Description |
+|------|----------|-------------|
+| `file` | No | File path. If omitted, pulls all tracked files |
+| `-f` | No | Overwrite existing files |
 
-### 動作
+### Behavior
 
-- symlink ファイル: store へのシンボリックリンクを作成
-- copy ファイル: store からファイルをコピー
-- 既存ファイルがある場合はスキップ（`-f` で上書き）
+- symlink files: creates a symbolic link to the store
+- copy files: copies the file from the store
+- Existing files are skipped unless `-f` is specified
 
-### 例
+### Examples
 
 ```bash
-ws shared pull              # 全追跡ファイルを pull
-ws shared pull .envrc       # 特定ファイルのみ
-ws shared pull -f           # 既存ファイルを上書き
+ws shared pull              # Pull all tracked files
+ws shared pull .envrc       # Specific file only
+ws shared pull -f           # Overwrite existing files
 ```

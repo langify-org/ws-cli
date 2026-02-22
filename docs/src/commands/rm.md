@@ -1,37 +1,37 @@
 # ws rm
 
-指定した worktree を削除します。
+Remove a worktree.
 
-## 使い方
+## Usage
 
 ```bash
 ws rm <path> [-f]
 ```
 
-## 引数
+## Arguments
 
-| 引数 | 必須 | 説明 |
-|------|------|------|
-| `path` | はい | 削除する worktree のパス |
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `path` | Yes | Path of the worktree to remove |
 
-## オプション
+## Options
 
-| オプション | 短縮 | 説明 |
-|-----------|------|------|
-| `--force` | `-f` | 未コミットの変更があっても強制削除する |
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--force` | `-f` | Force removal even with uncommitted changes |
 
-## 動作
+## Behavior
 
-内部で `git worktree remove <path>` を実行します。`-f` を指定した場合は `--force` フラグが追加されます。
+Runs `git worktree remove <path>` internally. If `-f` is specified, the `--force` flag is passed to git.
 
-未コミットの変更がある worktree を `-f` なしで削除しようとするとエラーになります。
+Attempting to remove a worktree with uncommitted changes without `-f` results in an error.
 
-## 例
+## Examples
 
 ```bash
-# worktree を削除
+# Remove a worktree
 ws rm feature-foo
 
-# 強制削除
+# Force removal
 ws rm feature-foo -f
 ```

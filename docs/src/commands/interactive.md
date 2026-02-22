@@ -1,41 +1,41 @@
-# ws i (インタラクティブモード)
+# ws i (Interactive mode)
 
-対話的にコマンドを組み立てて実行します。
+Build and run commands interactively.
 
-## 使い方
+## Usage
 
 ```bash
 ws i
 ```
 
-## 動作
+## Behavior
 
-1. コマンド一覧を表示
-2. コマンドを選択すると、必要なパラメータを対話的に入力
-3. 組み立てたコマンドを `ws` のサブプロセスとして実行
+1. Displays a list of available commands
+2. After selecting a command, prompts for required parameters interactively
+3. Executes the assembled command as a `ws` subprocess
 
-## 選択可能なコマンド
+## Available commands
 
-| コマンド | 説明 |
-|---------|------|
-| `clone` | bare リポジトリを作成 |
-| `new` | workspace を作成 |
-| `rm` | workspace を削除 |
-| `list` | worktree 一覧表示 |
-| `status` | 全体の状態表示 |
-| `shared` | 共有ファイル管理（サブメニューあり） |
+| Command | Description |
+|---------|-------------|
+| `clone` | Create a bare repository |
+| `new` | Create a workspace |
+| `rm` | Remove a workspace |
+| `list` | List worktrees |
+| `status` | Show overall status |
+| `shared` | Manage shared files (has a submenu) |
 
-## 例
+## Example
 
 ```bash
 $ ws i
-# → コマンド選択画面が表示される
-# → "new" を選択
-# → 名前、場所、ブランチ、起点を対話的に入力
-# → 最終的に "ws new feature/foo --from main" が実行される
+# → Command selection menu appears
+# → Select "new"
+# → Enter name, location, branch, and starting point interactively
+# → "ws new feature/foo --from main" is executed
 ```
 
-実行前に組み立てたコマンドが stderr に表示されるため、何が実行されるか確認できます。
+The assembled command is printed to stderr before execution, so you can see exactly what will run.
 
 ```
 > ws new feature/foo --from main
