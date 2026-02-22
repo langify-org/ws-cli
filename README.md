@@ -1,105 +1,36 @@
 # ws - workspace (git worktree) マネージャー
 
 git bare clone + worktree パターンでの開発を支援する CLI ツール。
-worktree の作成・削除に加え、gitignored ファイル（`.envrc`, `.mcp.json` 等）の管理を自動化する shared 機能を持つ。
 
-## ワークフロー
+## 特徴
 
-### bare 構成（推奨）
+- **bare clone + worktree の一括セットアップ** — `ws clone` → `ws new` で開発開始
+- **共有ストア** — gitignored ファイルを worktree 間で自動共有
+- **VSCode 連携** — worktree 作成後に自動で VSCode を起動
+- **インタラクティブモード** — fzf による対話的なコマンド選択
 
-```bash
-ws clone <url>                      # bare clone して .bare/ を作成
-ws new main                        # 同階層に worktree を作成して VSCode で開く
-ws new feature/foo                 # ブランチ名を指定して作成
-ws new feature/foo --from main     # main から分岐して作成
-```
-
-ディレクトリ構造:
-
-```
-my-project/
-├── .bare/                         # bare リポジトリ（git clone --bare で作成）
-│   └── worktree-store/            # shared 機能の store（任意）
-├── main/                          # worktree
-└── feature-foo/                   # worktree
-```
-
-### 通常構成
-
-既存の git clone リポジトリ内で `ws new` を使う。worktree はリポジトリの親ディレクトリに作成される。
-
-```
-parent/
-├── my-project/                    # 通常の git リポジトリ（.git/ あり）
-└── feature-foo/                   # worktree（../<name> に作成される）
-```
-
-### URL なしの bare 構成
+## クイックスタート
 
 ```bash
-mkdir my-project && cd my-project
-ws clone                            # 空の bare リポジトリを作成
-ws new master                      # orphan ブランチで worktree を作成
+ws clone https://github.com/example/repo.git
+ws new main
+ws new feature/awesome --from main
 ```
 
-## 基本操作
+## ドキュメント
+
+詳細なドキュメントは **[ws ドキュメント](https://langify-org.github.io/ws-cli/)** を参照してください。
+
+## インストール
 
 ```bash
-ws clone [url]                      # bare リポジトリを初期化（URL 省略で空リポジトリ）
-ws new [name]                      # worktree を作成して VSCode で開く
-ws new [name] --from <ref>         # 指定した起点から分岐して作成
-ws new [name] --branch <branch>    # ブランチ名を明示的に指定
-ws new [name] -d <path>            # worktree の作成先を指定
-ws rm <path>                       # 指定した worktree を削除
-ws rm <path> -f                    # 未コミットの変更があっても強制削除
-ws list                            # worktree 一覧を表示
-ws status                          # worktree の状態を表示
-ws i                               # コマンドを対話的に選択・実行
+# Nix flake
+nix run github:langify-org/ws-cli
+
+# cargo
+cargo install --git https://github.com/langify-org/ws-cli.git
 ```
 
-`ws new` は名前省略時にランダムな名前（例: `gentle-happy-fox`）を自動生成する。
-ブランチ名はデフォルトで名前と同じになるが、`--branch` で変更可能。
+## ライセンス
 
-## 共有ファイル管理 (ws shared)
-
-worktree 間で共有したい gitignored ファイルを一元管理する。
-store は `<git-common-dir>/worktree-store/` に作られ、manifest でファイルと strategy を記録する。
-
-### セットアップ
-
-```bash
-ws shared track -s symlink .envrc  # symlink で追跡（ファイルを即座にリンクに変換）
-ws shared track -s symlink .mcp.json
-ws shared track -s copy .env.local # copy で追跡（worktree ごとに内容を変えたい場合）
-```
-
-初回の `ws shared track` 実行時に store が自動的に初期化される。
-
-### 運用
-
-```bash
-ws shared status                   # 各ファイルの状態を表示（OK / MISSING / MODIFIED 等）
-ws shared push                     # copy ファイルの変更を store に反映（全件）
-ws shared push .env.local          # 特定ファイルだけ反映
-ws shared pull                     # store から全追跡ファイルを配布（既存はスキップ）
-ws shared pull .envrc              # 特定ファイルだけ配布
-ws shared pull -f                  # 既存ファイルを上書きして配布
-ws new feature/bar                 # 新 worktree 作成時に store から自動配布
-```
-
-### strategy の違い
-
-| strategy | 動作 | 用途 |
-|----------|------|------|
-| `symlink` | store 内ファイルへのシンボリックリンクを作成 | 全 worktree で同じ内容を共有したいファイル |
-| `copy` | store からファイルをコピー | worktree ごとに内容をカスタマイズしたいファイル |
-
-## store のディレクトリ構造
-
-```
-<git-common-dir>/worktree-store/
-├── manifest         # "strategy:filepath" の行形式
-├── .mcp.json        # マスターコピー
-├── .envrc           # マスターコピー
-└── .env.local       # マスターコピー
-```
+MIT
