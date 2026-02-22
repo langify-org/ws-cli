@@ -9,6 +9,6 @@ build-dir = "book"
 
 [output.html]
 git-repository-url = "https://github.com/langify-org/ws-cli"
-edit-url-template = "https://github.com/langify-org/ws-cli/edit/main/docs/{path}"
+edit-url-template = "https://github.com/langify-org/ws-cli/edit/master/docs/{path}"
 default-theme = "light"
 preferred-dark-theme = "navy"
