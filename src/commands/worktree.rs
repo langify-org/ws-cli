@@ -35,6 +35,32 @@ pub(crate) fn cmd_clone(cmd: &CloneCmd) -> Result<()> {
     }
 
     println!("{}", t!("worktree.bare_created"));
+
+    // URL ありの場合のみ、default branch の worktree を自動作成
+    if cmd.url.is_some() {
+        match crate::git::git_output(&["symbolic-ref", "HEAD"]) {
+            Ok(full_ref) => {
+                if let Some(branch) = full_ref.strip_prefix("refs/heads/") {
+                    println!(
+                        "{}",
+                        t!("worktree.creating_default_worktree", branch = branch)
+                    );
+                    let new_cmd = NewCmd {
+                        name: Some(branch.to_string()),
+                        directory: None,
+                        branch: None,
+                        from: None,
+                    };
+                    cmd_new(&new_cmd)?;
+                }
+            }
+            Err(_) => {
+                // default branch の検出に失敗しても clone は成功として扱う
+                eprintln!("{}", t!("worktree.default_branch_warning"));
+            }
+        }
+    }
+
     Ok(())
 }
 

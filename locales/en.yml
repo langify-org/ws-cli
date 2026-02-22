@@ -65,6 +65,8 @@ worktree:
   init_bare_failed: "Failed to execute git init --bare"
   bare_creation_failed: "Failed to create bare repository"
   bare_created: ".bare created"
+  creating_default_worktree: "Creating worktree for default branch '%{branch}'..."
+  default_branch_warning: "Warning: could not detect default branch. Create a worktree manually with 'ws new <branch>'"
   start_point_not_found: "Starting point '%{point}' not found"
   worktree_add_failed: "Failed to execute git worktree add"
   worktree_add_git_failed: "git worktree add failed"

@@ -9,17 +9,9 @@ mkdir my-project && cd my-project
 ws clone https://github.com/example/repo.git
 ```
 
-A bare repository is created in the `.bare/` directory.
+A bare repository is created in the `.bare/` directory, and a worktree for the default branch (e.g. `main`) is automatically set up.
 
-### 2. Create a worktree
-
-```bash
-ws new main
-```
-
-A worktree for the `main` branch is created.
-
-### 3. Work on a feature branch
+### 2. Work on a feature branch
 
 ```bash
 ws new feature/foo --from main

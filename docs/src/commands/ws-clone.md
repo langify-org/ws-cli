@@ -18,8 +18,8 @@ ws clone [url]
 
 Creates a `.bare/` directory in the current directory.
 
-- With a URL: runs `git clone --bare <url> .bare`
-- Without a URL: runs `git init --bare .bare`
+- With a URL: runs `git clone --bare <url> .bare`, then automatically creates a worktree for the default branch (e.g. `main` or `master`)
+- Without a URL: runs `git init --bare .bare` (no worktree is created since no commits exist)
 
 Fails with an error if `.bare` already exists.
 
@@ -30,6 +30,7 @@ Fails with an error if `.bare` already exists.
 ```bash
 mkdir my-project && cd my-project
 ws clone https://github.com/example/repo.git
+# .bare/ is created and a worktree for the default branch is set up automatically
 ```
 
 ### Create an empty bare repository

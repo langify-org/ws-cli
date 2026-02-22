@@ -65,6 +65,8 @@ worktree:
   init_bare_failed: "执行 git init --bare 失败"
   bare_creation_failed: "创建裸仓库失败"
   bare_created: "已创建 .bare"
+  creating_default_worktree: "正在为默认分支 '%{branch}' 创建 worktree..."
+  default_branch_warning: "警告: 无法检测默认分支。请使用 'ws new <分支名>' 手动创建"
   start_point_not_found: "找不到指定的起点 '%{point}'"
   worktree_add_failed: "执行 git worktree add 失败"
   worktree_add_git_failed: "git worktree add 失败"

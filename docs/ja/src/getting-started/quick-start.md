@@ -9,17 +9,9 @@ mkdir my-project && cd my-project
 ws clone https://github.com/example/repo.git
 ```
 
-`.bare/` ディレクトリに bare リポジトリが作成されます。
+`.bare/` ディレクトリに bare リポジトリが作成され、デフォルトブランチ（例: `main`）の worktree が自動的にセットアップされます。
 
-### 2. worktree を作成
-
-```bash
-ws new main
-```
-
-`main` ブランチの worktree が作成されます。
-
-### 3. 機能ブランチで作業
+### 2. 機能ブランチで作業
 
 ```bash
 ws new feature/foo --from main
