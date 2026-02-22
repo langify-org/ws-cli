@@ -1,0 +1,142 @@
+_version: 1
+
+# cli.rs - CLI help texts
+cli:
+  about: "Manage workspaces (git worktree)"
+  clone:
+    about: "Create a bare repository (omit URL for empty bare repo)"
+    url: "Remote URL (omit for empty bare repository)"
+  new:
+    about: "Create a worktree and open in VSCode"
+    name: "Workspace name (auto-generated if omitted)"
+    directory: "Worktree path (default: ../<name>)"
+    branch: "Branch name (default: same as name)"
+    from: "Starting point for new branch (default: HEAD)"
+  rm:
+    about: "Remove a worktree"
+    directory: "Path of the worktree to remove"
+    force: "Force removal even with uncommitted changes"
+  list:
+    about: "List worktrees"
+  status:
+    about: "Show workspace list and shared file status"
+  shared:
+    about: "Manage shared files"
+    track:
+      about: "Register a file in the store"
+      strategy: "Strategy (symlink or copy)"
+      file: "File path to track"
+    status:
+      about: "Show detailed shared file status"
+    push:
+      about: "Push copy-tracked file changes to store"
+      file: "File path (omit for all copy files)"
+    pull:
+      about: "Distribute tracked files from store to current worktree"
+      file: "File path (omit for all tracked files)"
+      force: "Overwrite existing files"
+  i:
+    about: "Build and run a command interactively"
+
+# main.rs - Top-level error
+error:
+  top: "Error: %{detail}"
+
+# git.rs - Git command errors
+git:
+  exec_failed: "Failed to execute git %{args}"
+  command_failed: "git %{args} failed: %{stderr}"
+  run_inside_worktree: "Please run inside a worktree"
+
+# store.rs - Store operation messages
+store:
+  path_canonicalize_failed: "Failed to canonicalize path: %{path}"
+  run_inside_repo: "Please run inside a git repository"
+  store_not_initialized: "Store is not initialized. Register a file first with 'ws shared track'"
+  manifest_read_failed: "Failed to read manifest: %{path}"
+  manifest_write_failed: "Failed to write manifest: %{path}"
+  skip_exists: "  Skip: %{file} (already exists)"
+  name_generation_failed: "Failed to generate name"
+
+# commands/worktree.rs - Worktree operation messages
+worktree:
+  bare_already_exists: ".bare already exists"
+  clone_bare_failed: "Failed to execute git clone --bare"
+  init_bare_failed: "Failed to execute git init --bare"
+  bare_creation_failed: "Failed to create bare repository"
+  bare_created: ".bare created"
+  start_point_not_found: "Starting point '%{point}' not found"
+  worktree_add_failed: "Failed to execute git worktree add"
+  worktree_add_git_failed: "git worktree add failed"
+  dir_canonicalize_failed: "Failed to canonicalize directory: %{dir}"
+  applying_store_files: "Applying files from store..."
+  vscode_launch_failed: "Failed to launch VSCode"
+  worktree_remove_failed: "Failed to execute git worktree remove"
+  worktree_remove_git_failed: "git worktree remove failed"
+
+# commands/shared.rs - Shared operation messages
+shared:
+  invalid_strategy: "Strategy must be 'symlink' or 'copy'"
+  file_not_found: "File not found: %{file}"
+  copy_to_store_failed: "Failed to copy to store"
+  converted_to_symlink: "Converted %{file} to symlink"
+  tracking_started: "Tracking started: %{strategy}:%{file}"
+  no_tracked_files: "No tracked files"
+  skip_not_in_worktree: "Skip: %{file} (not in worktree)"
+  not_copy_tracked: "%{file} is not tracked with copy strategy"
+  no_copy_files_to_push: "No copy files to push"
+  skip_not_in_store: "Skip: %{file} (not in store)"
+  skip_exists_use_force: "Skip: %{file} (already exists, use -f to overwrite)"
+  not_tracked: "%{file} is not tracked"
+  no_files_to_pull: "No files to pull"
+
+# commands/status.rs - Status display
+status:
+  workspaces: "Workspaces:"
+  files_tracked: "  [%{count} files tracked]"
+  shared_files: "Shared files:"
+
+# interactive.rs - Interactive mode
+interactive:
+  menu:
+    clone: "Create a bare repository"
+    new: "Create a workspace"
+    rm: "Remove a workspace"
+    list: "List worktrees"
+    status: "Show overall status"
+    shared: "Manage shared files"
+  select_command: "Select command:"
+  cancelled: "Cancelled"
+  selection_failed: "Selection failed"
+  unknown_command: "Unknown command: %{cmd}"
+  exec_failed: "Failed to execute %{cmd}"
+  clone:
+    url_prompt: "Remote URL:"
+    url_help: "Leave empty for empty bare repo"
+  new:
+    name_prompt: "Name:"
+    dir_prompt: "Location:"
+    branch_prompt: "Branch:"
+    from_prompt: "Starting point:"
+    from_help: "Leave empty for HEAD"
+  rm:
+    no_worktrees: "No worktrees available to remove"
+    select_worktree: "Select worktree to remove:"
+    path_failed: "Failed to get worktree path"
+  shared_menu:
+    track: "Register a file"
+    status: "Show shared file status"
+    push: "workspace → shared"
+    pull: "shared → workspace"
+  shared_select: "Select shared command:"
+  shared_push:
+    file_prompt: "File path:"
+    file_help: "Leave empty for all copy files"
+  shared_pull:
+    file_prompt: "File path:"
+    file_help: "Leave empty for all tracked files"
+  shared_track:
+    select_strategy: "Select strategy:"
+    file_prompt: "File path to track:"
+    empty_file: "Please enter a file path"
+  input_failed: "Input failed"

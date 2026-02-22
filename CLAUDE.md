@@ -27,12 +27,37 @@ cargo watch -x build
 
 ## アーキテクチャ
 
-単一ファイル構成（`src/main.rs`）。機能別に以下のセクションに分かれている:
+責務ごとにモジュール分割した構成:
 
-1. **CLI 定義** — `argh` derive macro でサブコマンドを宣言的に定義
-2. **ヘルパー** — git 操作（`git_output`）、bare ディレクトリ検出、manifest 読み書き
-3. **コマンド実装** — `cmd_clone`, `cmd_new`, `cmd_rm`, `cmd_list`, `cmd_status`, `cmd_shared_*`
-4. **インタラクティブモード** — fzf を外部プロセスとして呼び出し、対話的にコマンドを組み立てて再帰実行
+```
+src/
+  main.rs            エントリポイント + run() ディスパッチ
+  cli.rs             clap v4 derive による CLI 型定義 + parse_with_i18n()
+  git.rs             git コマンド実行ヘルパー
+  store.rs           shared store のデータ層（ManifestEntry, manifest 操作, file_status）
+  commands/
+    mod.rs           サブモジュール宣言
+    worktree.rs      clone, new, rm, list, generate_name
+    status.rs        status（統合表示）
+    shared.rs        shared track/status/push/pull
+  interactive.rs     inquire を使った対話モード
+```
+
+```
+locales/
+  en.yml             英語ロケール (デフォルト/フォールバック)
+  ja.yml             日本語ロケール
+  zh-CN.yml          簡体字中国語ロケール
+```
+
+依存グラフ（循環なし）:
+- `cli` / `git` — 依存なし（最下層）
+- `store` → `git`
+- `commands/worktree` → `cli`, `git`, `store`
+- `commands/status` → `git`, `store`
+- `commands/shared` → `cli`, `git`, `store`
+- `interactive` → `cli`, `git`, `commands::worktree`
+- `main` → `cli`, `commands/*`, `interactive`
 
 ### shared store の仕組み
 
@@ -41,5 +66,9 @@ cargo watch -x build
 ## コーディング規約
 
 - エラーハンドリングは `anyhow::Result` + `.context()` で統一
-- CLI 引数の doc comment とユーザー向けメッセージは日本語
-- 外部コマンド（git, fzf, code）は `std::process::Command` で直接呼び出し
+- ユーザー向け文字列は `rust_i18n` の `t!()` マクロで多言語化（en/ja/zh-CN 対応）
+- ロケールキーの名前空間はモジュール構造に対応（`cli.*`, `git.*`, `store.*` 等）
+- ステータスコード (`OK`, `MISSING`, `ERROR` 等) は技術用語として全ロケール英語固定
+- CLI パーサーは `clap v4` derive + `parse_with_i18n()` でランタイムに i18n ヘルプを適用
+- 外部コマンド（git, code）は `std::process::Command` で直接呼び出し
+- 対話的な選択・入力は `inquire` クレートを使用

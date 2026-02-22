@@ -1,0 +1,142 @@
+_version: 1
+
+# cli.rs - CLI ヘルプテキスト
+cli:
+  about: "workspace (git worktree) を管理する"
+  clone:
+    about: "bare リポジトリを作成する（URL 省略で空の bare リポジトリ）"
+    url: "リモート URL（省略で空の bare リポジトリを作成）"
+  new:
+    about: "worktree を作成して VSCode で開く"
+    name: "ワークスペース名（省略で自動生成）"
+    directory: "worktree を作成するパス (default: ../<name>)"
+    branch: "ブランチ名 (default: name と同じ)"
+    from: "新規ブランチの起点 (default: HEAD)"
+  rm:
+    about: "指定した worktree を削除する"
+    directory: "削除する worktree のパス"
+    force: "未コミットの変更があっても強制削除する"
+  list:
+    about: "worktree 一覧を表示する"
+  status:
+    about: "workspace 一覧と shared ファイル状態を統合表示する"
+  shared:
+    about: "共有ファイル管理"
+    track:
+      about: "ファイルを store に登録する"
+      strategy: "strategy (symlink or copy)"
+      file: "追跡するファイルパス"
+    status:
+      about: "共有ファイルの状態表示（詳細）"
+    push:
+      about: "copy 追跡ファイルの変更を store に反映する"
+      file: "ファイルパス（省略で全 copy ファイル）"
+    pull:
+      about: "store から追跡ファイルを現在の worktree に配布する"
+      file: "ファイルパス（省略で全追跡ファイル）"
+      force: "既存ファイルを上書きする"
+  i:
+    about: "対話的にコマンドを組み立てて実行する"
+
+# main.rs - トップレベルエラー
+error:
+  top: "エラー: %{detail}"
+
+# git.rs - git コマンドエラー
+git:
+  exec_failed: "git %{args} の実行に失敗しました"
+  command_failed: "git %{args} が失敗しました: %{stderr}"
+  run_inside_worktree: "worktree 内で実行してください"
+
+# store.rs - store 操作メッセージ
+store:
+  path_canonicalize_failed: "パスの正規化に失敗しました: %{path}"
+  run_inside_repo: "git リポジトリ内で実行してください"
+  store_not_initialized: "store が未初期化です。先に 'ws shared track' でファイルを登録してください"
+  manifest_read_failed: "manifest の読み込みに失敗しました: %{path}"
+  manifest_write_failed: "manifest の書き込みに失敗しました: %{path}"
+  skip_exists: "  スキップ: %{file} (既に存在します)"
+  name_generation_failed: "名前の生成に失敗しました"
+
+# commands/worktree.rs - worktree 操作メッセージ
+worktree:
+  bare_already_exists: ".bare は既に存在します"
+  clone_bare_failed: "git clone --bare の実行に失敗しました"
+  init_bare_failed: "git init --bare の実行に失敗しました"
+  bare_creation_failed: "bare リポジトリの作成に失敗しました"
+  bare_created: ".bare を作成しました"
+  start_point_not_found: "指定された起点 '%{point}' が見つかりません"
+  worktree_add_failed: "git worktree add の実行に失敗しました"
+  worktree_add_git_failed: "git worktree add が失敗しました"
+  dir_canonicalize_failed: "ディレクトリの正規化に失敗: %{dir}"
+  applying_store_files: "store からファイルを適用中..."
+  vscode_launch_failed: "VSCode の起動に失敗しました"
+  worktree_remove_failed: "git worktree remove の実行に失敗しました"
+  worktree_remove_git_failed: "git worktree remove が失敗しました"
+
+# commands/shared.rs - shared 操作メッセージ
+shared:
+  invalid_strategy: "strategy は 'symlink' または 'copy' を指定してください"
+  file_not_found: "ファイルが見つかりません: %{file}"
+  copy_to_store_failed: "store へのコピーに失敗しました"
+  converted_to_symlink: "%{file} をシンボリックリンクに変換しました"
+  tracking_started: "追跡を開始しました: %{strategy}:%{file}"
+  no_tracked_files: "追跡ファイルはありません"
+  skip_not_in_worktree: "スキップ: %{file} (worktree に存在しません)"
+  not_copy_tracked: "%{file} は copy strategy で追跡されていません"
+  no_copy_files_to_push: "push 対象の copy ファイルはありません"
+  skip_not_in_store: "スキップ: %{file} (store に存在しません)"
+  skip_exists_use_force: "スキップ: %{file} (既に存在します。-f で上書き)"
+  not_tracked: "%{file} は追跡されていません"
+  no_files_to_pull: "pull 対象のファイルはありません"
+
+# commands/status.rs - status 表示
+status:
+  workspaces: "Workspaces:"
+  files_tracked: "  [%{count} files tracked]"
+  shared_files: "Shared files:"
+
+# interactive.rs - 対話モード
+interactive:
+  menu:
+    clone: "bare リポジトリを作成"
+    new: "workspace を作成"
+    rm: "workspace を削除"
+    list: "worktree 一覧表示"
+    status: "全体の状態表示"
+    shared: "共有ファイル管理"
+  select_command: "コマンドを選択:"
+  cancelled: "キャンセルしました"
+  selection_failed: "選択に失敗しました"
+  unknown_command: "不明なコマンド: %{cmd}"
+  exec_failed: "%{cmd} の実行に失敗しました"
+  clone:
+    url_prompt: "リモート URL:"
+    url_help: "空で空の bare リポジトリ"
+  new:
+    name_prompt: "名前:"
+    dir_prompt: "場所:"
+    branch_prompt: "branch:"
+    from_prompt: "起点:"
+    from_help: "空で HEAD"
+  rm:
+    no_worktrees: "削除可能な worktree はありません"
+    select_worktree: "削除する worktree を選択:"
+    path_failed: "worktree のパスを取得できませんでした"
+  shared_menu:
+    track: "ファイルを登録"
+    status: "共有ファイルの状態表示"
+    push: "workspace → shared"
+    pull: "shared → workspace"
+  shared_select: "shared コマンドを選択:"
+  shared_push:
+    file_prompt: "ファイルパス:"
+    file_help: "空で全 copy ファイル"
+  shared_pull:
+    file_prompt: "ファイルパス:"
+    file_help: "空で全追跡ファイル"
+  shared_track:
+    select_strategy: "strategy を選択:"
+    file_prompt: "追跡するファイルパス:"
+    empty_file: "ファイルパスを入力してください"
+  input_failed: "入力に失敗しました"

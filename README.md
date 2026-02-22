@@ -54,7 +54,7 @@ ws rm <path>                       # 指定した worktree を削除
 ws rm <path> -f                    # 未コミットの変更があっても強制削除
 ws list                            # worktree 一覧を表示
 ws status                          # worktree の状態を表示
-ws i                               # fzf でコマンドを対話的に選択・実行
+ws i                               # コマンドを対話的に選択・実行
 ```
 
 `ws new` は名前省略時にランダムな名前（例: `gentle-happy-fox`）を自動生成する。
