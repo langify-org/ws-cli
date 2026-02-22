@@ -38,11 +38,22 @@
           packages = {
             default = ws;
             ws = ws;
+            docs = pkgs.stdenvNoCC.mkDerivation {
+              pname = "ws-docs";
+              version = "0.1.0";
+              src = ./docs;
+              nativeBuildInputs = [ pkgs.mdbook ];
+              buildPhase = ''
+                mdbook build -d $out
+              '';
+              dontInstall = true;
+            };
           };
 
           devShells.default = craneLib.devShell {
             packages = with pkgs; [
               cargo-watch
+              mdbook
             ];
           };
         };
