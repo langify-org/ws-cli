@@ -1,6 +1,6 @@
 # ws new
 
-Create a worktree and open it in VSCode.
+Create a new worktree.
 
 ## Usage
 
@@ -28,7 +28,6 @@ ws new [name] [options]
 2. If the branch doesn't exist, creates a new branch from `--from` (default: HEAD)
 3. If HEAD is invalid (e.g., empty bare repo) and `--from` is not specified, creates an orphan branch
 4. If a shared store exists, tracked files are automatically distributed
-5. Launches VSCode (`code`) on completion
 
 ### Worktree location
 

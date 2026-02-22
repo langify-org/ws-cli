@@ -54,7 +54,7 @@ ws new main                        # 既存ブランチをチェックアウト
 ws new feature/foo --from main     # main から新規ブランチを作成
 ```
 
-`ws new` は内部で `git worktree add` を実行し、完了後に VSCode を起動します。
+`ws new` は内部で `git worktree add` を実行します。
 
 ### worktree の削除
 

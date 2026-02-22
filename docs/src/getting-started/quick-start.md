@@ -17,7 +17,7 @@ A bare repository is created in the `.bare/` directory.
 ws new main
 ```
 
-A worktree for the `main` branch is created and VSCode opens automatically.
+A worktree for the `main` branch is created.
 
 ### 3. Work on a feature branch
 

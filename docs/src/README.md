@@ -18,7 +18,6 @@ ws solves these problems and makes worktree-based development seamless.
 
 - **One-step bare clone + worktree setup** — Get started with just `ws clone` then `ws new`
 - **Shared store** — Automatically share gitignored files across worktrees (symlink / copy strategies)
-- **VSCode integration** — Automatically opens VSCode after creating a worktree
 - **Interactive mode** — Build and run commands interactively
 
 ## Quick Start
@@ -27,7 +26,7 @@ ws solves these problems and makes worktree-based development seamless.
 # Bare clone the repository
 ws clone https://github.com/example/repo.git
 
-# Create a worktree and open in VSCode
+# Create a worktree
 ws new main
 
 # Create a feature branch

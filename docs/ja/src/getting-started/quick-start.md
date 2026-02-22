@@ -17,7 +17,7 @@ ws clone https://github.com/example/repo.git
 ws new main
 ```
 
-`main` ブランチの worktree が作成され、VSCode が自動的に開きます。
+`main` ブランチの worktree が作成されます。
 
 ### 3. 機能ブランチで作業
 

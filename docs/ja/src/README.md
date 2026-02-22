@@ -18,7 +18,6 @@ ws はこれらの課題を解決し、worktree ベースの開発を快適に�
 
 - **bare clone + worktree の一括セットアップ** — `ws clone` → `ws new` の2コマンドで開発開始
 - **共有ストア** — gitignored ファイルを worktree 間で自動共有（symlink / copy の2戦略）
-- **VSCode 連携** — `ws new` で worktree 作成後に自動で VSCode を起動
 - **インタラクティブモード** — 対話的なコマンド選択
 
 ## クイックスタート
@@ -27,7 +26,7 @@ ws はこれらの課題を解決し、worktree ベースの開発を快適に�
 # リポジトリを bare clone
 ws clone https://github.com/example/repo.git
 
-# worktree を作成して VSCode で開く
+# worktree を作成
 ws new main
 
 # 機能ブランチを作成

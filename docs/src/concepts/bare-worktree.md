@@ -54,7 +54,7 @@ ws new main                        # Check out an existing branch
 ws new feature/foo --from main     # Create a new branch from main
 ```
 
-`ws new` runs `git worktree add` internally and launches VSCode on completion.
+`ws new` runs `git worktree add` internally.
 
 ### Removing worktrees
 

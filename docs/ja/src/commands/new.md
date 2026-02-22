@@ -1,6 +1,6 @@
 # ws new
 
-worktree を作成して VSCode で開きます。
+worktree を作成します。
 
 ## 使い方
 
@@ -28,7 +28,6 @@ ws new [name] [options]
 2. ブランチが存在しない場合は、`--from` で指定した起点（デフォルト: HEAD）から新規ブランチを作成
 3. HEAD が無効（空の bare リポジトリ等）かつ `--from` 未指定の場合は、orphan ブランチで作成
 4. 共有ストア（store）が存在する場合、追跡ファイルを自動配布
-5. 完了後に VSCode (`code`) を起動
 
 ### worktree の作成先
 

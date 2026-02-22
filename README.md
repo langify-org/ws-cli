@@ -6,7 +6,6 @@ A CLI tool that streamlines development with the git bare clone + worktree patte
 
 - **One-step bare clone + worktree setup** — Get started with `ws clone` then `ws new`
 - **Shared store** — Automatically share gitignored files across worktrees
-- **VSCode integration** — Automatically opens VSCode after creating a worktree
 - **Interactive mode** — Build and run commands interactively
 
 ## Quick Start

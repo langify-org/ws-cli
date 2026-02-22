@@ -52,4 +52,3 @@ ws uses the following external commands:
 | Command | Required | Purpose |
 |---------|----------|---------|
 | `git` | Yes | All worktree operations |
-| `code` | No | Auto-launch VSCode with `ws new` |
