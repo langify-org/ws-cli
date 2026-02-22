@@ -7,7 +7,7 @@ git bare clone + worktree パターンでの開発を支援する CLI ツール�
 - **bare clone + worktree の一括セットアップ** — `ws clone` → `ws new` で開発開始
 - **共有ストア** — gitignored ファイルを worktree 間で自動共有
 - **VSCode 連携** — worktree 作成後に自動で VSCode を起動
-- **インタラクティブモード** — fzf による対話的なコマンド選択
+- **インタラクティブモード** — 対話的なコマンド選択
 
 ## クイックスタート
 
