@@ -8,7 +8,7 @@ worktree の作成・削除に加え、gitignored ファイル（`.envrc`, `.mcp
 ### bare 構成（推奨）
 
 ```bash
-ws init <url>                      # bare clone して .bare/ を作成
+ws clone <url>                      # bare clone して .bare/ を作成
 ws new main                        # 同階層に worktree を作成して VSCode で開く
 ws new feature/foo                 # ブランチ名を指定して作成
 ws new feature/foo --from main     # main から分岐して作成
@@ -38,14 +38,14 @@ parent/
 
 ```bash
 mkdir my-project && cd my-project
-ws init                            # 空の bare リポジトリを作成
+ws clone                            # 空の bare リポジトリを作成
 ws new master                      # orphan ブランチで worktree を作成
 ```
 
 ## 基本操作
 
 ```bash
-ws init [url]                      # bare リポジトリを初期化（URL 省略で空リポジトリ）
+ws clone [url]                      # bare リポジトリを初期化（URL 省略で空リポジトリ）
 ws new [name]                      # worktree を作成して VSCode で開く
 ws new [name] --from <ref>         # 指定した起点から分岐して作成
 ws new [name] --branch <branch>    # ブランチ名を明示的に指定
@@ -68,11 +68,12 @@ store は `<git-common-dir>/worktree-store/` に作られ、manifest でファ�
 ### セットアップ
 
 ```bash
-ws shared init                     # store を初期化（冪等）
 ws shared track -s symlink .envrc  # symlink で追跡（ファイルを即座にリンクに変換）
 ws shared track -s symlink .mcp.json
 ws shared track -s copy .env.local # copy で追跡（worktree ごとに内容を変えたい場合）
 ```
+
+初回の `ws shared track` 実行時に store が自動的に初期化される。
 
 ### 運用
 

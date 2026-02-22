@@ -16,7 +16,7 @@ struct Ws {
 #[derive(FromArgs)]
 #[argh(subcommand)]
 enum WsCommand {
-    Init(InitCmd),
+    Clone(CloneCmd),
     New(NewCmd),
     Rm(RmCmd),
     List(ListCmd),
@@ -25,10 +25,10 @@ enum WsCommand {
     I(InteractiveCmd),
 }
 
-/// bare リポジトリを初期化する
+/// bare リポジトリを作成する（URL 省略で空の bare リポジトリ）
 #[derive(FromArgs)]
-#[argh(subcommand, name = "init")]
-struct InitCmd {
+#[argh(subcommand, name = "clone")]
+struct CloneCmd {
     /// リモート URL（省略で空の bare リポジトリを作成）
     #[argh(positional)]
     url: Option<String>,
@@ -94,17 +94,11 @@ struct SharedCmd {
 #[derive(FromArgs)]
 #[argh(subcommand)]
 enum SharedCommand {
-    Init(SharedInitCmd),
     Track(SharedTrackCmd),
     Status(SharedStatusCmd),
     Push(SharedPushCmd),
     Pull(SharedPullCmd),
 }
-
-/// 共有ファイル管理の初期化
-#[derive(FromArgs)]
-#[argh(subcommand, name = "init")]
-struct SharedInitCmd {}
 
 /// ファイルを store に登録する
 #[derive(FromArgs)]
@@ -218,7 +212,17 @@ fn store_dir() -> Result<PathBuf> {
 fn require_store() -> Result<PathBuf> {
     let store = store_dir()?;
     if !store.is_dir() || !store.join("manifest").is_file() {
-        bail!("store が未初期化です。先に 'ws shared init' を実行してください");
+        bail!("store が未初期化です。先に 'ws shared track' でファイルを登録してください");
+    }
+    Ok(store)
+}
+
+fn ensure_store() -> Result<PathBuf> {
+    let store = store_dir()?;
+    fs::create_dir_all(&store)?;
+    let manifest = store.join("manifest");
+    if !manifest.is_file() {
+        fs::File::create(&manifest)?;
     }
     Ok(store)
 }
@@ -324,9 +328,9 @@ fn read_input(prompt: &str) -> Result<String> {
     Ok(buf.trim().to_string())
 }
 
-// --- コマンド: init ---
+// --- コマンド: clone ---
 
-fn cmd_init(cmd: &InitCmd) -> Result<()> {
+fn cmd_clone(cmd: &CloneCmd) -> Result<()> {
     let bare_dir = PathBuf::from(".bare");
     if bare_dir.exists() {
         bail!(".bare は既に存在します");
@@ -604,24 +608,8 @@ fn file_status(
 
 // --- コマンド: shared ---
 
-fn cmd_shared_init() -> Result<()> {
-    let store = store_dir()?;
-
-    fs::create_dir_all(&store)?;
-
-    let manifest = store.join("manifest");
-    if !manifest.is_file() {
-        fs::File::create(&manifest)?;
-        println!("store を初期化しました: {}", store.display());
-    } else {
-        println!("store は既に初期化済みです: {}", store.display());
-    }
-
-    Ok(())
-}
-
 fn cmd_shared_track(cmd: &SharedTrackCmd) -> Result<()> {
-    let store = require_store()?;
+    let store = ensure_store()?;
     let wt_root = worktree_root()?;
 
     if cmd.strategy != "symlink" && cmd.strategy != "copy" {
@@ -815,7 +803,7 @@ fn cmd_shared_pull(cmd: &SharedPullCmd) -> Result<()> {
 
 fn interactive_mode() -> Result<()> {
     let top_items = &[
-        "init      bare リポジトリを初期化",
+        "clone     bare リポジトリを作成",
         "new       workspace を作成",
         "rm        workspace を削除",
         "list      worktree 一覧表示",
@@ -835,7 +823,7 @@ fn interactive_mode() -> Result<()> {
     let cmd = selected.split_whitespace().next().unwrap_or("");
 
     let args = match cmd {
-        "init" => interactive_init()?,
+        "clone" => interactive_clone()?,
         "new" => interactive_new()?,
         "rm" => interactive_rm()?,
         "list" => vec!["list".to_string()],
@@ -858,9 +846,9 @@ fn interactive_mode() -> Result<()> {
     Ok(())
 }
 
-fn interactive_init() -> Result<Vec<String>> {
+fn interactive_clone() -> Result<Vec<String>> {
     let url_input = read_input("リモート URL (空で空の bare リポジトリ)")?;
-    let mut args = vec!["init".to_string()];
+    let mut args = vec!["clone".to_string()];
     if !url_input.is_empty() {
         args.push(url_input);
     }
@@ -930,7 +918,6 @@ fn interactive_rm() -> Result<Vec<String>> {
 
 fn interactive_shared() -> Result<Vec<String>> {
     let shared_items = &[
-        "init      共有ファイル管理の初期化",
         "track     ファイルを登録",
         "status    共有ファイルの状態表示",
         "push      workspace → shared",
@@ -946,7 +933,6 @@ fn interactive_shared() -> Result<Vec<String>> {
     let cmd = selected.split_whitespace().next().unwrap_or("");
 
     match cmd {
-        "init" => Ok(vec!["shared".to_string(), "init".to_string()]),
         "track" => interactive_shared_track(),
         "status" => Ok(vec!["shared".to_string(), "status".to_string()]),
         "push" => {
@@ -995,14 +981,13 @@ fn interactive_shared_track() -> Result<Vec<String>> {
 
 fn run(ws: Ws) -> Result<()> {
     match ws.command {
-        WsCommand::Init(cmd) => cmd_init(&cmd),
+        WsCommand::Clone(cmd) => cmd_clone(&cmd),
         WsCommand::New(cmd) => cmd_new(&cmd),
         WsCommand::Rm(cmd) => cmd_rm(&cmd),
         WsCommand::List(_) => cmd_list(),
         WsCommand::Status(_) => cmd_status(),
         WsCommand::I(_) => interactive_mode(),
         WsCommand::Shared(cmd) => match cmd.command {
-            SharedCommand::Init(_) => cmd_shared_init(),
             SharedCommand::Track(c) => cmd_shared_track(&c),
             SharedCommand::Status(_) => cmd_shared_status(),
             SharedCommand::Push(c) => cmd_shared_push(&c),
