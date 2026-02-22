@@ -12,8 +12,7 @@ A CLI tool that streamlines development with the git bare clone + worktree patte
 
 ```bash
 ws clone https://github.com/example/repo.git
-ws new main
-ws new feature/awesome --from main
+ws new feature/awesome
 ```
 
 ## Documentation
