@@ -1,6 +1,6 @@
 # ws - workspace manager
 
-> **[日本語版はこちら](../ja/)**
+> **[日本語版はこちら](ja/)**
 
 **ws** is a CLI tool that streamlines development with the git bare clone + worktree pattern.
 

@@ -1,6 +1,6 @@
 # ws - workspace マネージャー
 
-> **[English version](../../)**
+> **[English version](../)**
 
 **ws** は git bare clone + worktree パターンでの開発を支援する CLI ツールです。
 
