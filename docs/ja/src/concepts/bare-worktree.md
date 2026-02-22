@@ -50,11 +50,10 @@ ws clone https://github.com/example/repo.git
 ### worktree の作成
 
 ```bash
-ws new main                        # 既存ブランチをチェックアウト
-ws new feature/foo --from main     # main から新規ブランチを作成
+ws new feature/foo                 # HEAD から新規ブランチを作成
 ```
 
-`ws new` は内部で `git worktree add` を実行します。
+`ws clone` はデフォルトブランチ（例: `main`）の worktree を自動作成します。`ws new` は内部で `git worktree add` を実行します。
 
 ### worktree の削除
 

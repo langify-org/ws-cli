@@ -50,11 +50,10 @@ ws clone https://github.com/example/repo.git
 ### Creating worktrees
 
 ```bash
-ws new main                        # Check out an existing branch
-ws new feature/foo --from main     # Create a new branch from main
+ws new feature/foo                 # Create a new branch from HEAD
 ```
 
-`ws new` runs `git worktree add` internally.
+`ws clone` automatically creates a worktree for the default branch (e.g. `main`). `ws new` runs `git worktree add` internally.
 
 ### Removing worktrees
 

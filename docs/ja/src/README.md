@@ -23,14 +23,11 @@ ws はこれらの課題を解決し、worktree ベースの開発を快適に�
 ## クイックスタート
 
 ```bash
-# リポジトリを bare clone
+# リポジトリを bare clone（デフォルトブランチの worktree は自動作成）
 ws clone https://github.com/example/repo.git
 
-# worktree を作成
-ws new main
-
 # 機能ブランチを作成
-ws new feature/awesome --from main
+ws new feature/awesome
 ```
 
 詳しくは[クイックスタート](getting-started/quick-start.md)を参照してください。

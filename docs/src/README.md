@@ -23,14 +23,11 @@ ws solves these problems and makes worktree-based development seamless.
 ## Quick Start
 
 ```bash
-# Bare clone the repository
+# Bare clone the repository (default branch worktree is created automatically)
 ws clone https://github.com/example/repo.git
 
-# Create a worktree
-ws new main
-
 # Create a feature branch
-ws new feature/awesome --from main
+ws new feature/awesome
 ```
 
 See [Quick Start](getting-started/quick-start.md) for more details.

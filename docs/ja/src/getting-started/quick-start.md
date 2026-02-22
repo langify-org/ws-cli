@@ -14,10 +14,10 @@ ws clone https://github.com/example/repo.git
 ### 2. 機能ブランチで作業
 
 ```bash
-ws new feature/foo --from main
+ws new feature/foo
 ```
 
-`main` から分岐した `feature/foo` ブランチの worktree が作成されます。
+`feature/foo` ブランチの worktree が作成されます。
 
 ### 結果のディレクトリ構造
 

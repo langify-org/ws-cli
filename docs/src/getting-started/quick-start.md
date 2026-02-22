@@ -14,10 +14,10 @@ A bare repository is created in the `.bare/` directory, and a worktree for the d
 ### 2. Work on a feature branch
 
 ```bash
-ws new feature/foo --from main
+ws new feature/foo
 ```
 
-A worktree for a new `feature/foo` branch is created, branching from `main`.
+A worktree for a new `feature/foo` branch is created from the current HEAD.
 
 ### Resulting directory structure
 
