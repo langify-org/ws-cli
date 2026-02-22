@@ -65,6 +65,8 @@ worktree:
   init_bare_failed: "git init --bare の実行に失敗しました"
   bare_creation_failed: "bare リポジトリの作成に失敗しました"
   bare_created: ".bare を作成しました"
+  creating_default_worktree: "デフォルトブランチ '%{branch}' の worktree を作成中..."
+  default_branch_warning: "警告: デフォルトブランチを検出できませんでした。'ws new <ブランチ名>' で手動作成してください"
   start_point_not_found: "指定された起点 '%{point}' が見つかりません"
   worktree_add_failed: "git worktree add の実行に失敗しました"
   worktree_add_git_failed: "git worktree add が失敗しました"
