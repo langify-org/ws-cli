@@ -35,7 +35,7 @@ copy:.env.local
 store 内のファイルへのシンボリックリンクを worktree に作成します。
 
 ```bash
-ws shared track -s symlink .envrc
+ws store track -s symlink .envrc
 ```
 
 - **全 worktree で同じ内容を共有** — store のファイルを編集すると全 worktree に反映される
@@ -48,11 +48,11 @@ ws shared track -s symlink .envrc
 store からファイルを worktree にコピーします。
 
 ```bash
-ws shared track -s copy .env.local
+ws store track -s copy .env.local
 ```
 
 - **worktree ごとにカスタマイズ可能** — コピー後は各 worktree で独立して編集できる
-- `ws shared push` で変更を store に書き戻し、`ws shared pull` で store から取得
+- `ws store push` で変更を store に書き戻し、`ws store pull` で store から取得
 
 **用途:** `.env.local` など、worktree ごとに異なる値が必要なファイル
 
@@ -72,12 +72,12 @@ ws shared track -s copy .env.local
 worktree 内で追跡したいファイルを登録します。
 
 ```bash
-ws shared track -s symlink .envrc
-ws shared track -s symlink .mcp.json
-ws shared track -s copy .env.local
+ws store track -s symlink .envrc
+ws store track -s symlink .mcp.json
+ws store track -s copy .env.local
 ```
 
-初回の `ws shared track` 実行時に store が自動的に初期化されます。
+初回の `ws store track` 実行時に store が自動的に初期化されます。
 
 ### 新しい worktree の作成
 
@@ -91,7 +91,7 @@ ws new feature/bar
 ### 状態の確認
 
 ```bash
-ws shared status
+ws store status
 ```
 
 各ファイルの状態を表示します:
@@ -109,11 +109,20 @@ ws shared status
 
 ```bash
 # worktree の変更を store に反映
-ws shared push
-ws shared push .env.local          # 特定ファイルのみ
+ws store push
+ws store push .env.local          # 特定ファイルのみ
 
 # store から worktree に配布
-ws shared pull
-ws shared pull .envrc              # 特定ファイルのみ
-ws shared pull -f                  # 既存ファイルを上書き
+ws store pull
+ws store pull .envrc              # 特定ファイルのみ
+ws store pull -f                  # 既存ファイルを上書き
+```
+
+### ファイルの追跡解除
+
+ファイルの追跡を停止し、store から削除するには:
+
+```bash
+ws store untrack .envrc            # シンボリックリンクは実ファイルに復元される
+ws store untrack .env.local        # copy ファイルは worktree にそのまま残る
 ```

@@ -23,7 +23,7 @@ ws i
 | `rm` | workspace を削除 |
 | `list` | worktree 一覧表示 |
 | `status` | 全体の状態表示 |
-| `shared` | 共有ファイル管理（サブメニューあり） |
+| `store` | 共有ファイル管理（サブメニューあり） |
 
 ## 例
 

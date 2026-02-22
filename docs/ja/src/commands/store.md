@@ -1,4 +1,4 @@
-# ws shared
+# ws store
 
 worktree 間で共有したい gitignored ファイルを一元管理します。
 
@@ -6,23 +6,24 @@ worktree 間で共有したい gitignored ファイルを一元管理します�
 
 | サブコマンド | 説明 |
 |-------------|------|
-| [`ws shared track`](#ws-shared-track) | ファイルを store に登録 |
-| [`ws shared status`](#ws-shared-status) | 共有ファイルの状態表示 |
-| [`ws shared push`](#ws-shared-push) | copy ファイルの変更を store に反映 |
-| [`ws shared pull`](#ws-shared-pull) | store から追跡ファイルを配布 |
+| [`ws store track`](#ws-store-track) | ファイルを store に登録 |
+| [`ws store status`](#ws-store-status) | 共有ファイルの状態表示 |
+| [`ws store push`](#ws-store-push) | copy ファイルの変更を store に反映 |
+| [`ws store pull`](#ws-store-pull) | store から追跡ファイルを配布 |
+| [`ws store untrack`](#ws-store-untrack) | ファイルを store から登録解除 |
 
 共有ストアの詳しい仕組みについては[共有ストア](../concepts/shared-store.md)を参照してください。
 
 ---
 
-## ws shared track
+## ws store track
 
 ファイルを store に登録して追跡を開始します。
 
 ### 使い方
 
 ```bash
-ws shared track -s <strategy> <file>
+ws store track -s <strategy> <file>
 ```
 
 ### 引数・オプション
@@ -41,20 +42,20 @@ ws shared track -s <strategy> <file>
 ### 例
 
 ```bash
-ws shared track -s symlink .envrc
-ws shared track -s copy .env.local
+ws store track -s symlink .envrc
+ws store track -s copy .env.local
 ```
 
 ---
 
-## ws shared status
+## ws store status
 
 共有ファイルの状態を一覧表示します。
 
 ### 使い方
 
 ```bash
-ws shared status
+ws store status
 ```
 
 ### 出力例
@@ -71,14 +72,14 @@ copy     .env.local                               MODIFIED
 
 ---
 
-## ws shared push
+## ws store push
 
 copy strategy で追跡しているファイルの変更を store に反映します。
 
 ### 使い方
 
 ```bash
-ws shared push [file]
+ws store push [file]
 ```
 
 ### 引数
@@ -90,20 +91,20 @@ ws shared push [file]
 ### 例
 
 ```bash
-ws shared push              # 全 copy ファイルを push
-ws shared push .env.local   # 特定ファイルのみ
+ws store push              # 全 copy ファイルを push
+ws store push .env.local   # 特定ファイルのみ
 ```
 
 ---
 
-## ws shared pull
+## ws store pull
 
 store から追跡ファイルを現在の worktree に配布します。
 
 ### 使い方
 
 ```bash
-ws shared pull [file] [-f]
+ws store pull [file] [-f]
 ```
 
 ### 引数・オプション
@@ -122,7 +123,38 @@ ws shared pull [file] [-f]
 ### 例
 
 ```bash
-ws shared pull              # 全追跡ファイルを pull
-ws shared pull .envrc       # 特定ファイルのみ
-ws shared pull -f           # 既存ファイルを上書き
+ws store pull              # 全追跡ファイルを pull
+ws store pull .envrc       # 特定ファイルのみ
+ws store pull -f           # 既存ファイルを上書き
+```
+
+---
+
+## ws store untrack
+
+ファイルを store から登録解除し、追跡を停止します。
+
+### 使い方
+
+```bash
+ws store untrack <file>
+```
+
+### 引数
+
+| 引数 | 必須 | 説明 |
+|------|------|------|
+| `file` | はい | 登録解除するファイルパス |
+
+### 動作
+
+1. `symlink` strategy の場合、全 worktree のシンボリックリンクを実ファイルに復元（store からコピー）
+2. manifest からエントリを削除
+3. store のマスターコピーを削除
+
+### 例
+
+```bash
+ws store untrack .envrc
+ws store untrack .env.local
 ```

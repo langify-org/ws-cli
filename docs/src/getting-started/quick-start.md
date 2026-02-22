@@ -55,9 +55,9 @@ To share `.envrc` or `.mcp.json` across worktrees:
 
 ```bash
 # Run inside a worktree
-ws shared track -s symlink .envrc
-ws shared track -s symlink .mcp.json
-ws shared track -s copy .env.local
+ws store track -s symlink .envrc
+ws store track -s symlink .mcp.json
+ws store track -s copy .env.local
 ```
 
 From now on, every time you create a new worktree with `ws new`, these files are automatically distributed.

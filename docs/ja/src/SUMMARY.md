@@ -20,4 +20,4 @@
 - [ws list](commands/list.md)
 - [ws status](commands/status.md)
 - [ws i (インタラクティブ)](commands/interactive.md)
-- [ws shared](commands/shared.md)
+- [ws store](commands/store.md)

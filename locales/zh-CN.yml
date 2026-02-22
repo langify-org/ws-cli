@@ -20,7 +20,7 @@ cli:
     about: "列出 worktree"
   status:
     about: "显示工作区列表和共享文件状态"
-  shared:
+  store:
     about: "管理共享文件"
     track:
       about: "将文件注册到 store"
@@ -35,6 +35,9 @@ cli:
       about: "从 store 分发跟踪文件到当前 worktree"
       file: "文件路径（省略则处理所有跟踪文件）"
       force: "覆盖现有文件"
+    untrack:
+      about: "从 store 注销文件"
+      file: "要注销的文件路径"
   i:
     about: "交互式构建并执行命令"
 
@@ -52,11 +55,27 @@ git:
 store:
   path_canonicalize_failed: "路径规范化失败: %{path}"
   run_inside_repo: "请在 git 仓库内执行"
-  store_not_initialized: "store 未初始化。请先使用 'ws shared track' 注册文件"
+  store_not_initialized: "store 未初始化。请先使用 'ws store track' 注册文件"
   manifest_read_failed: "读取 manifest 失败: %{path}"
   manifest_write_failed: "写入 manifest 失败: %{path}"
   skip_exists: "  跳过: %{file} (已存在)"
   name_generation_failed: "名称生成失败"
+  invalid_strategy: "strategy 必须是 'symlink' 或 'copy'"
+  file_not_found: "找不到文件: %{file}"
+  copy_to_store_failed: "复制到 store 失败"
+  converted_to_symlink: "已将 %{file} 转换为符号链接"
+  tracking_started: "开始跟踪: %{strategy}:%{file}"
+  no_tracked_files: "没有跟踪文件"
+  skip_not_in_worktree: "跳过: %{file} (不在 worktree 中)"
+  not_copy_tracked: "%{file} 未使用 copy 策略跟踪"
+  no_copy_files_to_push: "没有需要 push 的 copy 文件"
+  skip_not_in_store: "跳过: %{file} (不在 store 中)"
+  skip_exists_use_force: "跳过: %{file} (已存在，使用 -f 覆盖)"
+  not_tracked: "%{file} 未被跟踪"
+  no_files_to_pull: "没有需要 pull 的文件"
+  untrack_success: "已取消跟踪: %{file}"
+  symlink_restored: "已将符号链接恢复为文件: %{file} (%{path})"
+  restore_copy_failed: "%{file} 恢复失败 (%{path})"
 
 # commands/worktree.rs - worktree 操作消息
 worktree:
@@ -75,22 +94,6 @@ worktree:
   worktree_remove_failed: "执行 git worktree remove 失败"
   worktree_remove_git_failed: "git worktree remove 失败"
 
-# commands/shared.rs - shared 操作消息
-shared:
-  invalid_strategy: "strategy 必须是 'symlink' 或 'copy'"
-  file_not_found: "找不到文件: %{file}"
-  copy_to_store_failed: "复制到 store 失败"
-  converted_to_symlink: "已将 %{file} 转换为符号链接"
-  tracking_started: "开始跟踪: %{strategy}:%{file}"
-  no_tracked_files: "没有跟踪文件"
-  skip_not_in_worktree: "跳过: %{file} (不在 worktree 中)"
-  not_copy_tracked: "%{file} 未使用 copy 策略跟踪"
-  no_copy_files_to_push: "没有需要 push 的 copy 文件"
-  skip_not_in_store: "跳过: %{file} (不在 store 中)"
-  skip_exists_use_force: "跳过: %{file} (已存在，使用 -f 覆盖)"
-  not_tracked: "%{file} 未被跟踪"
-  no_files_to_pull: "没有需要 pull 的文件"
-
 # commands/status.rs - status 显示
 status:
   workspaces: "Workspaces:"
@@ -105,7 +108,7 @@ interactive:
     rm: "删除工作区"
     list: "列出 worktree"
     status: "显示整体状态"
-    shared: "管理共享文件"
+    store: "管理共享文件"
   select_command: "选择命令:"
   cancelled: "已取消"
   selection_failed: "选择失败"
@@ -124,20 +127,25 @@ interactive:
     no_worktrees: "没有可删除的 worktree"
     select_worktree: "选择要删除的 worktree:"
     path_failed: "获取 worktree 路径失败"
-  shared_menu:
+  store_menu:
     track: "注册文件"
     status: "显示共享文件状态"
-    push: "workspace → shared"
-    pull: "shared → workspace"
-  shared_select: "选择 shared 命令:"
-  shared_push:
+    push: "workspace → store"
+    pull: "store → workspace"
+    untrack: "注销文件"
+  store_select: "选择 store 命令:"
+  store_push:
     file_prompt: "文件路径:"
     file_help: "留空则处理所有 copy 文件"
-  shared_pull:
+  store_pull:
     file_prompt: "文件路径:"
     file_help: "留空则处理所有跟踪文件"
-  shared_track:
+  store_track:
     select_strategy: "选择策略:"
     file_prompt: "要跟踪的文件路径:"
+    empty_file: "请输入文件路径"
+  store_untrack:
+    select_file: "选择要注销的文件:"
+    file_prompt: "要注销的文件路径:"
     empty_file: "请输入文件路径"
   input_failed: "输入失败"

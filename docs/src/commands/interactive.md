@@ -23,7 +23,7 @@ ws i
 | `rm` | Remove a workspace |
 | `list` | List worktrees |
 | `status` | Show overall status |
-| `shared` | Manage shared files (has a submenu) |
+| `store` | Manage shared files (has a submenu) |
 
 ## Example
 

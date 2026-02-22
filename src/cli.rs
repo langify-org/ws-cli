@@ -15,7 +15,7 @@ pub(crate) enum WsCommand {
     Rm(RmCmd),
     List(ListCmd),
     Status(StatusCmd),
-    Shared(SharedCmd),
+    Store(StoreCmd),
     I(InteractiveCmd),
 }
 
@@ -56,21 +56,22 @@ pub(crate) struct InteractiveCmd {}
 pub(crate) struct StatusCmd {}
 
 #[derive(Parser)]
-pub(crate) struct SharedCmd {
+pub(crate) struct StoreCmd {
     #[command(subcommand)]
-    pub command: SharedCommand,
+    pub command: StoreCommand,
 }
 
 #[derive(Subcommand)]
-pub(crate) enum SharedCommand {
-    Track(SharedTrackCmd),
-    Status(SharedStatusCmd),
-    Push(SharedPushCmd),
-    Pull(SharedPullCmd),
+pub(crate) enum StoreCommand {
+    Track(StoreTrackCmd),
+    Status(StoreStatusCmd),
+    Push(StorePushCmd),
+    Pull(StorePullCmd),
+    Untrack(StoreUntrackCmd),
 }
 
 #[derive(Parser)]
-pub(crate) struct SharedTrackCmd {
+pub(crate) struct StoreTrackCmd {
     #[arg(short = 's', long)]
     pub strategy: String,
 
@@ -78,19 +79,24 @@ pub(crate) struct SharedTrackCmd {
 }
 
 #[derive(Parser)]
-pub(crate) struct SharedStatusCmd {}
+pub(crate) struct StoreStatusCmd {}
 
 #[derive(Parser)]
-pub(crate) struct SharedPushCmd {
+pub(crate) struct StorePushCmd {
     pub file: Option<String>,
 }
 
 #[derive(Parser)]
-pub(crate) struct SharedPullCmd {
+pub(crate) struct StorePullCmd {
     pub file: Option<String>,
 
     #[arg(short = 'f', long)]
     pub force: bool,
+}
+
+#[derive(Parser)]
+pub(crate) struct StoreUntrackCmd {
+    pub file: String,
 }
 
 /// derive で定義した Command にランタイムで i18n ヘルプを上書きしてパース
@@ -122,33 +128,39 @@ pub(crate) fn parse_with_i18n() -> Ws {
         .mut_subcommand("i", |s| {
             s.about(t!("cli.i.about").to_string())
         })
-        .mut_subcommand("shared", |s| {
-            s.about(t!("cli.shared.about").to_string())
+        .mut_subcommand("store", |s| {
+            s.about(t!("cli.store.about").to_string())
                 .mut_subcommand("track", |ss| {
-                    ss.about(t!("cli.shared.track.about").to_string())
+                    ss.about(t!("cli.store.track.about").to_string())
                         .mut_arg("strategy", |a| {
-                            a.help(t!("cli.shared.track.strategy").to_string())
+                            a.help(t!("cli.store.track.strategy").to_string())
                         })
                         .mut_arg("file", |a| {
-                            a.help(t!("cli.shared.track.file").to_string())
+                            a.help(t!("cli.store.track.file").to_string())
                         })
                 })
                 .mut_subcommand("status", |ss| {
-                    ss.about(t!("cli.shared.status.about").to_string())
+                    ss.about(t!("cli.store.status.about").to_string())
                 })
                 .mut_subcommand("push", |ss| {
-                    ss.about(t!("cli.shared.push.about").to_string())
+                    ss.about(t!("cli.store.push.about").to_string())
                         .mut_arg("file", |a| {
-                            a.help(t!("cli.shared.push.file").to_string())
+                            a.help(t!("cli.store.push.file").to_string())
                         })
                 })
                 .mut_subcommand("pull", |ss| {
-                    ss.about(t!("cli.shared.pull.about").to_string())
+                    ss.about(t!("cli.store.pull.about").to_string())
                         .mut_arg("file", |a| {
-                            a.help(t!("cli.shared.pull.file").to_string())
+                            a.help(t!("cli.store.pull.file").to_string())
                         })
                         .mut_arg("force", |a| {
-                            a.help(t!("cli.shared.pull.force").to_string())
+                            a.help(t!("cli.store.pull.force").to_string())
+                        })
+                })
+                .mut_subcommand("untrack", |ss| {
+                    ss.about(t!("cli.store.untrack.about").to_string())
+                        .mut_arg("file", |a| {
+                            a.help(t!("cli.store.untrack.file").to_string())
                         })
                 })
         });

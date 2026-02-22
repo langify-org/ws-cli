@@ -35,7 +35,7 @@ The shared store supports two distribution strategies.
 Creates symbolic links in worktrees pointing to the file in the store.
 
 ```bash
-ws shared track -s symlink .envrc
+ws store track -s symlink .envrc
 ```
 
 - **All worktrees share the same content** — Editing the store file is reflected across all worktrees
@@ -48,11 +48,11 @@ ws shared track -s symlink .envrc
 Copies files from the store into worktrees.
 
 ```bash
-ws shared track -s copy .env.local
+ws store track -s copy .env.local
 ```
 
 - **Each worktree can be customized independently** — After copying, each worktree can edit the file freely
-- Use `ws shared push` to write changes back to the store, and `ws shared pull` to fetch from the store
+- Use `ws store push` to write changes back to the store, and `ws store pull` to fetch from the store
 
 **Use for:** `.env.local` and other files that need different values per worktree
 
@@ -72,12 +72,12 @@ ws shared track -s copy .env.local
 Register files you want to track from inside a worktree.
 
 ```bash
-ws shared track -s symlink .envrc
-ws shared track -s symlink .mcp.json
-ws shared track -s copy .env.local
+ws store track -s symlink .envrc
+ws store track -s symlink .mcp.json
+ws store track -s copy .env.local
 ```
 
-The store is automatically initialized on the first `ws shared track` invocation.
+The store is automatically initialized on the first `ws store track` invocation.
 
 ### Creating new worktrees
 
@@ -91,7 +91,7 @@ ws new feature/bar
 ### Checking status
 
 ```bash
-ws shared status
+ws store status
 ```
 
 Displays the status of each tracked file:
@@ -109,11 +109,20 @@ Displays the status of each tracked file:
 
 ```bash
 # Push worktree changes to the store
-ws shared push
-ws shared push .env.local          # Specific file only
+ws store push
+ws store push .env.local          # Specific file only
 
 # Pull from store to worktree
-ws shared pull
-ws shared pull .envrc              # Specific file only
-ws shared pull -f                  # Overwrite existing files
+ws store pull
+ws store pull .envrc              # Specific file only
+ws store pull -f                  # Overwrite existing files
+```
+
+### Untracking files
+
+To stop tracking a file and remove it from the store:
+
+```bash
+ws store untrack .envrc            # Symlinks are restored to regular files
+ws store untrack .env.local        # Copy files in worktrees are left as-is
 ```

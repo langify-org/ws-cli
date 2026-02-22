@@ -55,9 +55,9 @@ worktree 間で `.envrc` や `.mcp.json` を共有したい場合:
 
 ```bash
 # worktree 内で実行
-ws shared track -s symlink .envrc
-ws shared track -s symlink .mcp.json
-ws shared track -s copy .env.local
+ws store track -s symlink .envrc
+ws store track -s symlink .mcp.json
+ws store track -s copy .env.local
 ```
 
 以降、`ws new` で新しい worktree を作成するたびに、これらのファイルが自動的に配布されます。

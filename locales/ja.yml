@@ -20,7 +20,7 @@ cli:
     about: "worktree 一覧を表示する"
   status:
     about: "workspace 一覧と shared ファイル状態を統合表示する"
-  shared:
+  store:
     about: "共有ファイル管理"
     track:
       about: "ファイルを store に登録する"
@@ -35,6 +35,9 @@ cli:
       about: "store から追跡ファイルを現在の worktree に配布する"
       file: "ファイルパス（省略で全追跡ファイル）"
       force: "既存ファイルを上書きする"
+    untrack:
+      about: "ファイルを store から登録解除する"
+      file: "登録解除するファイルパス"
   i:
     about: "対話的にコマンドを組み立てて実行する"
 
@@ -52,11 +55,27 @@ git:
 store:
   path_canonicalize_failed: "パスの正規化に失敗しました: %{path}"
   run_inside_repo: "git リポジトリ内で実行してください"
-  store_not_initialized: "store が未初期化です。先に 'ws shared track' でファイルを登録してください"
+  store_not_initialized: "store が未初期化です。先に 'ws store track' でファイルを登録してください"
   manifest_read_failed: "manifest の読み込みに失敗しました: %{path}"
   manifest_write_failed: "manifest の書き込みに失敗しました: %{path}"
   skip_exists: "  スキップ: %{file} (既に存在します)"
   name_generation_failed: "名前の生成に失敗しました"
+  invalid_strategy: "strategy は 'symlink' または 'copy' を指定してください"
+  file_not_found: "ファイルが見つかりません: %{file}"
+  copy_to_store_failed: "store へのコピーに失敗しました"
+  converted_to_symlink: "%{file} をシンボリックリンクに変換しました"
+  tracking_started: "追跡を開始しました: %{strategy}:%{file}"
+  no_tracked_files: "追跡ファイルはありません"
+  skip_not_in_worktree: "スキップ: %{file} (worktree に存在しません)"
+  not_copy_tracked: "%{file} は copy strategy で追跡されていません"
+  no_copy_files_to_push: "push 対象の copy ファイルはありません"
+  skip_not_in_store: "スキップ: %{file} (store に存在しません)"
+  skip_exists_use_force: "スキップ: %{file} (既に存在します。-f で上書き)"
+  not_tracked: "%{file} は追跡されていません"
+  no_files_to_pull: "pull 対象のファイルはありません"
+  untrack_success: "追跡を解除しました: %{file}"
+  symlink_restored: "シンボリックリンクをファイルに復元しました: %{file} (%{path})"
+  restore_copy_failed: "%{file} の復元に失敗しました (%{path})"
 
 # commands/worktree.rs - worktree 操作メッセージ
 worktree:
@@ -75,22 +94,6 @@ worktree:
   worktree_remove_failed: "git worktree remove の実行に失敗しました"
   worktree_remove_git_failed: "git worktree remove が失敗しました"
 
-# commands/shared.rs - shared 操作メッセージ
-shared:
-  invalid_strategy: "strategy は 'symlink' または 'copy' を指定してください"
-  file_not_found: "ファイルが見つかりません: %{file}"
-  copy_to_store_failed: "store へのコピーに失敗しました"
-  converted_to_symlink: "%{file} をシンボリックリンクに変換しました"
-  tracking_started: "追跡を開始しました: %{strategy}:%{file}"
-  no_tracked_files: "追跡ファイルはありません"
-  skip_not_in_worktree: "スキップ: %{file} (worktree に存在しません)"
-  not_copy_tracked: "%{file} は copy strategy で追跡されていません"
-  no_copy_files_to_push: "push 対象の copy ファイルはありません"
-  skip_not_in_store: "スキップ: %{file} (store に存在しません)"
-  skip_exists_use_force: "スキップ: %{file} (既に存在します。-f で上書き)"
-  not_tracked: "%{file} は追跡されていません"
-  no_files_to_pull: "pull 対象のファイルはありません"
-
 # commands/status.rs - status 表示
 status:
   workspaces: "Workspaces:"
@@ -105,7 +108,7 @@ interactive:
     rm: "workspace を削除"
     list: "worktree 一覧表示"
     status: "全体の状態表示"
-    shared: "共有ファイル管理"
+    store: "共有ファイル管理"
   select_command: "コマンドを選択:"
   cancelled: "キャンセルしました"
   selection_failed: "選択に失敗しました"
@@ -124,20 +127,25 @@ interactive:
     no_worktrees: "削除可能な worktree はありません"
     select_worktree: "削除する worktree を選択:"
     path_failed: "worktree のパスを取得できませんでした"
-  shared_menu:
+  store_menu:
     track: "ファイルを登録"
     status: "共有ファイルの状態表示"
-    push: "workspace → shared"
-    pull: "shared → workspace"
-  shared_select: "shared コマンドを選択:"
-  shared_push:
+    push: "workspace → store"
+    pull: "store → workspace"
+    untrack: "ファイルの登録を解除"
+  store_select: "store コマンドを選択:"
+  store_push:
     file_prompt: "ファイルパス:"
     file_help: "空で全 copy ファイル"
-  shared_pull:
+  store_pull:
     file_prompt: "ファイルパス:"
     file_help: "空で全追跡ファイル"
-  shared_track:
+  store_track:
     select_strategy: "strategy を選択:"
     file_prompt: "追跡するファイルパス:"
+    empty_file: "ファイルパスを入力してください"
+  store_untrack:
+    select_file: "登録解除するファイルを選択:"
+    file_prompt: "登録解除するファイルパス:"
     empty_file: "ファイルパスを入力してください"
   input_failed: "入力に失敗しました"

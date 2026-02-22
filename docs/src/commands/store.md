@@ -1,4 +1,4 @@
-# ws shared
+# ws store
 
 Centrally manage gitignored files shared across worktrees.
 
@@ -6,23 +6,24 @@ Centrally manage gitignored files shared across worktrees.
 
 | Subcommand | Description |
 |------------|-------------|
-| [`ws shared track`](#ws-shared-track) | Register a file in the store |
-| [`ws shared status`](#ws-shared-status) | Show shared file status |
-| [`ws shared push`](#ws-shared-push) | Push copy file changes to the store |
-| [`ws shared pull`](#ws-shared-pull) | Distribute tracked files from the store |
+| [`ws store track`](#ws-store-track) | Register a file in the store |
+| [`ws store status`](#ws-store-status) | Show shared file status |
+| [`ws store push`](#ws-store-push) | Push copy file changes to the store |
+| [`ws store pull`](#ws-store-pull) | Distribute tracked files from the store |
+| [`ws store untrack`](#ws-store-untrack) | Unregister a file from the store |
 
 For details on how the shared store works, see [Shared Store](../concepts/shared-store.md).
 
 ---
 
-## ws shared track
+## ws store track
 
 Register a file in the store and start tracking it.
 
 ### Usage
 
 ```bash
-ws shared track -s <strategy> <file>
+ws store track -s <strategy> <file>
 ```
 
 ### Arguments and options
@@ -41,20 +42,20 @@ ws shared track -s <strategy> <file>
 ### Examples
 
 ```bash
-ws shared track -s symlink .envrc
-ws shared track -s copy .env.local
+ws store track -s symlink .envrc
+ws store track -s copy .env.local
 ```
 
 ---
 
-## ws shared status
+## ws store status
 
 Display the status of all shared files.
 
 ### Usage
 
 ```bash
-ws shared status
+ws store status
 ```
 
 ### Example output
@@ -71,14 +72,14 @@ copy     .env.local                               MODIFIED
 
 ---
 
-## ws shared push
+## ws store push
 
 Push changes to copy-tracked files back to the store.
 
 ### Usage
 
 ```bash
-ws shared push [file]
+ws store push [file]
 ```
 
 ### Arguments
@@ -90,20 +91,20 @@ ws shared push [file]
 ### Examples
 
 ```bash
-ws shared push              # Push all copy files
-ws shared push .env.local   # Specific file only
+ws store push              # Push all copy files
+ws store push .env.local   # Specific file only
 ```
 
 ---
 
-## ws shared pull
+## ws store pull
 
 Distribute tracked files from the store to the current worktree.
 
 ### Usage
 
 ```bash
-ws shared pull [file] [-f]
+ws store pull [file] [-f]
 ```
 
 ### Arguments and options
@@ -122,7 +123,38 @@ ws shared pull [file] [-f]
 ### Examples
 
 ```bash
-ws shared pull              # Pull all tracked files
-ws shared pull .envrc       # Specific file only
-ws shared pull -f           # Overwrite existing files
+ws store pull              # Pull all tracked files
+ws store pull .envrc       # Specific file only
+ws store pull -f           # Overwrite existing files
+```
+
+---
+
+## ws store untrack
+
+Unregister a file from the store and stop tracking it.
+
+### Usage
+
+```bash
+ws store untrack <file>
+```
+
+### Arguments
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `file` | Yes | File path to untrack |
+
+### Behavior
+
+1. If the file uses the `symlink` strategy, symbolic links in all worktrees are restored to regular files (copied from the store)
+2. Removes the entry from the manifest
+3. Deletes the master copy from the store
+
+### Examples
+
+```bash
+ws store untrack .envrc
+ws store untrack .env.local
 ```

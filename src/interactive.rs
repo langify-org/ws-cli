@@ -5,6 +5,7 @@ use std::process::Command;
 
 use crate::commands::worktree::generate_name;
 use crate::git::{find_bare_dir, git_output, is_inside_git_worktree};
+use crate::store::{read_manifest, require_store};
 
 pub(crate) fn interactive_mode() -> Result<()> {
     let top_items: Vec<String> = vec![
@@ -13,7 +14,7 @@ pub(crate) fn interactive_mode() -> Result<()> {
         format!("rm        {}", t!("interactive.menu.rm")),
         format!("list      {}", t!("interactive.menu.list")),
         format!("status    {}", t!("interactive.menu.status")),
-        format!("shared    {}", t!("interactive.menu.shared")),
+        format!("store     {}", t!("interactive.menu.store")),
     ];
 
     let items_ref: Vec<&str> = top_items.iter().map(|s| s.as_str()).collect();
@@ -37,7 +38,7 @@ pub(crate) fn interactive_mode() -> Result<()> {
         "rm" => interactive_rm()?,
         "list" => vec!["list".to_string()],
         "status" => vec!["status".to_string()],
-        "shared" => interactive_shared()?,
+        "store" => interactive_store()?,
         _ => bail!("{}", t!("interactive.unknown_command", cmd = cmd)),
     };
 
@@ -151,16 +152,17 @@ fn interactive_rm() -> Result<Vec<String>> {
     Ok(vec!["rm".to_string(), path])
 }
 
-fn interactive_shared() -> Result<Vec<String>> {
-    let shared_items: Vec<String> = vec![
-        format!("track     {}", t!("interactive.shared_menu.track")),
-        format!("status    {}", t!("interactive.shared_menu.status")),
-        format!("push      {}", t!("interactive.shared_menu.push")),
-        format!("pull      {}", t!("interactive.shared_menu.pull")),
+fn interactive_store() -> Result<Vec<String>> {
+    let store_items: Vec<String> = vec![
+        format!("track     {}", t!("interactive.store_menu.track")),
+        format!("status    {}", t!("interactive.store_menu.status")),
+        format!("push      {}", t!("interactive.store_menu.push")),
+        format!("pull      {}", t!("interactive.store_menu.pull")),
+        format!("untrack   {}", t!("interactive.store_menu.untrack")),
     ];
 
-    let items_ref: Vec<&str> = shared_items.iter().map(|s| s.as_str()).collect();
-    let selected = Select::new(&t!("interactive.shared_select").to_string(), items_ref)
+    let items_ref: Vec<&str> = store_items.iter().map(|s| s.as_str()).collect();
+    let selected = Select::new(&t!("interactive.store_select").to_string(), items_ref)
         .prompt_skippable()
         .context(t!("interactive.selection_failed").to_string())?;
 
@@ -172,41 +174,42 @@ fn interactive_shared() -> Result<Vec<String>> {
     let cmd = selected.split_whitespace().next().unwrap_or("");
 
     match cmd {
-        "track" => interactive_shared_track(),
-        "status" => Ok(vec!["shared".to_string(), "status".to_string()]),
+        "track" => interactive_store_track(),
+        "status" => Ok(vec!["store".to_string(), "status".to_string()]),
         "push" => {
-            let file_input = Text::new(&t!("interactive.shared_push.file_prompt").to_string())
-                .with_help_message(&t!("interactive.shared_push.file_help").to_string())
+            let file_input = Text::new(&t!("interactive.store_push.file_prompt").to_string())
+                .with_help_message(&t!("interactive.store_push.file_help").to_string())
                 .prompt_skippable()
                 .context(t!("interactive.input_failed").to_string())?
                 .unwrap_or_default();
 
-            let mut args = vec!["shared".to_string(), "push".to_string()];
+            let mut args = vec!["store".to_string(), "push".to_string()];
             if !file_input.is_empty() {
                 args.push(file_input);
             }
             Ok(args)
         }
         "pull" => {
-            let file_input = Text::new(&t!("interactive.shared_pull.file_prompt").to_string())
-                .with_help_message(&t!("interactive.shared_pull.file_help").to_string())
+            let file_input = Text::new(&t!("interactive.store_pull.file_prompt").to_string())
+                .with_help_message(&t!("interactive.store_pull.file_help").to_string())
                 .prompt_skippable()
                 .context(t!("interactive.input_failed").to_string())?
                 .unwrap_or_default();
 
-            let mut args = vec!["shared".to_string(), "pull".to_string()];
+            let mut args = vec!["store".to_string(), "pull".to_string()];
             if !file_input.is_empty() {
                 args.push(file_input);
             }
             Ok(args)
         }
+        "untrack" => interactive_store_untrack(),
         _ => bail!("{}", t!("interactive.unknown_command", cmd = cmd)),
     }
 }
 
-fn interactive_shared_track() -> Result<Vec<String>> {
+fn interactive_store_track() -> Result<Vec<String>> {
     let strategy_items = vec!["symlink", "copy"];
-    let strategy = Select::new(&t!("interactive.shared_track.select_strategy").to_string(), strategy_items)
+    let strategy = Select::new(&t!("interactive.store_track.select_strategy").to_string(), strategy_items)
         .prompt_skippable()
         .context(t!("interactive.selection_failed").to_string())?;
 
@@ -215,19 +218,60 @@ fn interactive_shared_track() -> Result<Vec<String>> {
         None => bail!("{}", t!("interactive.cancelled")),
     };
 
-    let file = Text::new(&t!("interactive.shared_track.file_prompt").to_string())
+    let file = Text::new(&t!("interactive.store_track.file_prompt").to_string())
         .prompt()
         .context(t!("interactive.input_failed").to_string())?;
 
     if file.is_empty() {
-        bail!("{}", t!("interactive.shared_track.empty_file"));
+        bail!("{}", t!("interactive.store_track.empty_file"));
     }
 
     Ok(vec![
-        "shared".to_string(),
+        "store".to_string(),
         "track".to_string(),
         "-s".to_string(),
         strategy,
+        file,
+    ])
+}
+
+fn interactive_store_untrack() -> Result<Vec<String>> {
+    let store = require_store();
+    if let Ok(store) = store {
+        let entries = read_manifest(&store)?;
+        if !entries.is_empty() {
+            let file_list: Vec<String> = entries.iter().map(|e| e.filepath.clone()).collect();
+            let items_ref: Vec<&str> = file_list.iter().map(|s| s.as_str()).collect();
+            let selected = Select::new(
+                &t!("interactive.store_untrack.select_file").to_string(),
+                items_ref,
+            )
+            .prompt_skippable()
+            .context(t!("interactive.selection_failed").to_string())?;
+
+            return match selected {
+                Some(s) => Ok(vec![
+                    "store".to_string(),
+                    "untrack".to_string(),
+                    s.to_string(),
+                ]),
+                None => bail!("{}", t!("interactive.cancelled")),
+            };
+        }
+    }
+
+    // store 未初期化 or 追跡ファイルなしの場合はテキスト入力にフォールバック
+    let file = Text::new(&t!("interactive.store_untrack.file_prompt").to_string())
+        .prompt()
+        .context(t!("interactive.input_failed").to_string())?;
+
+    if file.is_empty() {
+        bail!("{}", t!("interactive.store_untrack.empty_file"));
+    }
+
+    Ok(vec![
+        "store".to_string(),
+        "untrack".to_string(),
         file,
     ])
 }

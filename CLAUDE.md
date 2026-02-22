@@ -39,7 +39,7 @@ src/
     mod.rs           サブモジュール宣言
     worktree.rs      clone, new, rm, list, generate_name
     status.rs        status（統合表示）
-    shared.rs        shared track/status/push/pull
+    store.rs         store track/status/push/pull/untrack
   interactive.rs     inquire を使った対話モード
 ```
 
@@ -55,8 +55,8 @@ locales/
 - `store` → `git`
 - `commands/worktree` → `cli`, `git`, `store`
 - `commands/status` → `git`, `store`
-- `commands/shared` → `cli`, `git`, `store`
-- `interactive` → `cli`, `git`, `commands::worktree`
+- `commands/store` → `cli`, `git`, `store`
+- `interactive` → `cli`, `git`, `store`, `commands::worktree`
 - `main` → `cli`, `commands/*`, `interactive`
 
 ### shared store の仕組み
