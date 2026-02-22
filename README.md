@@ -22,17 +22,39 @@ See the **[ws documentation](https://langify-org.github.io/ws-cli/)** for detail
 
 ## Installation
 
+### Shell installer (macOS / Linux)
+
 ```bash
-# Shell installer (macOS / Linux)
 curl --proto '=https' --tlsv1.2 -LsSf https://github.com/langify-org/ws-cli/releases/latest/download/ws-installer.sh | sh
+```
 
-# Homebrew
+### Homebrew
+
+```bash
 brew install langify-org/tap/ws
+```
 
-# Nix flake
+### Nix flake
+
+```bash
 nix run github:langify-org/ws-cli
+```
 
-# cargo
+### Home Manager (Nix)
+
+```nix
+# flake.nix の inputs に追加
+inputs.ws-cli.url = "github:langify-org/ws-cli";
+
+# home.nix
+home.packages = [
+  inputs.ws-cli.packages.${system}.default
+];
+```
+
+### cargo
+
+```bash
 cargo install --git https://github.com/langify-org/ws-cli.git
 ```
 

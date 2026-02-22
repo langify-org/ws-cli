@@ -28,6 +28,29 @@ nix profile install github:langify-org/ws-cli
 }
 ```
 
+### Home Manager
+
+flake の入力に `ws-cli` を追加し、`home.packages` に含めます:
+
+```nix
+# flake.nix
+{
+  inputs = {
+    ws-cli.url = "github:langify-org/ws-cli";
+  };
+}
+```
+
+```nix
+# home.nix
+{ inputs, system, ... }:
+{
+  home.packages = [
+    inputs.ws-cli.packages.${system}.default
+  ];
+}
+```
+
 ## cargo install
 
 Rust ツールチェインがインストール済みであれば、cargo から直接ビルドできます。

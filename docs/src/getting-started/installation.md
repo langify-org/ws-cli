@@ -28,6 +28,29 @@ nix profile install github:langify-org/ws-cli
 }
 ```
 
+### Home Manager
+
+Add `ws-cli` as a flake input, then include it in your `home.packages`:
+
+```nix
+# flake.nix
+{
+  inputs = {
+    ws-cli.url = "github:langify-org/ws-cli";
+  };
+}
+```
+
+```nix
+# home.nix
+{ inputs, system, ... }:
+{
+  home.packages = [
+    inputs.ws-cli.packages.${system}.default
+  ];
+}
+```
+
 ## cargo install
 
 If you have the Rust toolchain installed, you can build directly with cargo.
