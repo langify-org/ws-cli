@@ -111,9 +111,18 @@ nix run github:langify-org/ws-cli
 inputs.ws-cli.url = "github:langify-org/ws-cli";
 
 # home.nix
-home.packages = [
-  inputs.ws-cli.packages.${system}.default
-];
+imports = [ inputs.ws-cli.homeManagerModules.default ];
+
+programs.ws = {
+  enable = true;
+  package = inputs.ws-cli.packages.${system}.default;
+  repos = {
+    my-repo = {
+      path = "/Users/user/projects/my-repo";
+      url = "git@github.com:user/my-repo.git";
+    };
+  };
+};
 ```
 
 ### cargo

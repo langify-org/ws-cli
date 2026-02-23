@@ -30,7 +30,7 @@ nix profile install github:langify-org/ws-cli
 
 ### Home Manager
 
-Add `ws-cli` as a flake input, then include it in your `home.packages`:
+Add `ws-cli` as a flake input and import the Home Manager module:
 
 ```nix
 # flake.nix
@@ -45,11 +45,35 @@ Add `ws-cli` as a flake input, then include it in your `home.packages`:
 # home.nix
 { inputs, system, ... }:
 {
-  home.packages = [
-    inputs.ws-cli.packages.${system}.default
-  ];
+  imports = [ inputs.ws-cli.homeManagerModules.default ];
+
+  programs.ws = {
+    enable = true;
+    package = inputs.ws-cli.packages.${system}.default;
+    repos = {
+      my-repo = {
+        path = "/Users/user/projects/my-repo";
+        url = "git@github.com:user/my-repo.git";
+      };
+    };
+  };
 }
 ```
+
+#### `programs.ws` options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enable` | bool | `false` | Enable ws |
+| `package` | package | `pkgs.ws` | The ws package to install |
+| `repos` | attrset | `{}` | Repositories to register in `~/.config/ws/config.toml` |
+
+Each entry in `repos`:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `path` | string | Yes | Path to the repository |
+| `url` | string | No | Remote URL |
 
 ## cargo install
 

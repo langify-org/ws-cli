@@ -30,7 +30,7 @@ nix profile install github:langify-org/ws-cli
 
 ### Home Manager
 
-flake の入力に `ws-cli` を追加し、`home.packages` に含めます:
+flake の入力に `ws-cli` を追加し、Home Manager モジュールをインポートします:
 
 ```nix
 # flake.nix
@@ -45,11 +45,35 @@ flake の入力に `ws-cli` を追加し、`home.packages` に含めます:
 # home.nix
 { inputs, system, ... }:
 {
-  home.packages = [
-    inputs.ws-cli.packages.${system}.default
-  ];
+  imports = [ inputs.ws-cli.homeManagerModules.default ];
+
+  programs.ws = {
+    enable = true;
+    package = inputs.ws-cli.packages.${system}.default;
+    repos = {
+      my-repo = {
+        path = "/Users/user/projects/my-repo";
+        url = "git@github.com:user/my-repo.git";
+      };
+    };
+  };
 }
 ```
+
+#### `programs.ws` オプション
+
+| オプション | 型 | デフォルト | 説明 |
+|-----------|-----|-----------|------|
+| `enable` | bool | `false` | ws を有効にする |
+| `package` | package | `pkgs.ws` | インストールする ws パッケージ |
+| `repos` | attrset | `{}` | `~/.config/ws/config.toml` に登録するリポジトリ |
+
+`repos` の各エントリ:
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| `path` | string | はい | リポジトリのパス |
+| `url` | string | いいえ | リモート URL |
 
 ## cargo install
 

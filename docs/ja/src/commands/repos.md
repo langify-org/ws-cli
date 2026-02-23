@@ -2,6 +2,9 @@
 
 リポジトリの登録を管理します。登録情報は `~/.config/ws/config.toml` に保存されます。
 
+> [!TIP]
+> Home Manager を使用している場合、`ws repos add` の代わりに `programs.ws.repos` でリポジトリを宣言的に管理できます。詳しくは[インストール](../getting-started/installation.md)を参照してください。
+
 ## サブコマンド
 
 | サブコマンド | 説明 |

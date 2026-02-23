@@ -2,6 +2,9 @@
 
 Manage the repository registry. Registered repositories are stored in `~/.config/ws/config.toml`.
 
+> [!TIP]
+> If you use Home Manager, you can declaratively manage repositories with `programs.ws.repos` instead of `ws repos add`. See [Installation](../getting-started/installation.md) for details.
+
 ## Subcommands
 
 | Subcommand | Description |
