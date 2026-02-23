@@ -11,6 +11,8 @@ readme = "README.md"
 [dependencies]
 clap = { version = "4", features = ["derive"] }
 anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
 petname = "2"
 inquire = "0.7"
 rust-i18n = "3"
@@ -20,6 +22,7 @@ sys-locale = "0.3"
 tempfile = "3"
 assert_cmd = "2"
 predicates = "3"
+toml = "0.8"
 
 [profile.dist]
 inherits = "release"

@@ -121,3 +121,42 @@ fn rm_removes_worktree() {
 
     assert!(!repo.path().join("to-remove").is_dir());
 }
+
+// ---- config registration ----
+
+#[test]
+fn clone_registers_in_config() {
+    let tmp = TempDir::new().unwrap();
+    let config_path = tmp.path().join("ws-config.toml");
+
+    let mut cmd = assert_cmd::cargo_bin_cmd!("ws");
+    cmd.arg("clone")
+        .current_dir(tmp.path())
+        .env("LC_ALL", "en")
+        .env("WS_CONFIG_PATH", &config_path)
+        .assert()
+        .success();
+
+    // config.toml が作成されている
+    assert!(config_path.exists(), "config.toml should be created");
+
+    // config の中身を検証
+    let content = fs::read_to_string(&config_path).unwrap();
+    let config: toml::Value = toml::from_str(&content).unwrap();
+    let repos = config.get("repos").expect("repos section should exist");
+    let repos_table = repos.as_table().expect("repos should be a table");
+    assert_eq!(repos_table.len(), 1, "Expected exactly one repo entry");
+
+    // エントリの path が実際のディレクトリを指している
+    let (_name, entry) = repos_table.iter().next().unwrap();
+    let path_str = entry
+        .get("path")
+        .expect("path field should exist")
+        .as_str()
+        .expect("path should be a string");
+    assert!(
+        std::path::Path::new(path_str).exists(),
+        "Registered path should exist: {}",
+        path_str
+    );
+}

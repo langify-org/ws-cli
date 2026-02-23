@@ -77,6 +77,15 @@ store:
   symlink_restored: "已将符号链接恢复为文件: %{file} (%{path})"
   restore_copy_failed: "%{file} 恢复失败 (%{path})"
 
+# config.rs - 配置文件消息
+config:
+  read_failed: "读取配置文件失败: %{path}"
+  parse_failed: "解析配置文件失败: %{path}"
+  mkdir_failed: "创建配置目录失败: %{path}"
+  serialize_failed: "配置序列化失败"
+  write_failed: "写入配置文件失败: %{path}"
+  save_warning: "警告: 保存配置文件失败: %{detail}"
+
 # commands/worktree.rs - worktree 操作消息
 worktree:
   bare_already_exists: ".bare 已存在"

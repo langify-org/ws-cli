@@ -77,6 +77,15 @@ store:
   symlink_restored: "Restored symlink to file: %{file} in %{path}"
   restore_copy_failed: "Failed to restore %{file} in %{path}"
 
+# config.rs - Config file messages
+config:
+  read_failed: "Failed to read config: %{path}"
+  parse_failed: "Failed to parse config: %{path}"
+  mkdir_failed: "Failed to create config directory: %{path}"
+  serialize_failed: "Failed to serialize config"
+  write_failed: "Failed to write config: %{path}"
+  save_warning: "Warning: failed to save config: %{detail}"
+
 # commands/worktree.rs - Worktree operation messages
 worktree:
   bare_already_exists: ".bare already exists"

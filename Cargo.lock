@@ -1396,8 +1396,10 @@ dependencies = [
  "petname",
  "predicates",
  "rust-i18n",
+ "serde",
  "sys-locale",
  "tempfile",
+ "toml",
 ]
 
 [[package]]

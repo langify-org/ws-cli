@@ -77,6 +77,15 @@ store:
   symlink_restored: "シンボリックリンクをファイルに復元しました: %{file} (%{path})"
   restore_copy_failed: "%{file} の復元に失敗しました (%{path})"
 
+# config.rs - 設定ファイルメッセージ
+config:
+  read_failed: "設定ファイルの読み込みに失敗しました: %{path}"
+  parse_failed: "設定ファイルの解析に失敗しました: %{path}"
+  mkdir_failed: "設定ディレクトリの作成に失敗しました: %{path}"
+  serialize_failed: "設定のシリアライズに失敗しました"
+  write_failed: "設定ファイルの書き込みに失敗しました: %{path}"
+  save_warning: "警告: 設定ファイルの保存に失敗しました: %{detail}"
+
 # commands/worktree.rs - worktree 操作メッセージ
 worktree:
   bare_already_exists: ".bare は既に存在します"

@@ -61,6 +61,30 @@ pub(crate) fn cmd_clone(cmd: &CloneCmd) -> Result<()> {
         }
     }
 
+    // config に自動登録（失敗しても clone 自体は成功扱い）
+    if let Ok(abs_path) = std::fs::canonicalize(".") {
+        if let Ok(mut config) = crate::config::load_config() {
+            let name = abs_path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("unknown")
+                .to_string();
+            config.repos.insert(
+                name,
+                crate::config::RepoEntry {
+                    path: abs_path,
+                    url: cmd.url.clone(),
+                },
+            );
+            if let Err(e) = crate::config::save_config(&config) {
+                eprintln!(
+                    "{}",
+                    t!("config.save_warning", detail = format!("{:#}", e))
+                );
+            }
+        }
+    }
+
     Ok(())
 }
 
