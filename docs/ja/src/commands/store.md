@@ -61,13 +61,13 @@ ws store status
 ### 出力例
 
 ```
-Store: /Users/user/my-project/.bare/worktree-store
+Store: ~/my-project/.bare/worktree-store
 
-STRATEGY FILE                                     STATUS
--------- ---------------------------------------- ----------
-symlink  .envrc                                   OK
-symlink  .mcp.json                                OK
-copy     .env.local                               MODIFIED
+STRATEGY  FILE        STATUS
+────────  ────        ──────
+symlink   .envrc      OK
+symlink   .mcp.json   OK
+copy      .env.local  MODIFIED
 ```
 
 ---

@@ -110,9 +110,9 @@ ws status
 ```
 
 以下をカバーする統合ダッシュボードを表示します:
-- Registry に登録された **Repositories**
-- 現在の **Workspace** 情報
-- Store からの **共有ファイル** の状態
+- Registry に登録された **Repositories**（名前、パス、タイプのテーブル）
+- **Current Repository** の worktree ツリー
+- **Current Workspace** の Store 共有ファイル状態
 
 ### 5. クリーンアップ（Workspace）
 

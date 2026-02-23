@@ -1,6 +1,6 @@
 # ws status
 
-Display an integrated status dashboard covering repositories, the current workspace, and shared files.
+Display an integrated status dashboard covering repositories, the current repository, and the current workspace.
 
 ## Usage
 
@@ -14,15 +14,15 @@ Displays up to three sections depending on context:
 
 ### Repositories section
 
-Shown when repositories are registered in `~/.config/ws/config.toml`. Lists each repository with its path, GIT_DIR type, and worktree tree. The current repository (if any) is marked with `*`.
+Shown when repositories are registered in `~/.config/ws/config.toml`. Displays a table with each repository's name, path (abbreviated with `~`), and type (`bare` or `git`). The current repository (if any) is marked with `*`.
 
-### Current workspace section
+### Current Repository section
 
-Shown when running inside a worktree. Displays the current worktree path, branch, and tracked file count.
+Shown when running inside a git repository (even if not registered in the config). Displays the repository name, path, and a tree view of all worktrees. The current worktree is marked with `*`.
 
-### Shared files section
+### Current Workspace section
 
-Shown when a shared store exists and files are being tracked. Lists each file's strategy and status.
+Shown when running inside a worktree that has a shared store with tracked files. Displays a table of each tracked file's strategy and status.
 
 When running outside any repository with no registered repositories, a "No registered repositories" message is shown.
 
@@ -30,28 +30,22 @@ When running outside any repository with no registered repositories, a "No regis
 
 ```
 Repositories:
-  web
-    Path: /Users/user/projects/web
-    GIT_DIR: .bare
-    Worktrees:
-      └── release   [release] 9946e77
+  NAME              PATH                                     TYPE
+  ────              ────                                     ────
+  langify-notebook  ~/Projects/langify-org/langify-notebook  git
+  web               ~/Projects/spirinc/web                   bare
+* ws-cli            ~/Projects/langify-org/ws-cli            bare
 
-* my-project
-    Path: /Users/user/projects/my-project
-    GIT_DIR: .bare
-    Worktrees:
-      ├── main   [main] abc1234
-      └── feature-foo   [feature/foo] def5678
+Current Repository: ws-cli
+  Path: ~/Projects/langify-org/ws-cli
+  Worktrees:
+    ├──   fix-ci    [fix-ci] fb7eff8
+    └── * master    [master] 5b33080
 
-Current workspace:
-  * /Users/user/projects/my-project/main [main]  [3 files tracked]
-
-Shared files:
-  STRATEGY FILE                                     STATUS
-  -------- ---------------------------------------- ----------
-  symlink  .envrc                                   OK
-  symlink  .mcp.json                                OK
-  copy     .env.local                               MODIFIED
+Current Workspace: master [master]
+  STRATEGY  FILE       STATUS
+  ────────  ────       ──────
+  symlink   .mcp.json  OK
 ```
 
 ## Status values

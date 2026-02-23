@@ -29,7 +29,7 @@ cargo watch -x build
 cargo test
 ```
 
-- ユニットテスト: `crates/ws-core/src/store.rs`, `crates/ws-core/src/commands/worktree.rs` にインライン (`#[cfg(test)] mod tests`)
+- ユニットテスト: `crates/ws-core/src/store.rs`, `crates/ws-core/src/context.rs`, `crates/ws-core/src/commands/worktree.rs` にインライン (`#[cfg(test)] mod tests`)
 - E2E テスト: `crates/ws-cli/tests/` ディレクトリに `assert_cmd` でバイナリ実行（`tempfile` で一時 git リポジトリを構築）
 - E2E テストのロケールは `LC_ALL=en` で英語固定
 
@@ -51,10 +51,11 @@ crates/
       git.rs              git コマンド実行ヘルパー
       store.rs            shared store のデータ層（Strategy, ManifestEntry, manifest 操作, file_status, path_or_symlink_exists）
       config.rs           設定ファイル（~/.config/ws/config.toml）の読み書き
+      context.rs          AppContext（3層の状態を一括構築）+ abbreviate_home() + print_table()
       commands/
         mod.rs            サブモジュール宣言
         worktree.rs       clone, new, rm
-        status.rs         status（全レイヤー統合ダッシュボード: Repositories / Current workspace / Shared files）
+        status.rs         status（3セクション統合ダッシュボード: Repositories / Current Repository / Current Workspace）
         store.rs          store track/status/push/pull/untrack
         repos.rs          repos add/list/rm（リポジトリ登録管理）+ WorktreeEntry/parse_worktree_list（status.rs と共有）
   ws-cli/                 バイナリクレート（package name = "ws"）
@@ -68,12 +69,23 @@ crates/
 - `cli` / `git` — 依存なし（最下層）
 - `store` → `git`
 - `config` — 依存なし
+- `context` → `config`, `git`, `store`, `commands/repos`
 - `commands/worktree` → `cli`, `git`, `store`, `config`
-- `commands/status` → `git`, `store`, `config`, `commands/repos`
-- `commands/store` → `cli`, `git`, `store`
-- `commands/repos` → `cli`, `config`
-- `ws-cli/interactive` → `ws_core::cli`, `ws_core::config`, `ws_core::git`, `ws_core::store`, `ws_core::commands::*`
-- `ws-cli/main` → `ws_core::cli`, `ws_core::commands::*`, `interactive`
+- `commands/status` → `context`, `store`, `commands/repos`
+- `commands/store` → `cli`, `git`, `store`, `context`
+- `commands/repos` → `cli`, `config`, `context`
+- `ws-cli/interactive` → `ws_core::cli`, `ws_core::config`, `ws_core::context`, `ws_core::git`, `ws_core::store`, `ws_core::commands::*`
+- `ws-cli/main` → `ws_core::cli`, `ws_core::context`, `ws_core::commands::*`, `interactive`
+
+### AppContext と3層の状態モデル
+
+`context.rs` の `AppContext` は読み取り系コマンド（`status`, `repos list`, `store status`）が共有する3層の状態を一括構築する:
+
+- **Config** (`config.rs`): `~/.config/ws/config.toml` のリポジトリ登録情報
+- **CurrentRepo**: カレントディレクトリが属するリポジトリのルート、bare/git 判定、worktree 一覧。config に登録があれば名前も解決
+- **CurrentWorkspace**: 現在の worktree のルート、ブランチ、store の manifest
+
+`AppContext::build()` は `load_config()` + `resolve_repo_root_from_cwd()` + `worktree_root()` + `store_dir()` を統合し、各コマンドが個別にこれらを呼び出す必要をなくしている。書き込み系コマンド（`repos add/rm`, `store track/push/pull/untrack`, `clone/new/rm`）は従来通り個別に必要な情報を取得する。
 
 ### shared store の仕組み
 

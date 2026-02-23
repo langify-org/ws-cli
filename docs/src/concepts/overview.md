@@ -110,9 +110,9 @@ ws status
 ```
 
 Displays a unified dashboard covering:
-- **Repositories** registered in the Registry
-- **Current Workspace** information
-- **Shared files** status from the Store
+- **Repositories** registered in the Registry (table with name, path, type)
+- **Current Repository** with its worktree tree
+- **Current Workspace** shared file status from the Store
 
 ### 5. Clean up (Workspace)
 

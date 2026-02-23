@@ -106,8 +106,10 @@ ws repos list
 ### 出力例
 
 ```
-my-repo              /Users/user/projects/my-repo (git@github.com:user/my-repo.git)
-another              /Users/user/projects/another
+NAME     PATH                          URL
+────     ────                          ───
+my-repo  ~/projects/my-repo            git@github.com:user/my-repo.git
+another  ~/projects/another
 ```
 
 ---
