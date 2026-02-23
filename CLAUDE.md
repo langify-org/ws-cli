@@ -48,13 +48,14 @@ crates/
     src/
       lib.rs              i18n!() + pub mod 宣言 + detect_and_set_locale()
       cli.rs              clap v4 derive による CLI 型定義 + parse_with_i18n()
-      git.rs              git コマンド実行ヘルパー
-      store.rs            shared store のデータ層（Strategy, ManifestEntry, manifest 操作, file_status, path_or_symlink_exists）
+      git.rs              git コマンド実行ヘルパー + resolve_repo_root()
+      store.rs            shared store のデータ層（Strategy, FileStatus, ManifestEntry, manifest 操作, file_status, path_or_symlink_exists）
       config.rs           設定ファイル（~/.config/ws/config.toml）の読み書き
       context.rs          AppContext（3層の状態を一括構築）+ abbreviate_home() + print_table()
       ui.rs               カラー出力（スタイル定数, styled(), section_header(), StyledCell）
       commands/
         mod.rs            サブモジュール宣言
+        completions.rs    completions（シェル補完スクリプト生成）
         worktree.rs       clone, new, rm
         status.rs         status（3セクション統合ダッシュボード: Repositories / Current Repository / Current Workspace）
         store.rs          store track/status/push/pull/untrack
@@ -67,11 +68,12 @@ crates/
 ```
 
 依存グラフ（循環なし）:
-- `cli` / `git` — 依存なし（最下層）
+- `cli` / `git` — 依存なし（最下層。ただし `cli` は `store::Strategy` を参照）
 - `ui` — 依存なし（`anstyle` のみ使用）
 - `store` → `git`, `ui`
 - `config` — 依存なし
 - `context` → `config`, `git`, `store`, `ui`, `commands/repos`
+- `commands/completions` → `cli`
 - `commands/worktree` → `cli`, `git`, `store`, `ui`
 - `commands/status` → `context`, `store`, `ui`, `commands/repos`
 - `commands/store` → `cli`, `git`, `store`, `ui`, `context`
@@ -87,7 +89,7 @@ crates/
 - **CurrentRepo**: カレントディレクトリが属するリポジトリのルート、bare/git 判定、worktree 一覧。config に登録があれば名前も解決
 - **CurrentWorkspace**: 現在の worktree のルート、ブランチ、store の manifest
 
-`AppContext::build()` は `load_config()` + `resolve_repo_root_from_cwd()` + `worktree_root()` + `store_dir()` を統合し、各コマンドが個別にこれらを呼び出す必要をなくしている。書き込み系コマンド（`repos add/rm`, `store track/push/pull/untrack`, `clone/new/rm`）は従来通り個別に必要な情報を取得する。
+`AppContext::build()` は `load_config()` + `resolve_repo_root(None)` + `worktree_root()` + `store_dir()` を統合し、各コマンドが個別にこれらを呼び出す必要をなくしている。書き込み系コマンド（`repos add/rm`, `store track/push/pull/untrack`, `clone/new/rm`）は従来通り個別に必要な情報を取得する。
 
 ### shared store の仕組み
 
@@ -97,20 +99,21 @@ strategy の使い分け:
 - `symlink` の典型例: `.envrc`, `.tool-versions` など全 worktree で共通の設定ファイル
 - `copy` の典型例: `.mcp.json`, `.env` など worktree ごとにカスタマイズが必要なファイル
 
-### repos のリポジトリルート解決
+### リポジトリルート解決
 
-`ws repos add` は指定パス（またはcwd）からリポジトリルートを自動解決して登録する（`resolve_repo_root()`）。
+`git.rs` の `resolve_repo_root(path: Option<&Path>)` がリポジトリルート解決の統一関数。`AppContext`（`path=None` で cwd）と `ws repos add`（`path=Some(&path)`）の両方から呼ばれる。
 
 解決ロジック:
-1. `git rev-parse --git-common-dir` が `.bare` で終わる → その親ディレクトリ（bare worktree パターン）
-2. それ以外 → `git rev-parse --show-toplevel`（通常の clone）
-3. どちらも失敗 → 指定パスをそのまま使用
+1. `git rev-parse --git-common-dir` → `.bare` の親（bare worktree パターン）
+2. 同上 → `.git` の親（通常の clone）
+3. `git rev-parse --show-toplevel`（フォールバック）
+4. `.bare` ディレクトリの直接検出（bare root にいる場合）
 
 これにより worktree 内から実行しても bare root が登録され、`ws repos clone` の自動登録と一致する。
 
 ### 対話モードの関数直接呼び出し
 
-`ws-cli/src/interactive.rs` は `ws_core::commands::*` の関数を直接呼び出す。外部プロセス (`Command::new("ws")`) は使用しない。これにより `cargo run -- i` で開発中のビルドがそのまま対話モードに反映される。
+`ws-cli/src/interactive.rs` は `ws_core::commands::*` の関数を直接呼び出す。外部プロセス (`Command::new("ws")`) は使用しない。これにより `cargo run -- interactive`（または `cargo run -- i`）で開発中のビルドがそのまま対話モードに反映される。
 
 ### 対話モードのコンパイル時安全機構
 
@@ -138,7 +141,8 @@ strategy の使い分け:
 - ユーザー向け文字列は `rust_i18n` の `t!()` マクロで多言語化（en/ja/zh-CN 対応）
 - ロケールキーの名前空間はモジュール構造に対応（`cli.*`, `git.*`, `store.*` 等）
 - ステータスコード (`OK`, `MISSING`, `ERROR` 等) およびテーブルヘッダー (`STRATEGY`, `FILE`, `STATUS`) は全ロケール英語固定
-- strategy は `Strategy` enum (`Symlink`, `Copy`) で管理する。文字列リテラル `"symlink"` / `"copy"` を直接使わないこと
+- strategy は `Strategy` enum (`Symlink`, `Copy`) で管理する。`clap::ValueEnum` を derive しており CLI パース段階で型安全にバリデーションされる。文字列リテラル `"symlink"` / `"copy"` を直接使わないこと
+- ファイルステータスは `FileStatus` enum で管理する。`Display` trait で表示文字列を提供。文字列リテラル `"OK"`, `"MISSING"` 等を直接使わないこと
 - ファイル存在チェックには `path_or_symlink_exists()` を使う（`Path::exists()` はリンク切れ symlink で false を返すため）
 - CLI パーサーは `clap v4` derive + `parse_with_i18n()` でランタイムに i18n ヘルプを適用
 - 外部コマンド（git, code）は `std::process::Command` で直接呼び出し

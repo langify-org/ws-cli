@@ -47,8 +47,11 @@ cli:
     rm:
       about: "注销仓库（不删除仓库本身）"
       name: "要注销的仓库名称"
-  i:
+  interactive:
     about: "交互式构建并执行命令"
+  completions:
+    about: "生成 shell 补全脚本"
+    shell: "目标 shell (bash, zsh, fish, elvish, powershell)"
 
 # main.rs - 顶层错误
 error:

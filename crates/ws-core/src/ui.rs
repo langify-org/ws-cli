@@ -1,5 +1,7 @@
 use anstyle::{AnsiColor, Effects, Style};
 
+use crate::store::FileStatus;
+
 // --- Style constants ---
 
 pub const STYLE_HEADER: Style = Style::new().effects(Effects::BOLD);
@@ -42,14 +44,13 @@ pub fn section_header(title: &str) -> String {
 }
 
 /// Return the appropriate style for a file status value.
-pub fn status_style(status: &str) -> Style {
+pub fn status_style(status: &FileStatus) -> Style {
     match status {
-        "OK" => STYLE_OK,
-        "MISSING" | "MISSING(store)" => STYLE_ERROR,
-        "ERROR" => STYLE_ERROR_BOLD,
-        "MODIFIED" | "NOT_LINK" | "WRONG_LINK" => STYLE_WARN,
-        "(store only)" => STYLE_DIM,
-        _ => Style::new(),
+        FileStatus::Ok => STYLE_OK,
+        FileStatus::Missing | FileStatus::MissingStore => STYLE_ERROR,
+        FileStatus::Error => STYLE_ERROR_BOLD,
+        FileStatus::Modified | FileStatus::NotLink | FileStatus::WrongLink => STYLE_WARN,
+        FileStatus::StoreOnly => STYLE_DIM,
     }
 }
 

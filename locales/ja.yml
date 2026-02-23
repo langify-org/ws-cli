@@ -47,8 +47,11 @@ cli:
     rm:
       about: "リポジトリの登録を解除する（リポジトリ自体は削除しない）"
       name: "登録解除するリポジトリの名前"
-  i:
+  interactive:
     about: "対話的にコマンドを組み立てて実行する"
+  completions:
+    about: "シェル補完スクリプトを生成する"
+    shell: "対象シェル (bash, zsh, fish, elvish, powershell)"
 
 # main.rs - トップレベルエラー
 error:

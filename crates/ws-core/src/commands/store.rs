@@ -16,10 +16,7 @@ pub fn cmd_store_track(cmd: &StoreTrackCmd) -> Result<()> {
     let store = ensure_store()?;
     let wt_root = worktree_root()?;
 
-    let strategy: Strategy = cmd
-        .strategy
-        .parse()
-        .map_err(|_| anyhow::anyhow!("{}", t!("store.invalid_strategy")))?;
+    let strategy = &cmd.strategy;
 
     let source = wt_root.join(&cmd.file);
     if !path_or_symlink_exists(&source) {
@@ -55,7 +52,7 @@ pub fn cmd_store_track(cmd: &StoreTrackCmd) -> Result<()> {
         .map(|m| m.file_type().is_symlink())
         .unwrap_or(false);
 
-    if strategy == Strategy::Symlink {
+    if *strategy == Strategy::Symlink {
         fs::copy(&source, &store_file).context(t!("store.copy_to_store_failed").to_string())?;
 
         if !is_symlink {
@@ -107,11 +104,11 @@ pub fn cmd_store_status() -> Result<()> {
         rows.push(vec![
             StyledCell::plain(entry.strategy.to_string()),
             StyledCell::plain(entry.filepath.clone()),
-            StyledCell::new(status, ui::status_style(status)),
+            StyledCell::new(status.to_string(), ui::status_style(&status)),
         ]);
     }
 
-    crate::context::print_table(&["STRATEGY", "FILE", "STATUS"], &rows, 0);
+    crate::context::print_table(&["STRATEGY", "FILE", "STATUS"], &rows, 0, None);
 
     Ok(())
 }

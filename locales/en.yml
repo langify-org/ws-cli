@@ -47,8 +47,11 @@ cli:
     rm:
       about: "Unregister a repository (does not delete the repository)"
       name: "Name of the repository to unregister"
-  i:
+  interactive:
     about: "Build and run a command interactively"
+  completions:
+    about: "Generate shell completions"
+    shell: "Target shell (bash, zsh, fish, elvish, powershell)"
 
 # main.rs - Top-level error
 error:

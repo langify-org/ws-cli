@@ -40,7 +40,7 @@ pub fn cmd_repos_add(cmd: &ReposAddCmd) -> Result<()> {
     }
 
     // リポジトリルートを解決
-    let path = resolve_repo_root(&path).unwrap_or(path);
+    let path = crate::git::resolve_repo_root(Some(&path)).unwrap_or(path);
 
     // 名前を決定
     let name = match &cmd.name {
@@ -113,50 +113,9 @@ pub fn cmd_repos_list(ctx: &crate::context::AppContext) -> Result<()> {
         ]);
     }
 
-    crate::context::print_table(&["NAME", "PATH", "URL"], &rows, 0);
+    crate::context::print_table(&["NAME", "PATH", "URL"], &rows, 0, None);
 
     Ok(())
-}
-
-/// 指定パスからリポジトリのルートディレクトリを解決する。
-/// - bare worktree パターン: git-common-dir (.bare) の親ディレクトリ
-/// - 通常の clone: git rev-parse --show-toplevel
-fn resolve_repo_root(path: &std::path::Path) -> Option<PathBuf> {
-    // bare worktree パターン: .bare の親がリポジトリルート
-    let common_dir = Command::new("git")
-        .args(["rev-parse", "--git-common-dir"])
-        .current_dir(path)
-        .output()
-        .ok()?;
-    if common_dir.status.success() {
-        let common = String::from_utf8_lossy(&common_dir.stdout)
-            .trim()
-            .to_string();
-        let common_path = if std::path::Path::new(&common).is_absolute() {
-            PathBuf::from(&common)
-        } else {
-            path.join(&common)
-        };
-        if let Ok(canonical) = common_path.canonicalize()
-            && canonical.file_name().and_then(|n| n.to_str()) == Some(".bare")
-            && let Some(parent) = canonical.parent()
-        {
-            return Some(parent.to_path_buf());
-        }
-    }
-
-    // 通常の clone: show-toplevel がリポジトリルート
-    let toplevel = Command::new("git")
-        .args(["rev-parse", "--show-toplevel"])
-        .current_dir(path)
-        .output()
-        .ok()?;
-    if toplevel.status.success() {
-        let root = String::from_utf8_lossy(&toplevel.stdout).trim().to_string();
-        return PathBuf::from(root).canonicalize().ok();
-    }
-
-    None
 }
 
 pub struct WorktreeEntry {

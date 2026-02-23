@@ -13,7 +13,9 @@ fn help_shows_all_subcommands() {
             .and(predicate::str::contains("rm"))
             .and(predicate::str::contains("status"))
             .and(predicate::str::contains("store"))
-            .and(predicate::str::contains("repos")),
+            .and(predicate::str::contains("repos"))
+            .and(predicate::str::contains("interactive"))
+            .and(predicate::str::contains("completions")),
     );
 }
 
@@ -67,6 +69,30 @@ fn store_track_missing_args_fails() {
     ws().args(["store", "track", "-s", "symlink"])
         .assert()
         .failure();
+}
+
+#[test]
+fn completions_generates_output() {
+    ws().args(["completions", "zsh"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("#compdef ws"));
+}
+
+#[test]
+fn completions_missing_shell_fails() {
+    ws().arg("completions").assert().failure();
+}
+
+#[test]
+fn interactive_alias_i_works() {
+    // "i" alias should be recognized (fails because no TTY, but exits with clap error, not unknown command)
+    // Just verify that "i" is not rejected as unknown subcommand
+    ws().arg("i").assert().failure().stderr(
+        predicate::str::contains("unknown")
+            .not()
+            .and(predicate::str::contains("unrecognized").not()),
+    );
 }
 
 #[test]

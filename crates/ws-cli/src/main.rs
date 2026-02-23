@@ -15,7 +15,11 @@ fn run(ws: ws_core::cli::Ws) -> Result<()> {
             let ctx = ws_core::context::AppContext::build()?;
             ws_core::commands::status::cmd_status(&ctx)
         }
-        WsCommand::I(_) => interactive::interactive_mode(),
+        WsCommand::Interactive(_) => interactive::interactive_mode(),
+        WsCommand::Completions(cmd) => {
+            ws_core::commands::completions::cmd_completions(&cmd);
+            Ok(())
+        }
         WsCommand::Repos(cmd) => match cmd.command {
             ReposCommand::Clone(c) => ws_core::commands::worktree::cmd_clone(&c),
             ReposCommand::Add(c) => ws_core::commands::repos::cmd_repos_add(&c),
@@ -35,17 +39,20 @@ fn run(ws: ws_core::cli::Ws) -> Result<()> {
     }
 }
 
-fn main() {
+fn main() -> std::process::ExitCode {
     ws_core::detect_and_set_locale();
     let ws = ws_core::cli::parse_with_i18n();
-    if let Err(e) = run(ws) {
-        anstream::eprintln!(
-            "{}",
-            ws_core::ui::styled(
-                ws_core::ui::STYLE_ERROR_BOLD,
-                &t!("error.top", detail = format!("{:#}", e))
-            )
-        );
-        std::process::exit(1);
+    match run(ws) {
+        Ok(()) => std::process::ExitCode::SUCCESS,
+        Err(e) => {
+            anstream::eprintln!(
+                "{}",
+                ws_core::ui::styled(
+                    ws_core::ui::STYLE_ERROR_BOLD,
+                    &t!("error.top", detail = format!("{:#}", e))
+                )
+            );
+            std::process::ExitCode::FAILURE
+        }
     }
 }

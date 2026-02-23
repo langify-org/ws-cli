@@ -26,9 +26,13 @@ pub fn config_path() -> Result<PathBuf> {
     }
     let config_dir = std::env::var("XDG_CONFIG_HOME")
         .map(PathBuf::from)
-        .unwrap_or_else(|_| {
-            PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "~".to_string())).join(".config")
-        });
+        .or_else(|_| {
+            let home = shellexpand::tilde("~");
+            if home.as_ref() == "~" {
+                anyhow::bail!("HOME is not set and cannot be determined");
+            }
+            Ok(PathBuf::from(home.into_owned()).join(".config"))
+        })?;
     Ok(config_dir.join("ws").join("config.toml"))
 }
 

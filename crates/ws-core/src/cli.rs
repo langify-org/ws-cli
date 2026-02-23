@@ -1,5 +1,8 @@
 use clap::{CommandFactory, FromArgMatches, Parser, Subcommand};
+use clap_complete::Shell;
 use rust_i18n::t;
+
+use crate::store::Strategy;
 
 #[derive(Parser)]
 #[command(name = "ws", version)]
@@ -15,7 +18,9 @@ pub enum WsCommand {
     Status(StatusCmd),
     Store(StoreCmd),
     Repos(ReposCmd),
-    I(InteractiveCmd),
+    #[command(alias = "i")]
+    Interactive(InteractiveCmd),
+    Completions(CompletionsCmd),
 }
 
 #[derive(Parser)]
@@ -49,6 +54,12 @@ pub struct RmCmd {
 pub struct InteractiveCmd {}
 
 #[derive(Parser)]
+pub struct CompletionsCmd {
+    #[arg(value_enum)]
+    pub shell: Shell,
+}
+
+#[derive(Parser)]
 pub struct StatusCmd {}
 
 #[derive(Parser)]
@@ -68,8 +79,8 @@ pub enum StoreCommand {
 
 #[derive(Parser)]
 pub struct StoreTrackCmd {
-    #[arg(short = 's', long)]
-    pub strategy: String,
+    #[arg(short = 's', long, value_enum)]
+    pub strategy: Strategy,
 
     pub file: String,
 }
@@ -142,7 +153,13 @@ pub fn parse_with_i18n() -> Ws {
                 .mut_arg("force", |a| a.help(t!("cli.rm.force").to_string()))
         })
         .mut_subcommand("status", |s| s.about(t!("cli.status.about").to_string()))
-        .mut_subcommand("i", |s| s.about(t!("cli.i.about").to_string()))
+        .mut_subcommand("interactive", |s| {
+            s.about(t!("cli.interactive.about").to_string())
+        })
+        .mut_subcommand("completions", |s| {
+            s.about(t!("cli.completions.about").to_string())
+                .mut_arg("shell", |a| a.help(t!("cli.completions.shell").to_string()))
+        })
         .mut_subcommand("store", |s| {
             s.about(t!("cli.store.about").to_string())
                 .mut_subcommand("track", |ss| {

@@ -5,7 +5,7 @@ use rust_i18n::t;
 use ws_core::cli::WsCommand;
 use ws_core::config::load_config;
 use ws_core::git::{find_bare_dir, is_inside_git_worktree};
-use ws_core::store::{read_manifest, require_store};
+use ws_core::store::{Strategy, read_manifest, require_store};
 
 pub(crate) fn interactive_mode() -> Result<()> {
     let top_items: Vec<String> = vec![
@@ -257,16 +257,20 @@ fn interactive_store() -> Result<()> {
 }
 
 fn interactive_store_track() -> Result<()> {
-    let strategy_items = vec!["symlink", "copy"];
-    let strategy = Select::new(
+    let strategy_items = vec![Strategy::Symlink, Strategy::Copy];
+    let display_items: Vec<&str> = strategy_items.iter().map(|s| s.as_str()).collect();
+    let selected = Select::new(
         &t!("interactive.store_track.select_strategy"),
-        strategy_items,
+        display_items,
     )
     .prompt_skippable()
     .context(t!("interactive.selection_failed").to_string())?;
 
-    let strategy = match strategy {
-        Some(s) => s.to_string(),
+    let strategy = match selected {
+        Some(s) => strategy_items
+            .into_iter()
+            .find(|item| item.as_str() == s)
+            .expect("selected item must exist in strategy_items"),
         None => bail!("{}", t!("interactive.cancelled")),
     };
 
@@ -278,11 +282,8 @@ fn interactive_store_track() -> Result<()> {
         bail!("{}", t!("interactive.store_track.empty_file"));
     }
 
-    let cmd = ws_core::cli::StoreTrackCmd {
-        strategy: strategy.clone(),
-        file: file.clone(),
-    };
-    eprintln!("> ws store track -s {} {}", strategy, file);
+    eprintln!("> ws store track -s {} {}", strategy, &file);
+    let cmd = ws_core::cli::StoreTrackCmd { strategy, file };
     ws_core::commands::store::cmd_store_track(&cmd)
 }
 
@@ -441,6 +442,7 @@ fn _ensure_all_commands_in_interactive(cmd: &WsCommand) -> &'static str {
         WsCommand::Status(_) => "status",
         WsCommand::Store(_) => "store",
         WsCommand::Repos(_) => "repos",
-        WsCommand::I(_) => "i",
+        WsCommand::Interactive(_) => "interactive",
+        WsCommand::Completions(_) => "completions",
     }
 }

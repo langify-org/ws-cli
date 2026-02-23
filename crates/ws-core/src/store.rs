@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use crate::git;
 use crate::ui;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, clap::ValueEnum)]
 pub enum Strategy {
     Symlink,
     Copy,
@@ -178,23 +178,50 @@ pub fn apply_file(
     Ok(())
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum FileStatus {
+    Ok,
+    Missing,
+    MissingStore,
+    Modified,
+    NotLink,
+    WrongLink,
+    Error,
+    StoreOnly,
+}
+
+impl std::fmt::Display for FileStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Ok => write!(f, "OK"),
+            Self::Missing => write!(f, "MISSING"),
+            Self::MissingStore => write!(f, "MISSING(store)"),
+            Self::Modified => write!(f, "MODIFIED"),
+            Self::NotLink => write!(f, "NOT_LINK"),
+            Self::WrongLink => write!(f, "WRONG_LINK"),
+            Self::Error => write!(f, "ERROR"),
+            Self::StoreOnly => write!(f, "(store only)"),
+        }
+    }
+}
+
 pub fn file_status(
     entry: &ManifestEntry,
     store_file: &Path,
     wt_root: &Option<PathBuf>,
-) -> &'static str {
+) -> FileStatus {
     if !store_file.is_file() {
-        return "MISSING(store)";
+        return FileStatus::MissingStore;
     }
 
     let Some(root) = wt_root else {
-        return "(store only)";
+        return FileStatus::StoreOnly;
     };
 
     let wt_file = root.join(&entry.filepath);
 
     if !path_or_symlink_exists(&wt_file) {
-        return "MISSING";
+        return FileStatus::Missing;
     }
 
     match entry.strategy {
@@ -205,26 +232,26 @@ pub fn file_status(
                 .unwrap_or(false);
 
             if !is_link {
-                return "NOT_LINK";
+                return FileStatus::NotLink;
             }
 
             let link_target = match fs::read_link(&wt_file) {
                 Ok(t) => t,
-                Err(_) => return "ERROR",
+                Err(_) => return FileStatus::Error,
             };
             if link_target != *store_file {
-                "WRONG_LINK"
+                FileStatus::WrongLink
             } else {
-                "OK"
+                FileStatus::Ok
             }
         }
         Strategy::Copy => {
             let store_content = fs::read(store_file).ok();
             let wt_content = fs::read(&wt_file).ok();
             if store_content != wt_content {
-                "MODIFIED"
+                FileStatus::Modified
             } else {
-                "OK"
+                FileStatus::Ok
             }
         }
     }
@@ -319,7 +346,10 @@ mod tests {
             strategy: Strategy::Symlink,
             filepath: "test".into(),
         };
-        assert_eq!(file_status(&entry, &store_file, &None), "MISSING(store)");
+        assert_eq!(
+            file_status(&entry, &store_file, &None),
+            FileStatus::MissingStore
+        );
     }
 
     #[test]
@@ -332,7 +362,10 @@ mod tests {
             strategy: Strategy::Symlink,
             filepath: "test_file".into(),
         };
-        assert_eq!(file_status(&entry, &store_file, &None), "(store only)");
+        assert_eq!(
+            file_status(&entry, &store_file, &None),
+            FileStatus::StoreOnly
+        );
     }
 
     #[test]
@@ -348,7 +381,10 @@ mod tests {
             strategy: Strategy::Symlink,
             filepath: "missing_file".into(),
         };
-        assert_eq!(file_status(&entry, &store_file, &Some(wt_root)), "MISSING");
+        assert_eq!(
+            file_status(&entry, &store_file, &Some(wt_root)),
+            FileStatus::Missing
+        );
     }
 
     #[test]
@@ -365,7 +401,10 @@ mod tests {
             strategy: Strategy::Symlink,
             filepath: ".envrc".into(),
         };
-        assert_eq!(file_status(&entry, &store_file, &Some(wt_root)), "NOT_LINK");
+        assert_eq!(
+            file_status(&entry, &store_file, &Some(wt_root)),
+            FileStatus::NotLink
+        );
     }
 
     #[test]
@@ -387,7 +426,7 @@ mod tests {
         };
         assert_eq!(
             file_status(&entry, &store_file, &Some(wt_root)),
-            "WRONG_LINK"
+            FileStatus::WrongLink
         );
     }
 
@@ -405,7 +444,10 @@ mod tests {
             strategy: Strategy::Symlink,
             filepath: ".envrc".into(),
         };
-        assert_eq!(file_status(&entry, &store_file, &Some(wt_root)), "OK");
+        assert_eq!(
+            file_status(&entry, &store_file, &Some(wt_root)),
+            FileStatus::Ok
+        );
     }
 
     #[test]
@@ -422,7 +464,10 @@ mod tests {
             strategy: Strategy::Copy,
             filepath: ".mcp.json".into(),
         };
-        assert_eq!(file_status(&entry, &store_file, &Some(wt_root)), "MODIFIED");
+        assert_eq!(
+            file_status(&entry, &store_file, &Some(wt_root)),
+            FileStatus::Modified
+        );
     }
 
     #[test]
@@ -439,7 +484,10 @@ mod tests {
             strategy: Strategy::Copy,
             filepath: ".mcp.json".into(),
         };
-        assert_eq!(file_status(&entry, &store_file, &Some(wt_root)), "OK");
+        assert_eq!(
+            file_status(&entry, &store_file, &Some(wt_root)),
+            FileStatus::Ok
+        );
     }
 
     // ---- apply_file ----

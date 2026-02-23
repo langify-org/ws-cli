@@ -10,6 +10,7 @@ rust_i18n::i18n!("../../locales", fallback = "en");
 
 pub fn detect_and_set_locale() {
     let locale = std::env::var("LC_ALL")
+        .or_else(|_| std::env::var("LC_MESSAGES"))
         .or_else(|_| std::env::var("LANG"))
         .ok()
         .and_then(|v| {

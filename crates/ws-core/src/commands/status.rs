@@ -14,10 +14,8 @@ pub fn cmd_status(ctx: &AppContext) -> Result<()> {
         anstream::println!("{}", ui::section_header(&t!("status.repositories")));
         has_output = true;
 
-        let headers = ["NAME", "PATH", "TYPE"];
-        let num_cols = headers.len();
-
-        let mut rows: Vec<(bool, Vec<StyledCell>)> = Vec::new();
+        let mut rows = Vec::new();
+        let mut markers = Vec::new();
         for (name, entry) in &ctx.config.repos {
             let is_current = ctx
                 .current_repo
@@ -34,83 +32,15 @@ pub fn cmd_status(ctx: &AppContext) -> Result<()> {
                 "git"
             };
 
-            rows.push((
-                is_current,
-                vec![
-                    StyledCell::plain(name.clone()),
-                    StyledCell::plain(display_path),
-                    StyledCell::new(repo_type, ui::repo_type_style(repo_type)),
-                ],
-            ));
+            markers.push(is_current);
+            rows.push(vec![
+                StyledCell::plain(name.clone()),
+                StyledCell::plain(display_path),
+                StyledCell::new(repo_type, ui::repo_type_style(repo_type)),
+            ]);
         }
 
-        // Calculate column widths
-        let mut widths: Vec<usize> = headers.iter().map(|h| h.len()).collect();
-        for (_, row) in &rows {
-            for (i, cell) in row.iter().enumerate().take(num_cols) {
-                widths[i] = widths[i].max(cell.plain.len());
-            }
-        }
-
-        // Header (with 2-space indent, bold)
-        let header_line: String = headers
-            .iter()
-            .enumerate()
-            .map(|(i, h)| {
-                let styled_h = ui::styled(ui::STYLE_TABLE_HEADER, h);
-                if i == num_cols - 1 {
-                    styled_h
-                } else {
-                    let padding = widths[i].saturating_sub(h.len());
-                    format!("{styled_h}{}", " ".repeat(padding))
-                }
-            })
-            .collect::<Vec<_>>()
-            .join("  ");
-        anstream::println!("  {header_line}");
-
-        // Separator (dim)
-        let sep_line: String = headers
-            .iter()
-            .enumerate()
-            .map(|(i, h)| {
-                let sep = "\u{2500}".repeat(h.len());
-                let styled_sep = ui::styled(ui::STYLE_DIM, &sep);
-                if i == num_cols - 1 {
-                    styled_sep
-                } else {
-                    let padding = widths[i].saturating_sub(h.len());
-                    format!("{styled_sep}{}", " ".repeat(padding))
-                }
-            })
-            .collect::<Vec<_>>()
-            .join("  ");
-        anstream::println!("  {sep_line}");
-
-        // Data rows (marker replaces 2-space indent)
-        for (is_current, row) in &rows {
-            let marker = if *is_current {
-                ui::styled(ui::STYLE_MARKER, "*")
-            } else {
-                " ".to_string()
-            };
-            let row_line: String = (0..num_cols)
-                .map(|i| {
-                    let cell = row.get(i);
-                    let (plain, styled) = cell
-                        .map(|c| (c.plain.as_str(), c.styled.as_str()))
-                        .unwrap_or(("", ""));
-                    if i == num_cols - 1 {
-                        styled.to_string()
-                    } else {
-                        let padding = widths[i].saturating_sub(plain.len());
-                        format!("{styled}{}", " ".repeat(padding))
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join("  ");
-            anstream::println!("{marker} {row_line}");
-        }
+        print_table(&["NAME", "PATH", "TYPE"], &rows, 2, Some(&markers));
     }
 
     // --- Current Repository section ---
@@ -210,11 +140,11 @@ pub fn cmd_status(ctx: &AppContext) -> Result<()> {
             rows.push(vec![
                 StyledCell::plain(entry.strategy.to_string()),
                 StyledCell::plain(entry.filepath.clone()),
-                StyledCell::new(status, ui::status_style(status)),
+                StyledCell::new(status.to_string(), ui::status_style(&status)),
             ]);
         }
 
-        print_table(&["STRATEGY", "FILE", "STATUS"], &rows, 2);
+        print_table(&["STRATEGY", "FILE", "STATUS"], &rows, 2, None);
     }
 
     if !has_output {

@@ -1,10 +1,10 @@
 use anyhow::Result;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::Command;
 
 use crate::commands::repos::{WorktreeEntry, parse_worktree_list};
 use crate::config::{Config, load_config};
-use crate::git::worktree_root;
+use crate::git::{resolve_repo_root, worktree_root};
 use crate::store::{ManifestEntry, read_manifest, store_dir};
 use crate::ui::{self, StyledCell};
 
@@ -42,7 +42,7 @@ impl AppContext {
     }
 
     fn resolve_current_repo(config: &Config) -> Option<CurrentRepo> {
-        let root = resolve_repo_root_from_cwd()?;
+        let root = resolve_repo_root(None)?;
         let is_bare = root.join(".bare").is_dir();
 
         let name = config.repos.iter().find_map(|(name, entry)| {
@@ -103,44 +103,6 @@ impl AppContext {
     }
 }
 
-/// カレントディレクトリが属するリポジトリのルートパス（canonical）を解決する。
-fn resolve_repo_root_from_cwd() -> Option<PathBuf> {
-    let common_dir = Command::new("git")
-        .args(["rev-parse", "--git-common-dir"])
-        .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .output()
-        .ok()?;
-
-    if common_dir.status.success() {
-        let common = String::from_utf8_lossy(&common_dir.stdout)
-            .trim()
-            .to_string();
-        let common_path = if Path::new(&common).is_absolute() {
-            PathBuf::from(&common)
-        } else {
-            std::env::current_dir().ok()?.join(&common)
-        };
-        if let Ok(canonical) = common_path.canonicalize() {
-            // bare worktree パターン: .bare がリポジトリルート
-            if canonical.file_name().and_then(|n| n.to_str()) == Some(".bare") {
-                return canonical.parent().map(|p| p.to_path_buf());
-            }
-            // 通常の clone: .git の親がリポジトリルート
-            if canonical.file_name().and_then(|n| n.to_str()) == Some(".git") {
-                return canonical.parent().map(|p| p.to_path_buf());
-            }
-        }
-    }
-
-    // フォールバック: bare root にいる場合
-    if PathBuf::from(".bare").is_dir() {
-        return std::fs::canonicalize(".").ok();
-    }
-
-    None
-}
-
 /// ホームディレクトリを `~` に短縮して表示する。
 pub fn abbreviate_home(path: &Path) -> String {
     if let Ok(home) = std::env::var("HOME") {
@@ -157,7 +119,14 @@ pub fn abbreviate_home(path: &Path) -> String {
 /// - `headers`: ヘッダー文字列のスライス（英語固定）
 /// - `rows`: 各行のセルデータ（`StyledCell` で plain/styled を保持）
 /// - `indent`: 全行に付与するインデント（スペース数）
-pub fn print_table(headers: &[&str], rows: &[Vec<StyledCell>], indent: usize) {
+/// - `markers`: 各行にマーカーを付与する場合 `Some(&[bool])`。`true` の行は `*` でマーク。
+///   マーカーは indent 領域の先頭1文字を置換する形で表示される（indent >= 2 推奨）。
+pub fn print_table(
+    headers: &[&str],
+    rows: &[Vec<StyledCell>],
+    indent: usize,
+    markers: Option<&[bool]>,
+) {
     if headers.is_empty() {
         return;
     }
@@ -208,7 +177,15 @@ pub fn print_table(headers: &[&str], rows: &[Vec<StyledCell>], indent: usize) {
     anstream::println!("{prefix}{sep_line}");
 
     // Data rows
-    for row in rows {
+    for (row_idx, row) in rows.iter().enumerate() {
+        let row_prefix = match markers {
+            Some(m) if m.get(row_idx).copied().unwrap_or(false) => {
+                let rest = " ".repeat(indent.saturating_sub(1));
+                format!("{}{rest}", ui::styled(ui::STYLE_MARKER, "*"))
+            }
+            _ => prefix.clone(),
+        };
+
         let row_line: String = (0..num_cols)
             .map(|i| {
                 let cell = row.get(i);
@@ -224,7 +201,7 @@ pub fn print_table(headers: &[&str], rows: &[Vec<StyledCell>], indent: usize) {
             })
             .collect::<Vec<_>>()
             .join("  ");
-        anstream::println!("{prefix}{row_line}");
+        anstream::println!("{row_prefix}{row_line}");
     }
 }
 
