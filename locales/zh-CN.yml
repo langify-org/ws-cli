@@ -38,6 +38,17 @@ cli:
     untrack:
       about: "从 store 注销文件"
       file: "要注销的文件路径"
+  repos:
+    about: "管理已注册的仓库"
+    add:
+      about: "注册现有仓库"
+      path: "仓库路径（默认: 当前目录）"
+      name: "自定义名称（默认: 目录名）"
+    list:
+      about: "列出已注册的仓库"
+    rm:
+      about: "注销仓库（不删除仓库本身）"
+      name: "要注销的仓库名称"
   i:
     about: "交互式构建并执行命令"
 
@@ -76,6 +87,16 @@ store:
   untrack_success: "已取消跟踪: %{file}"
   symlink_restored: "已将符号链接恢复为文件: %{file} (%{path})"
   restore_copy_failed: "%{file} 恢复失败 (%{path})"
+
+# commands/repos.rs - 仓库操作消息
+repos:
+  path_not_found: "路径未找到: %{path}"
+  not_a_git_repo: "不是 git 仓库: %{path}"
+  already_registered: "仓库 '%{name}' 已注册"
+  added: "已注册: %{name} (%{path})"
+  no_repos: "没有已注册的仓库"
+  removed: "已注销: %{name}"
+  not_found: "未找到仓库 '%{name}'"
 
 # config.rs - 配置文件消息
 config:

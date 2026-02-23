@@ -16,6 +16,7 @@ pub(crate) enum WsCommand {
     List(ListCmd),
     Status(StatusCmd),
     Store(StoreCmd),
+    Repos(ReposCmd),
     I(InteractiveCmd),
 }
 
@@ -99,6 +100,35 @@ pub(crate) struct StoreUntrackCmd {
     pub file: String,
 }
 
+#[derive(Parser)]
+pub(crate) struct ReposCmd {
+    #[command(subcommand)]
+    pub command: ReposCommand,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum ReposCommand {
+    Add(ReposAddCmd),
+    List(ReposListCmd),
+    Rm(ReposRmCmd),
+}
+
+#[derive(Parser)]
+pub(crate) struct ReposAddCmd {
+    pub path: Option<String>,
+
+    #[arg(long)]
+    pub name: Option<String>,
+}
+
+#[derive(Parser)]
+pub(crate) struct ReposListCmd {}
+
+#[derive(Parser)]
+pub(crate) struct ReposRmCmd {
+    pub name: String,
+}
+
 /// derive で定義した Command にランタイムで i18n ヘルプを上書きしてパース
 pub(crate) fn parse_with_i18n() -> Ws {
     let cmd = Ws::command()
@@ -162,6 +192,21 @@ pub(crate) fn parse_with_i18n() -> Ws {
                         .mut_arg("file", |a| {
                             a.help(t!("cli.store.untrack.file").to_string())
                         })
+                })
+        })
+        .mut_subcommand("repos", |s| {
+            s.about(t!("cli.repos.about").to_string())
+                .mut_subcommand("add", |ss| {
+                    ss.about(t!("cli.repos.add.about").to_string())
+                        .mut_arg("path", |a| a.help(t!("cli.repos.add.path").to_string()))
+                        .mut_arg("name", |a| a.help(t!("cli.repos.add.name").to_string()))
+                })
+                .mut_subcommand("list", |ss| {
+                    ss.about(t!("cli.repos.list.about").to_string())
+                })
+                .mut_subcommand("rm", |ss| {
+                    ss.about(t!("cli.repos.rm.about").to_string())
+                        .mut_arg("name", |a| a.help(t!("cli.repos.rm.name").to_string()))
                 })
         });
 

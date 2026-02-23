@@ -38,6 +38,17 @@ cli:
     untrack:
       about: "ファイルを store から登録解除する"
       file: "登録解除するファイルパス"
+  repos:
+    about: "登録済みリポジトリを管理する"
+    add:
+      about: "既存リポジトリを登録する"
+      path: "リポジトリのパス（省略でカレントディレクトリ）"
+      name: "カスタム名（省略でディレクトリ名）"
+    list:
+      about: "登録済みリポジトリの一覧を表示する"
+    rm:
+      about: "リポジトリの登録を解除する（リポジトリ自体は削除しない）"
+      name: "登録解除するリポジトリの名前"
   i:
     about: "対話的にコマンドを組み立てて実行する"
 
@@ -76,6 +87,16 @@ store:
   untrack_success: "追跡を解除しました: %{file}"
   symlink_restored: "シンボリックリンクをファイルに復元しました: %{file} (%{path})"
   restore_copy_failed: "%{file} の復元に失敗しました (%{path})"
+
+# commands/repos.rs - リポジトリ操作メッセージ
+repos:
+  path_not_found: "パスが見つかりません: %{path}"
+  not_a_git_repo: "git リポジトリではありません: %{path}"
+  already_registered: "リポジトリ '%{name}' は既に登録されています"
+  added: "登録しました: %{name} (%{path})"
+  no_repos: "登録済みリポジトリはありません"
+  removed: "登録を解除しました: %{name}"
+  not_found: "リポジトリ '%{name}' が見つかりません"
 
 # config.rs - 設定ファイルメッセージ
 config:

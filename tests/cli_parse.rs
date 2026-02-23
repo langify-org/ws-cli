@@ -17,7 +17,8 @@ fn help_shows_all_subcommands() {
                 .and(predicate::str::contains("rm"))
                 .and(predicate::str::contains("list"))
                 .and(predicate::str::contains("status"))
-                .and(predicate::str::contains("store")),
+                .and(predicate::str::contains("store"))
+                .and(predicate::str::contains("repos")),
         );
 }
 
@@ -43,6 +44,28 @@ fn no_subcommand_shows_error() {
 #[test]
 fn unknown_subcommand_fails() {
     ws().arg("foobar").assert().failure();
+}
+
+#[test]
+fn repos_help_shows_subcommands() {
+    ws().args(["repos", "--help"])
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::contains("add")
+                .and(predicate::str::contains("list"))
+                .and(predicate::str::contains("rm")),
+        );
+}
+
+#[test]
+fn repos_no_subcommand_fails() {
+    ws().arg("repos").assert().failure();
+}
+
+#[test]
+fn repos_rm_missing_name_fails() {
+    ws().args(["repos", "rm"]).assert().failure();
 }
 
 #[test]

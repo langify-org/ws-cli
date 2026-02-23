@@ -38,6 +38,17 @@ cli:
     untrack:
       about: "Unregister a file from the store"
       file: "File path to untrack"
+  repos:
+    about: "Manage registered repositories"
+    add:
+      about: "Register an existing repository"
+      path: "Repository path (default: current directory)"
+      name: "Custom name (default: directory name)"
+    list:
+      about: "List registered repositories"
+    rm:
+      about: "Unregister a repository (does not delete the repository)"
+      name: "Name of the repository to unregister"
   i:
     about: "Build and run a command interactively"
 
@@ -76,6 +87,16 @@ store:
   untrack_success: "Untracked: %{file}"
   symlink_restored: "Restored symlink to file: %{file} in %{path}"
   restore_copy_failed: "Failed to restore %{file} in %{path}"
+
+# commands/repos.rs - Repos operation messages
+repos:
+  path_not_found: "Path not found: %{path}"
+  not_a_git_repo: "Not a git repository: %{path}"
+  already_registered: "Repository '%{name}' is already registered"
+  added: "Registered: %{name} (%{path})"
+  no_repos: "No registered repositories"
+  removed: "Unregistered: %{name}"
+  not_found: "Repository '%{name}' not found"
 
 # config.rs - Config file messages
 config:

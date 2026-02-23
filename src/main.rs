@@ -8,7 +8,7 @@ mod store;
 use anyhow::Result;
 use rust_i18n::t;
 
-use cli::{StoreCommand, WsCommand};
+use cli::{ReposCommand, StoreCommand, WsCommand};
 
 rust_i18n::i18n!("locales", fallback = "en");
 
@@ -46,6 +46,11 @@ fn run(ws: cli::Ws) -> Result<()> {
         WsCommand::List(_) => commands::worktree::cmd_list(),
         WsCommand::Status(_) => commands::status::cmd_status(),
         WsCommand::I(_) => interactive::interactive_mode(),
+        WsCommand::Repos(cmd) => match cmd.command {
+            ReposCommand::Add(c) => commands::repos::cmd_repos_add(&c),
+            ReposCommand::List(_) => commands::repos::cmd_repos_list(),
+            ReposCommand::Rm(c) => commands::repos::cmd_repos_rm(&c),
+        },
         WsCommand::Store(cmd) => match cmd.command {
             StoreCommand::Track(c) => commands::store::cmd_store_track(&c),
             StoreCommand::Status(_) => commands::store::cmd_store_status(),
