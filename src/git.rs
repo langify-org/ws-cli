@@ -27,10 +27,10 @@ pub(crate) fn is_inside_git_worktree() -> bool {
 pub(crate) fn git_output(args: &[&str]) -> Result<String> {
     let mut cmd = Command::new("git");
 
-    if !is_inside_git_worktree() {
-        if let Some(bare_dir) = find_bare_dir() {
-            cmd.arg("--git-dir").arg(&bare_dir);
-        }
+    if !is_inside_git_worktree()
+        && let Some(bare_dir) = find_bare_dir()
+    {
+        cmd.arg("--git-dir").arg(&bare_dir);
     }
 
     cmd.args(args);

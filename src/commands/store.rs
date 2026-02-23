@@ -117,10 +117,10 @@ pub(crate) fn cmd_store_push(cmd: &StorePushCmd) -> Result<()> {
             continue;
         }
 
-        if let Some(ref target_file) = cmd.file {
-            if entry.filepath != *target_file {
-                continue;
-            }
+        if let Some(ref target_file) = cmd.file
+            && entry.filepath != *target_file
+        {
+            continue;
         }
 
         let wt_file = wt_root.join(&entry.filepath);
@@ -157,10 +157,10 @@ pub(crate) fn cmd_store_pull(cmd: &StorePullCmd) -> Result<()> {
     let mut pulled = 0u32;
 
     for entry in &entries {
-        if let Some(ref target_file) = cmd.file {
-            if entry.filepath != *target_file {
-                continue;
-            }
+        if let Some(ref target_file) = cmd.file
+            && entry.filepath != *target_file
+        {
+            continue;
         }
 
         let store_file = store.join(&entry.filepath);

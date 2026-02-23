@@ -62,23 +62,23 @@ pub(crate) fn cmd_clone(cmd: &CloneCmd) -> Result<()> {
     }
 
     // config に自動登録（失敗しても clone 自体は成功扱い）
-    if let Ok(abs_path) = std::fs::canonicalize(".") {
-        if let Ok(mut config) = crate::config::load_config() {
-            let name = abs_path
-                .file_name()
-                .and_then(|n| n.to_str())
-                .unwrap_or("unknown")
-                .to_string();
-            config.repos.insert(
-                name,
-                crate::config::RepoEntry {
-                    path: abs_path,
-                    url: cmd.url.clone(),
-                },
-            );
-            if let Err(e) = crate::config::save_config(&config) {
-                eprintln!("{}", t!("config.save_warning", detail = format!("{:#}", e)));
-            }
+    if let Ok(abs_path) = std::fs::canonicalize(".")
+        && let Ok(mut config) = crate::config::load_config()
+    {
+        let name = abs_path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("unknown")
+            .to_string();
+        config.repos.insert(
+            name,
+            crate::config::RepoEntry {
+                path: abs_path,
+                url: cmd.url.clone(),
+            },
+        );
+        if let Err(e) = crate::config::save_config(&config) {
+            eprintln!("{}", t!("config.save_warning", detail = format!("{:#}", e)));
         }
     }
 
@@ -162,16 +162,17 @@ pub(crate) fn cmd_new(cmd: &NewCmd) -> Result<()> {
     }
 
     // store が存在すればファイルを適用
-    if let Ok(sd) = store::store_dir() {
-        if sd.is_dir() && sd.join("manifest").is_file() {
-            let abs_directory = fs::canonicalize(&directory).with_context(|| {
-                t!("worktree.dir_canonicalize_failed", dir = &directory).to_string()
-            })?;
-            println!("{}", t!("worktree.applying_store_files"));
-            let entries = store::read_manifest(&sd)?;
-            for entry in &entries {
-                store::apply_file(&entry.strategy, &entry.filepath, &sd, &abs_directory)?;
-            }
+    if let Ok(sd) = store::store_dir()
+        && sd.is_dir()
+        && sd.join("manifest").is_file()
+    {
+        let abs_directory = fs::canonicalize(&directory).with_context(|| {
+            t!("worktree.dir_canonicalize_failed", dir = &directory).to_string()
+        })?;
+        println!("{}", t!("worktree.applying_store_files"));
+        let entries = store::read_manifest(&sd)?;
+        for entry in &entries {
+            store::apply_file(&entry.strategy, &entry.filepath, &sd, &abs_directory)?;
         }
     }
 

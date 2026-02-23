@@ -101,13 +101,13 @@ pub(crate) fn read_manifest(store: &Path) -> Result<Vec<ManifestEntry>> {
         if line.is_empty() {
             continue;
         }
-        if let Some((strategy_str, filepath)) = line.split_once(':') {
-            if let Ok(strategy) = strategy_str.parse::<Strategy>() {
-                entries.push(ManifestEntry {
-                    strategy,
-                    filepath: filepath.to_string(),
-                });
-            }
+        if let Some((strategy_str, filepath)) = line.split_once(':')
+            && let Ok(strategy) = strategy_str.parse::<Strategy>()
+        {
+            entries.push(ManifestEntry {
+                strategy,
+                filepath: filepath.to_string(),
+            });
         }
     }
     Ok(entries)
@@ -177,7 +177,7 @@ pub(crate) fn file_status(
         return "MISSING(store)";
     }
 
-    let Some(ref root) = wt_root else {
+    let Some(root) = wt_root else {
         return "(store only)";
     };
 
