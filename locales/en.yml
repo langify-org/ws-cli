@@ -170,6 +170,7 @@ interactive:
   store_pull:
     file_prompt: "File path:"
     file_help: "Leave empty for all tracked files"
+    force_prompt: "Overwrite existing files?"
   store_track:
     select_strategy: "Select strategy:"
     file_prompt: "File path to track:"

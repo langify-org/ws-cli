@@ -1,5 +1,5 @@
 use anyhow::{Context, Result, bail};
-use inquire::{Select, Text};
+use inquire::{Confirm, Select, Text};
 use rust_i18n::t;
 
 use ws_core::cli::WsCommand;
@@ -233,16 +233,23 @@ fn interactive_store() -> Result<()> {
                 .context(t!("interactive.input_failed").to_string())?
                 .unwrap_or_default();
 
+            let force = Confirm::new(&t!("interactive.store_pull.force_prompt"))
+                .with_default(false)
+                .prompt_skippable()
+                .context(t!("interactive.input_failed").to_string())?
+                .unwrap_or(false);
+
             let cmd = ws_core::cli::StorePullCmd {
                 file: if file_input.is_empty() {
                     None
                 } else {
                     Some(file_input.clone())
                 },
-                force: false,
+                force,
             };
             eprintln!(
-                "> ws store pull{}",
+                "> ws store pull{}{}",
+                if force { " --force" } else { "" },
                 if file_input.is_empty() {
                     String::new()
                 } else {

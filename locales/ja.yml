@@ -170,6 +170,7 @@ interactive:
   store_pull:
     file_prompt: "ファイルパス:"
     file_help: "空で全追跡ファイル"
+    force_prompt: "既存ファイルを上書きしますか？"
   store_track:
     select_strategy: "strategy を選択:"
     file_prompt: "追跡するファイルパス:"

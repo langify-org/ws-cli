@@ -170,6 +170,7 @@ interactive:
   store_pull:
     file_prompt: "文件路径:"
     file_help: "留空则处理所有跟踪文件"
+    force_prompt: "覆盖已有文件？"
   store_track:
     select_strategy: "选择策略:"
     file_prompt: "要跟踪的文件路径:"
