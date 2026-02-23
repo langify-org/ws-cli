@@ -1,10 +1,10 @@
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use rust_i18n::t;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
 use crate::cli::{ReposAddCmd, ReposRmCmd};
-use crate::config::{load_config, save_config, RepoEntry};
+use crate::config::{RepoEntry, load_config, save_config};
 
 pub(crate) fn cmd_repos_add(cmd: &ReposAddCmd) -> Result<()> {
     let raw_path = match &cmd.path {
@@ -121,18 +121,19 @@ fn resolve_repo_root(path: &std::path::Path) -> Option<PathBuf> {
         .output()
         .ok()?;
     if common_dir.status.success() {
-        let common = String::from_utf8_lossy(&common_dir.stdout).trim().to_string();
+        let common = String::from_utf8_lossy(&common_dir.stdout)
+            .trim()
+            .to_string();
         let common_path = if std::path::Path::new(&common).is_absolute() {
             PathBuf::from(&common)
         } else {
             path.join(&common)
         };
-        if let Ok(canonical) = common_path.canonicalize() {
-            if canonical.file_name().and_then(|n| n.to_str()) == Some(".bare") {
-                if let Some(parent) = canonical.parent() {
-                    return Some(parent.to_path_buf());
-                }
-            }
+        if let Ok(canonical) = common_path.canonicalize()
+            && canonical.file_name().and_then(|n| n.to_str()) == Some(".bare")
+            && let Some(parent) = canonical.parent()
+        {
+            return Some(parent.to_path_buf());
         }
     }
 

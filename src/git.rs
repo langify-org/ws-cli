@@ -1,4 +1,4 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use rust_i18n::t;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};

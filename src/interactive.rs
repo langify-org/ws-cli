@@ -1,4 +1,4 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use inquire::{Select, Text};
 use rust_i18n::t;
 use std::process::Command;
@@ -328,23 +328,19 @@ fn interactive_repos_add() -> Result<Vec<String>> {
 }
 
 fn interactive_repos_rm() -> Result<Vec<String>> {
-    if let Ok(config) = load_config() {
-        if !config.repos.is_empty() {
-            let names: Vec<String> = config.repos.keys().cloned().collect();
-            let items_ref: Vec<&str> = names.iter().map(|s| s.as_str()).collect();
-            let selected = Select::new(&t!("interactive.repos_rm.select_repo"), items_ref)
-                .prompt_skippable()
-                .context(t!("interactive.selection_failed").to_string())?;
+    if let Ok(config) = load_config()
+        && !config.repos.is_empty()
+    {
+        let names: Vec<String> = config.repos.keys().cloned().collect();
+        let items_ref: Vec<&str> = names.iter().map(|s| s.as_str()).collect();
+        let selected = Select::new(&t!("interactive.repos_rm.select_repo"), items_ref)
+            .prompt_skippable()
+            .context(t!("interactive.selection_failed").to_string())?;
 
-            return match selected {
-                Some(s) => Ok(vec![
-                    "repos".to_string(),
-                    "rm".to_string(),
-                    s.to_string(),
-                ]),
-                None => bail!("{}", t!("interactive.cancelled")),
-            };
-        }
+        return match selected {
+            Some(s) => Ok(vec!["repos".to_string(), "rm".to_string(), s.to_string()]),
+            None => bail!("{}", t!("interactive.cancelled")),
+        };
     }
 
     // config 読み込み失敗 or リポジトリ未登録の場合はテキスト入力にフォールバック

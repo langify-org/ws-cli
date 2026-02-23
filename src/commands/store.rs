@@ -1,4 +1,4 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use rust_i18n::t;
 use std::fs;
 use std::os::unix::fs as unix_fs;
@@ -7,8 +7,8 @@ use std::path::Path;
 use crate::cli::{StorePullCmd, StorePushCmd, StoreTrackCmd, StoreUntrackCmd};
 use crate::git::{git_output, worktree_root};
 use crate::store::{
-    ensure_store, file_status, path_or_symlink_exists, read_manifest, require_store,
-    write_manifest, ManifestEntry, Strategy,
+    ManifestEntry, Strategy, ensure_store, file_status, path_or_symlink_exists, read_manifest,
+    require_store, write_manifest,
 };
 
 pub(crate) fn cmd_store_track(cmd: &StoreTrackCmd) -> Result<()> {
