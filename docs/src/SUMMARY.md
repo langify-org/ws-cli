@@ -9,6 +9,7 @@
 
 # Concepts
 
+- [Conceptual Overview](concepts/overview.md)
 - [Bare Clone + Worktree Pattern](concepts/bare-worktree.md)
 - [Shared Store](concepts/shared-store.md)
 

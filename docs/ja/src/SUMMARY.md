@@ -9,6 +9,7 @@
 
 # コンセプト
 
+- [概念の全体像](concepts/overview.md)
 - [bare clone + worktree パターン](concepts/bare-worktree.md)
 - [共有ストア](concepts/shared-store.md)
 
