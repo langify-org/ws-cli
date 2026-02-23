@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use crate::git;
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum Strategy {
+pub enum Strategy {
     Symlink,
     Copy,
 }
@@ -39,12 +39,12 @@ impl std::str::FromStr for Strategy {
     }
 }
 
-pub(crate) struct ManifestEntry {
+pub struct ManifestEntry {
     pub strategy: Strategy,
     pub filepath: String,
 }
 
-pub(crate) fn store_dir() -> Result<PathBuf> {
+pub fn store_dir() -> Result<PathBuf> {
     // まず git rev-parse --git-common-dir を試す
     if let Ok(common_dir) = git::git_output(&["rev-parse", "--git-common-dir"]) {
         let canonical = fs::canonicalize(&common_dir).with_context(|| {
@@ -68,7 +68,7 @@ pub(crate) fn store_dir() -> Result<PathBuf> {
     bail!("{}", t!("store.run_inside_repo"))
 }
 
-pub(crate) fn require_store() -> Result<PathBuf> {
+pub fn require_store() -> Result<PathBuf> {
     let store = store_dir()?;
     if !store.is_dir() || !store.join("manifest").is_file() {
         bail!("{}", t!("store.store_not_initialized"));
@@ -76,7 +76,7 @@ pub(crate) fn require_store() -> Result<PathBuf> {
     Ok(store)
 }
 
-pub(crate) fn ensure_store() -> Result<PathBuf> {
+pub fn ensure_store() -> Result<PathBuf> {
     let store = store_dir()?;
     fs::create_dir_all(&store)?;
     let manifest = store.join("manifest");
@@ -86,7 +86,7 @@ pub(crate) fn ensure_store() -> Result<PathBuf> {
     Ok(store)
 }
 
-pub(crate) fn read_manifest(store: &Path) -> Result<Vec<ManifestEntry>> {
+pub fn read_manifest(store: &Path) -> Result<Vec<ManifestEntry>> {
     let manifest_path = store.join("manifest");
     let content = fs::read_to_string(&manifest_path).with_context(|| {
         t!(
@@ -113,7 +113,7 @@ pub(crate) fn read_manifest(store: &Path) -> Result<Vec<ManifestEntry>> {
     Ok(entries)
 }
 
-pub(crate) fn write_manifest(store: &Path, entries: &[ManifestEntry]) -> Result<()> {
+pub fn write_manifest(store: &Path, entries: &[ManifestEntry]) -> Result<()> {
     let manifest_path = store.join("manifest");
     let mut file = fs::File::create(&manifest_path).with_context(|| {
         t!(
@@ -132,11 +132,11 @@ pub(crate) fn write_manifest(store: &Path, entries: &[ManifestEntry]) -> Result<
 /// ファイルまたはシンボリックリンク（リンク切れ含む）が存在するか判定。
 /// `Path::exists()` はリンク切れ symlink で false を返すため、
 /// symlink 自体の存在も `symlink_metadata()` で確認する。
-pub(crate) fn path_or_symlink_exists(path: &Path) -> bool {
+pub fn path_or_symlink_exists(path: &Path) -> bool {
     path.exists() || path.symlink_metadata().is_ok()
 }
 
-pub(crate) fn apply_file(
+pub fn apply_file(
     strategy: &Strategy,
     filepath: &str,
     store: &Path,
@@ -168,7 +168,7 @@ pub(crate) fn apply_file(
     Ok(())
 }
 
-pub(crate) fn file_status(
+pub fn file_status(
     entry: &ManifestEntry,
     store_file: &Path,
     wt_root: &Option<PathBuf>,

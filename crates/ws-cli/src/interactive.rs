@@ -1,13 +1,12 @@
 use anyhow::{Context, Result, bail};
 use inquire::{Select, Text};
 use rust_i18n::t;
-use std::process::Command;
 
-use crate::cli::WsCommand;
-use crate::commands::worktree::generate_name;
-use crate::config::load_config;
-use crate::git::{find_bare_dir, git_output, is_inside_git_worktree};
-use crate::store::{read_manifest, require_store};
+use ws_core::cli::WsCommand;
+use ws_core::commands::worktree::generate_name;
+use ws_core::config::load_config;
+use ws_core::git::{find_bare_dir, git_output, is_inside_git_worktree};
+use ws_core::store::{read_manifest, require_store};
 
 pub(crate) fn interactive_mode() -> Result<()> {
     let top_items: Vec<String> = vec![
@@ -35,46 +34,50 @@ pub(crate) fn interactive_mode() -> Result<()> {
 
     let cmd = selected.split_whitespace().next().unwrap_or("");
 
-    let args = match cmd {
-        "clone" => interactive_clone()?,
-        "new" => interactive_new()?,
-        "rm" => interactive_rm()?,
-        "list" => vec!["list".to_string()],
-        "status" => vec!["status".to_string()],
-        "store" => interactive_store()?,
-        "repos" => interactive_repos()?,
+    match cmd {
+        "clone" => interactive_clone(),
+        "new" => interactive_new(),
+        "rm" => interactive_rm(),
+        "list" => {
+            eprintln!("> ws list");
+            ws_core::commands::worktree::cmd_list()
+        }
+        "status" => {
+            eprintln!("> ws status");
+            ws_core::commands::status::cmd_status()
+        }
+        "store" => interactive_store(),
+        "repos" => interactive_repos(),
         _ => bail!("{}", t!("interactive.unknown_command", cmd = cmd)),
-    };
-
-    let cmd_str = format!("ws {}", args.join(" "));
-    eprintln!("> {}", cmd_str);
-
-    let status = Command::new("ws")
-        .args(&args)
-        .status()
-        .with_context(|| t!("interactive.exec_failed", cmd = &cmd_str).to_string())?;
-
-    if !status.success() {
-        std::process::exit(status.code().unwrap_or(1));
     }
-    Ok(())
 }
 
-fn interactive_clone() -> Result<Vec<String>> {
+fn interactive_clone() -> Result<()> {
     let url_input = Text::new(&t!("interactive.clone.url_prompt"))
         .with_help_message(&t!("interactive.clone.url_help"))
         .prompt_skippable()
         .context(t!("interactive.input_failed").to_string())?
         .unwrap_or_default();
 
-    let mut args = vec!["clone".to_string()];
-    if !url_input.is_empty() {
-        args.push(url_input);
-    }
-    Ok(args)
+    let cmd = ws_core::cli::CloneCmd {
+        url: if url_input.is_empty() {
+            None
+        } else {
+            Some(url_input.clone())
+        },
+    };
+    eprintln!(
+        "> ws clone{}",
+        if url_input.is_empty() {
+            String::new()
+        } else {
+            format!(" {}", url_input)
+        }
+    );
+    ws_core::commands::worktree::cmd_clone(&cmd)
 }
 
-fn interactive_new() -> Result<Vec<String>> {
+fn interactive_new() -> Result<()> {
     let default_name = generate_name();
     let name_input = Text::new(&t!("interactive.new.name_prompt"))
         .with_default(&default_name)
@@ -107,30 +110,53 @@ fn interactive_new() -> Result<Vec<String>> {
         .context(t!("interactive.input_failed").to_string())?
         .unwrap_or_default();
 
-    let mut args = vec!["new".to_string(), name];
-    if !dir_input.is_empty() && dir_input != default_dir {
-        args.push("-d".to_string());
-        args.push(dir_input);
-    }
-    if !branch_input.is_empty() && branch_input != default_branch {
-        args.push("--branch".to_string());
-        args.push(branch_input);
-    }
-
     let from_input = Text::new(&t!("interactive.new.from_prompt"))
         .with_help_message(&t!("interactive.new.from_help"))
         .prompt_skippable()
         .context(t!("interactive.input_failed").to_string())?
         .unwrap_or_default();
 
-    if !from_input.is_empty() {
-        args.push("--from".to_string());
-        args.push(from_input);
+    let directory = if !dir_input.is_empty() && dir_input != default_dir {
+        Some(dir_input)
+    } else {
+        None
+    };
+
+    let branch = if !branch_input.is_empty() && branch_input != default_branch {
+        Some(branch_input)
+    } else {
+        None
+    };
+
+    let from = if !from_input.is_empty() {
+        Some(from_input)
+    } else {
+        None
+    };
+
+    let cmd = ws_core::cli::NewCmd {
+        name: Some(name.clone()),
+        directory,
+        branch,
+        from,
+    };
+
+    let mut cmd_str = format!("ws new {}", name);
+    if let Some(ref d) = cmd.directory {
+        cmd_str.push_str(&format!(" -d {}", d));
     }
-    Ok(args)
+    if let Some(ref b) = cmd.branch {
+        cmd_str.push_str(&format!(" --branch {}", b));
+    }
+    if let Some(ref f) = cmd.from {
+        cmd_str.push_str(&format!(" --from {}", f));
+    }
+    eprintln!("> {}", cmd_str);
+
+    ws_core::commands::worktree::cmd_new(&cmd)
 }
 
-fn interactive_rm() -> Result<Vec<String>> {
+fn interactive_rm() -> Result<()> {
     let worktree_list = git_output(&["worktree", "list"])?;
     let lines: Vec<&str> = worktree_list.lines().skip(1).collect();
 
@@ -153,10 +179,15 @@ fn interactive_rm() -> Result<Vec<String>> {
         .context(t!("interactive.rm.path_failed").to_string())?
         .to_string();
 
-    Ok(vec!["rm".to_string(), path])
+    let cmd = ws_core::cli::RmCmd {
+        directory: path.clone(),
+        force: false,
+    };
+    eprintln!("> ws rm {}", path);
+    ws_core::commands::worktree::cmd_rm(&cmd)
 }
 
-fn interactive_store() -> Result<Vec<String>> {
+fn interactive_store() -> Result<()> {
     let store_items: Vec<String> = vec![
         format!("track     {}", t!("interactive.store_menu.track")),
         format!("status    {}", t!("interactive.store_menu.status")),
@@ -179,7 +210,10 @@ fn interactive_store() -> Result<Vec<String>> {
 
     match cmd {
         "track" => interactive_store_track(),
-        "status" => Ok(vec!["store".to_string(), "status".to_string()]),
+        "status" => {
+            eprintln!("> ws store status");
+            ws_core::commands::store::cmd_store_status()
+        }
         "push" => {
             let file_input = Text::new(&t!("interactive.store_push.file_prompt"))
                 .with_help_message(&t!("interactive.store_push.file_help"))
@@ -187,11 +221,22 @@ fn interactive_store() -> Result<Vec<String>> {
                 .context(t!("interactive.input_failed").to_string())?
                 .unwrap_or_default();
 
-            let mut args = vec!["store".to_string(), "push".to_string()];
-            if !file_input.is_empty() {
-                args.push(file_input);
-            }
-            Ok(args)
+            let cmd = ws_core::cli::StorePushCmd {
+                file: if file_input.is_empty() {
+                    None
+                } else {
+                    Some(file_input.clone())
+                },
+            };
+            eprintln!(
+                "> ws store push{}",
+                if file_input.is_empty() {
+                    String::new()
+                } else {
+                    format!(" {}", file_input)
+                }
+            );
+            ws_core::commands::store::cmd_store_push(&cmd)
         }
         "pull" => {
             let file_input = Text::new(&t!("interactive.store_pull.file_prompt"))
@@ -200,18 +245,30 @@ fn interactive_store() -> Result<Vec<String>> {
                 .context(t!("interactive.input_failed").to_string())?
                 .unwrap_or_default();
 
-            let mut args = vec!["store".to_string(), "pull".to_string()];
-            if !file_input.is_empty() {
-                args.push(file_input);
-            }
-            Ok(args)
+            let cmd = ws_core::cli::StorePullCmd {
+                file: if file_input.is_empty() {
+                    None
+                } else {
+                    Some(file_input.clone())
+                },
+                force: false,
+            };
+            eprintln!(
+                "> ws store pull{}",
+                if file_input.is_empty() {
+                    String::new()
+                } else {
+                    format!(" {}", file_input)
+                }
+            );
+            ws_core::commands::store::cmd_store_pull(&cmd)
         }
         "untrack" => interactive_store_untrack(),
         _ => bail!("{}", t!("interactive.unknown_command", cmd = cmd)),
     }
 }
 
-fn interactive_store_track() -> Result<Vec<String>> {
+fn interactive_store_track() -> Result<()> {
     let strategy_items = vec!["symlink", "copy"];
     let strategy = Select::new(
         &t!("interactive.store_track.select_strategy"),
@@ -233,16 +290,15 @@ fn interactive_store_track() -> Result<Vec<String>> {
         bail!("{}", t!("interactive.store_track.empty_file"));
     }
 
-    Ok(vec![
-        "store".to_string(),
-        "track".to_string(),
-        "-s".to_string(),
-        strategy,
-        file,
-    ])
+    let cmd = ws_core::cli::StoreTrackCmd {
+        strategy: strategy.clone(),
+        file: file.clone(),
+    };
+    eprintln!("> ws store track -s {} {}", strategy, file);
+    ws_core::commands::store::cmd_store_track(&cmd)
 }
 
-fn interactive_store_untrack() -> Result<Vec<String>> {
+fn interactive_store_untrack() -> Result<()> {
     let store = require_store();
     if let Ok(store) = store {
         let entries = read_manifest(&store)?;
@@ -254,11 +310,13 @@ fn interactive_store_untrack() -> Result<Vec<String>> {
                 .context(t!("interactive.selection_failed").to_string())?;
 
             return match selected {
-                Some(s) => Ok(vec![
-                    "store".to_string(),
-                    "untrack".to_string(),
-                    s.to_string(),
-                ]),
+                Some(s) => {
+                    let cmd = ws_core::cli::StoreUntrackCmd {
+                        file: s.to_string(),
+                    };
+                    eprintln!("> ws store untrack {}", s);
+                    ws_core::commands::store::cmd_store_untrack(&cmd)
+                }
                 None => bail!("{}", t!("interactive.cancelled")),
             };
         }
@@ -273,10 +331,12 @@ fn interactive_store_untrack() -> Result<Vec<String>> {
         bail!("{}", t!("interactive.store_untrack.empty_file"));
     }
 
-    Ok(vec!["store".to_string(), "untrack".to_string(), file])
+    let cmd = ws_core::cli::StoreUntrackCmd { file: file.clone() };
+    eprintln!("> ws store untrack {}", file);
+    ws_core::commands::store::cmd_store_untrack(&cmd)
 }
 
-fn interactive_repos() -> Result<Vec<String>> {
+fn interactive_repos() -> Result<()> {
     let repos_items: Vec<String> = vec![
         format!("add       {}", t!("interactive.repos_menu.add")),
         format!("list      {}", t!("interactive.repos_menu.list")),
@@ -297,13 +357,16 @@ fn interactive_repos() -> Result<Vec<String>> {
 
     match cmd {
         "add" => interactive_repos_add(),
-        "list" => Ok(vec!["repos".to_string(), "list".to_string()]),
+        "list" => {
+            eprintln!("> ws repos list");
+            ws_core::commands::repos::cmd_repos_list()
+        }
         "rm" => interactive_repos_rm(),
         _ => bail!("{}", t!("interactive.unknown_command", cmd = cmd)),
     }
 }
 
-fn interactive_repos_add() -> Result<Vec<String>> {
+fn interactive_repos_add() -> Result<()> {
     let path_input = Text::new(&t!("interactive.repos_add.path_prompt"))
         .with_help_message(&t!("interactive.repos_add.path_help"))
         .prompt_skippable()
@@ -316,18 +379,32 @@ fn interactive_repos_add() -> Result<Vec<String>> {
         .context(t!("interactive.input_failed").to_string())?
         .unwrap_or_default();
 
-    let mut args = vec!["repos".to_string(), "add".to_string()];
+    let cmd = ws_core::cli::ReposAddCmd {
+        path: if path_input.is_empty() {
+            None
+        } else {
+            Some(path_input.clone())
+        },
+        name: if name_input.is_empty() {
+            None
+        } else {
+            Some(name_input.clone())
+        },
+    };
+
+    let mut cmd_str = "ws repos add".to_string();
     if !path_input.is_empty() {
-        args.push(path_input);
+        cmd_str.push_str(&format!(" {}", path_input));
     }
     if !name_input.is_empty() {
-        args.push("--name".to_string());
-        args.push(name_input);
+        cmd_str.push_str(&format!(" --name {}", name_input));
     }
-    Ok(args)
+    eprintln!("> {}", cmd_str);
+
+    ws_core::commands::repos::cmd_repos_add(&cmd)
 }
 
-fn interactive_repos_rm() -> Result<Vec<String>> {
+fn interactive_repos_rm() -> Result<()> {
     if let Ok(config) = load_config()
         && !config.repos.is_empty()
     {
@@ -338,7 +415,13 @@ fn interactive_repos_rm() -> Result<Vec<String>> {
             .context(t!("interactive.selection_failed").to_string())?;
 
         return match selected {
-            Some(s) => Ok(vec!["repos".to_string(), "rm".to_string(), s.to_string()]),
+            Some(s) => {
+                let cmd = ws_core::cli::ReposRmCmd {
+                    name: s.to_string(),
+                };
+                eprintln!("> ws repos rm {}", s);
+                ws_core::commands::repos::cmd_repos_rm(&cmd)
+            }
             None => bail!("{}", t!("interactive.cancelled")),
         };
     }
@@ -352,7 +435,9 @@ fn interactive_repos_rm() -> Result<Vec<String>> {
         bail!("{}", t!("interactive.repos_rm.empty_name"));
     }
 
-    Ok(vec!["repos".to_string(), "rm".to_string(), name])
+    let cmd = ws_core::cli::ReposRmCmd { name: name.clone() };
+    eprintln!("> ws repos rm {}", name);
+    ws_core::commands::repos::cmd_repos_rm(&cmd)
 }
 
 /// WsCommand に新バリアントが追加されるとここでコンパイルエラーになる。

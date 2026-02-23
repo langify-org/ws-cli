@@ -29,46 +29,51 @@ cargo watch -x build
 cargo test
 ```
 
-- ユニットテスト: `src/store.rs`, `src/commands/worktree.rs` にインライン (`#[cfg(test)] mod tests`)
-- E2E テスト: `tests/` ディレクトリに `assert_cmd` でバイナリ実行（`tempfile` で一時 git リポジトリを構築）
+- ユニットテスト: `crates/ws-core/src/store.rs`, `crates/ws-core/src/commands/worktree.rs` にインライン (`#[cfg(test)] mod tests`)
+- E2E テスト: `crates/ws-cli/tests/` ディレクトリに `assert_cmd` でバイナリ実行（`tempfile` で一時 git リポジトリを構築）
 - E2E テストのロケールは `LC_ALL=en` で英語固定
 
 ## アーキテクチャ
 
-責務ごとにモジュール分割した構成:
+Cargo workspace で `ws-core`（ライブラリ）と `ws-cli`（バイナリ）に分割:
 
 ```
-src/
-  main.rs            エントリポイント + run() ディスパッチ
-  cli.rs             clap v4 derive による CLI 型定義 + parse_with_i18n()
-  git.rs             git コマンド実行ヘルパー
-  store.rs           shared store のデータ層（Strategy, ManifestEntry, manifest 操作, file_status, path_or_symlink_exists）
-  config.rs          設定ファイル（~/.config/ws/config.toml）の読み書き
-  commands/
-    mod.rs           サブモジュール宣言
-    worktree.rs      clone, new, rm, list, generate_name
-    status.rs        status（統合表示）
-    store.rs         store track/status/push/pull/untrack
-    repos.rs         repos add/list/rm（リポジトリ登録管理）
-  interactive.rs     inquire を使った対話モード
-```
-
-```
-locales/
-  en.yml             英語ロケール (デフォルト/フォールバック)
-  ja.yml             日本語ロケール
-  zh-CN.yml          簡体字中国語ロケール
+Cargo.toml               [workspace] 定義
+locales/                  i18n ファイル（両クレートから参照）
+  en.yml                  英語ロケール (デフォルト/フォールバック)
+  ja.yml                  日本語ロケール
+  zh-CN.yml               簡体字中国語ロケール
+crates/
+  ws-core/                ライブラリクレート（コアロジック）
+    src/
+      lib.rs              i18n!() + pub mod 宣言 + detect_and_set_locale()
+      cli.rs              clap v4 derive による CLI 型定義 + parse_with_i18n()
+      git.rs              git コマンド実行ヘルパー
+      store.rs            shared store のデータ層（Strategy, ManifestEntry, manifest 操作, file_status, path_or_symlink_exists）
+      config.rs           設定ファイル（~/.config/ws/config.toml）の読み書き
+      commands/
+        mod.rs            サブモジュール宣言
+        worktree.rs       clone, new, rm, list, generate_name
+        status.rs         status（統合表示）
+        store.rs          store track/status/push/pull/untrack
+        repos.rs          repos add/list/rm（リポジトリ登録管理）
+  ws-cli/                 バイナリクレート（package name = "ws"）
+    src/
+      main.rs             エントリポイント + run() ディスパッチ
+      interactive.rs      inquire を使った対話モード（ws_core:: 関数を直接呼び出し）
+    tests/                E2E テスト
 ```
 
 依存グラフ（循環なし）:
 - `cli` / `git` — 依存なし（最下層）
 - `store` → `git`
-- `commands/worktree` → `cli`, `git`, `store`
+- `config` — 依存なし
+- `commands/worktree` → `cli`, `git`, `store`, `config`
 - `commands/status` → `git`, `store`
 - `commands/store` → `cli`, `git`, `store`
 - `commands/repos` → `cli`, `config`
-- `interactive` → `cli`, `config`, `git`, `store`, `commands::worktree`
-- `main` → `cli`, `commands/*`, `interactive`
+- `ws-cli/interactive` → `ws_core::cli`, `ws_core::config`, `ws_core::git`, `ws_core::store`, `ws_core::commands::*`
+- `ws-cli/main` → `ws_core::cli`, `ws_core::commands::*`, `interactive`
 
 ### shared store の仕組み
 
@@ -88,6 +93,10 @@ strategy の使い分け:
 3. どちらも失敗 → 指定パスをそのまま使用
 
 これにより worktree 内から実行しても bare root が登録され、`ws clone` の自動登録と一致する。
+
+### 対話モードの関数直接呼び出し
+
+`ws-cli/src/interactive.rs` は `ws_core::commands::*` の関数を直接呼び出す。外部プロセス (`Command::new("ws")`) は使用しない。これにより `cargo run -- i` で開発中のビルドがそのまま対話モードに反映される。
 
 ### 対話モードのコンパイル時安全機構
 

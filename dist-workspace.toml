@@ -1,5 +1,5 @@
 [workspace]
-members = ["cargo:./"]
+members = ["cargo:crates/ws-cli"]
 
 [dist]
 cargo-dist-version = "0.30.4"

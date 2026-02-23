@@ -6,13 +6,13 @@ use std::path::{Path, PathBuf};
 use rust_i18n::t;
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub(crate) struct Config {
+pub struct Config {
     #[serde(default)]
     pub repos: BTreeMap<String, RepoEntry>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct RepoEntry {
+pub struct RepoEntry {
     pub path: PathBuf,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub url: Option<String>,
@@ -20,7 +20,7 @@ pub(crate) struct RepoEntry {
 
 /// config.toml のパスを返す。
 /// 優先順位: `WS_CONFIG_PATH` > `XDG_CONFIG_HOME/ws/config.toml` > `~/.config/ws/config.toml`
-pub(crate) fn config_path() -> Result<PathBuf> {
+pub fn config_path() -> Result<PathBuf> {
     if let Ok(p) = std::env::var("WS_CONFIG_PATH") {
         return Ok(PathBuf::from(p));
     }
@@ -59,12 +59,12 @@ fn save_config_to(config: &Config, path: &Path) -> Result<()> {
 }
 
 /// config.toml を読み込む。ファイルが存在しなければ空の Config を返す。
-pub(crate) fn load_config() -> Result<Config> {
+pub fn load_config() -> Result<Config> {
     load_config_from(&config_path()?)
 }
 
 /// config.toml を保存する。親ディレクトリが存在しなければ作成する。
-pub(crate) fn save_config(config: &Config) -> Result<()> {
+pub fn save_config(config: &Config) -> Result<()> {
     save_config_to(config, &config_path()?)
 }
 

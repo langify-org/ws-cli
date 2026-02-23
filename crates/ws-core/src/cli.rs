@@ -3,13 +3,13 @@ use rust_i18n::t;
 
 #[derive(Parser)]
 #[command(name = "ws", version)]
-pub(crate) struct Ws {
+pub struct Ws {
     #[command(subcommand)]
     pub command: WsCommand,
 }
 
 #[derive(Subcommand)]
-pub(crate) enum WsCommand {
+pub enum WsCommand {
     Clone(CloneCmd),
     New(NewCmd),
     Rm(RmCmd),
@@ -21,12 +21,12 @@ pub(crate) enum WsCommand {
 }
 
 #[derive(Parser)]
-pub(crate) struct CloneCmd {
+pub struct CloneCmd {
     pub url: Option<String>,
 }
 
 #[derive(Parser)]
-pub(crate) struct NewCmd {
+pub struct NewCmd {
     pub name: Option<String>,
 
     #[arg(short = 'd', long)]
@@ -40,7 +40,7 @@ pub(crate) struct NewCmd {
 }
 
 #[derive(Parser)]
-pub(crate) struct RmCmd {
+pub struct RmCmd {
     pub directory: String,
 
     #[arg(short = 'f', long)]
@@ -48,22 +48,22 @@ pub(crate) struct RmCmd {
 }
 
 #[derive(Parser)]
-pub(crate) struct ListCmd {}
+pub struct ListCmd {}
 
 #[derive(Parser)]
-pub(crate) struct InteractiveCmd {}
+pub struct InteractiveCmd {}
 
 #[derive(Parser)]
-pub(crate) struct StatusCmd {}
+pub struct StatusCmd {}
 
 #[derive(Parser)]
-pub(crate) struct StoreCmd {
+pub struct StoreCmd {
     #[command(subcommand)]
     pub command: StoreCommand,
 }
 
 #[derive(Subcommand)]
-pub(crate) enum StoreCommand {
+pub enum StoreCommand {
     Track(StoreTrackCmd),
     Status(StoreStatusCmd),
     Push(StorePushCmd),
@@ -72,7 +72,7 @@ pub(crate) enum StoreCommand {
 }
 
 #[derive(Parser)]
-pub(crate) struct StoreTrackCmd {
+pub struct StoreTrackCmd {
     #[arg(short = 's', long)]
     pub strategy: String,
 
@@ -80,15 +80,15 @@ pub(crate) struct StoreTrackCmd {
 }
 
 #[derive(Parser)]
-pub(crate) struct StoreStatusCmd {}
+pub struct StoreStatusCmd {}
 
 #[derive(Parser)]
-pub(crate) struct StorePushCmd {
+pub struct StorePushCmd {
     pub file: Option<String>,
 }
 
 #[derive(Parser)]
-pub(crate) struct StorePullCmd {
+pub struct StorePullCmd {
     pub file: Option<String>,
 
     #[arg(short = 'f', long)]
@@ -96,25 +96,25 @@ pub(crate) struct StorePullCmd {
 }
 
 #[derive(Parser)]
-pub(crate) struct StoreUntrackCmd {
+pub struct StoreUntrackCmd {
     pub file: String,
 }
 
 #[derive(Parser)]
-pub(crate) struct ReposCmd {
+pub struct ReposCmd {
     #[command(subcommand)]
     pub command: ReposCommand,
 }
 
 #[derive(Subcommand)]
-pub(crate) enum ReposCommand {
+pub enum ReposCommand {
     Add(ReposAddCmd),
     List(ReposListCmd),
     Rm(ReposRmCmd),
 }
 
 #[derive(Parser)]
-pub(crate) struct ReposAddCmd {
+pub struct ReposAddCmd {
     pub path: Option<String>,
 
     #[arg(long)]
@@ -122,15 +122,15 @@ pub(crate) struct ReposAddCmd {
 }
 
 #[derive(Parser)]
-pub(crate) struct ReposListCmd {}
+pub struct ReposListCmd {}
 
 #[derive(Parser)]
-pub(crate) struct ReposRmCmd {
+pub struct ReposRmCmd {
     pub name: String,
 }
 
 /// derive で定義した Command にランタイムで i18n ヘルプを上書きしてパース
-pub(crate) fn parse_with_i18n() -> Ws {
+pub fn parse_with_i18n() -> Ws {
     let cmd = Ws::command()
         .about(t!("cli.about").to_string())
         .mut_subcommand("clone", |s| {

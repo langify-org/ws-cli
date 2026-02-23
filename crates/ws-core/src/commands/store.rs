@@ -11,7 +11,7 @@ use crate::store::{
     require_store, write_manifest,
 };
 
-pub(crate) fn cmd_store_track(cmd: &StoreTrackCmd) -> Result<()> {
+pub fn cmd_store_track(cmd: &StoreTrackCmd) -> Result<()> {
     let store = ensure_store()?;
     let wt_root = worktree_root()?;
 
@@ -77,7 +77,7 @@ pub(crate) fn cmd_store_track(cmd: &StoreTrackCmd) -> Result<()> {
     Ok(())
 }
 
-pub(crate) fn cmd_store_status() -> Result<()> {
+pub fn cmd_store_status() -> Result<()> {
     let store = require_store()?;
     let wt_root = worktree_root().ok();
 
@@ -105,7 +105,7 @@ pub(crate) fn cmd_store_status() -> Result<()> {
     Ok(())
 }
 
-pub(crate) fn cmd_store_push(cmd: &StorePushCmd) -> Result<()> {
+pub fn cmd_store_push(cmd: &StorePushCmd) -> Result<()> {
     let store = require_store()?;
     let wt_root = worktree_root()?;
     let entries = read_manifest(&store)?;
@@ -149,7 +149,7 @@ pub(crate) fn cmd_store_push(cmd: &StorePushCmd) -> Result<()> {
     Ok(())
 }
 
-pub(crate) fn cmd_store_pull(cmd: &StorePullCmd) -> Result<()> {
+pub fn cmd_store_pull(cmd: &StorePullCmd) -> Result<()> {
     let store = require_store()?;
     let wt_root = worktree_root()?;
     let entries = read_manifest(&store)?;
@@ -285,7 +285,7 @@ fn cleanup_empty_parents(path: &Path, stop_at: &Path) {
     }
 }
 
-pub(crate) fn cmd_store_untrack(cmd: &StoreUntrackCmd) -> Result<()> {
+pub fn cmd_store_untrack(cmd: &StoreUntrackCmd) -> Result<()> {
     let store = require_store()?;
     let mut entries = read_manifest(&store)?;
 

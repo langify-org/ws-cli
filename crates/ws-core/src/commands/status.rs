@@ -4,7 +4,7 @@ use rust_i18n::t;
 use crate::git::{git_output, worktree_root};
 use crate::store::{file_status, read_manifest, store_dir};
 
-pub(crate) fn cmd_status() -> Result<()> {
+pub fn cmd_status() -> Result<()> {
     let worktree_list = git_output(&["worktree", "list"])?;
     println!("{}", t!("status.workspaces"));
 

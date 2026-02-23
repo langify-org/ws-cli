@@ -1391,10 +1391,21 @@ version = "0.4.0"
 dependencies = [
  "anyhow",
  "assert_cmd",
- "clap",
  "inquire",
- "petname",
  "predicates",
+ "rust-i18n",
+ "tempfile",
+ "toml",
+ "ws-core",
+]
+
+[[package]]
+name = "ws-core"
+version = "0.4.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "petname",
  "rust-i18n",
  "serde",
  "sys-locale",

@@ -8,11 +8,11 @@ use crate::cli::{CloneCmd, NewCmd, RmCmd};
 use crate::git::{find_bare_dir, is_inside_git_worktree};
 use crate::store;
 
-pub(crate) fn generate_name() -> String {
+pub fn generate_name() -> String {
     petname::petname(3, "-").expect(&t!("store.name_generation_failed"))
 }
 
-pub(crate) fn cmd_clone(cmd: &CloneCmd) -> Result<()> {
+pub fn cmd_clone(cmd: &CloneCmd) -> Result<()> {
     let bare_dir = PathBuf::from(".bare");
     if bare_dir.exists() {
         bail!("{}", t!("worktree.bare_already_exists"));
@@ -85,7 +85,7 @@ pub(crate) fn cmd_clone(cmd: &CloneCmd) -> Result<()> {
     Ok(())
 }
 
-pub(crate) fn cmd_new(cmd: &NewCmd) -> Result<()> {
+pub fn cmd_new(cmd: &NewCmd) -> Result<()> {
     let name = match &cmd.name {
         Some(n) => n.clone(),
         None => generate_name(),
@@ -179,13 +179,13 @@ pub(crate) fn cmd_new(cmd: &NewCmd) -> Result<()> {
     Ok(())
 }
 
-pub(crate) fn cmd_list() -> Result<()> {
+pub fn cmd_list() -> Result<()> {
     let output = crate::git::git_output(&["worktree", "list"])?;
     println!("{}", output);
     Ok(())
 }
 
-pub(crate) fn cmd_rm(cmd: &RmCmd) -> Result<()> {
+pub fn cmd_rm(cmd: &RmCmd) -> Result<()> {
     let mut args = vec!["worktree", "remove"];
     if cmd.force {
         args.push("--force");

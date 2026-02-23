@@ -6,7 +6,7 @@ use std::process::{Command, Stdio};
 use crate::cli::{ReposAddCmd, ReposRmCmd};
 use crate::config::{RepoEntry, load_config, save_config};
 
-pub(crate) fn cmd_repos_add(cmd: &ReposAddCmd) -> Result<()> {
+pub fn cmd_repos_add(cmd: &ReposAddCmd) -> Result<()> {
     let raw_path = match &cmd.path {
         Some(p) => PathBuf::from(p),
         None => std::env::current_dir()?,
@@ -92,7 +92,7 @@ pub(crate) fn cmd_repos_add(cmd: &ReposAddCmd) -> Result<()> {
     Ok(())
 }
 
-pub(crate) fn cmd_repos_list() -> Result<()> {
+pub fn cmd_repos_list() -> Result<()> {
     let config = load_config()?;
 
     if config.repos.is_empty() {
@@ -151,7 +151,7 @@ fn resolve_repo_root(path: &std::path::Path) -> Option<PathBuf> {
     None
 }
 
-pub(crate) fn cmd_repos_rm(cmd: &ReposRmCmd) -> Result<()> {
+pub fn cmd_repos_rm(cmd: &ReposRmCmd) -> Result<()> {
     let mut config = load_config()?;
 
     if config.repos.remove(&cmd.name).is_none() {
