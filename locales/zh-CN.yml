@@ -139,6 +139,7 @@ interactive:
     list: "列出 worktree"
     status: "显示整体状态"
     store: "管理共享文件"
+    repos: "管理已注册的仓库"
   select_command: "选择命令:"
   cancelled: "已取消"
   selection_failed: "选择失败"
@@ -178,4 +179,18 @@ interactive:
     select_file: "选择要注销的文件:"
     file_prompt: "要注销的文件路径:"
     empty_file: "请输入文件路径"
+  repos_menu:
+    add: "注册仓库"
+    list: "列出已注册的仓库"
+    rm: "注销仓库"
+  repos_select: "选择 repos 命令:"
+  repos_add:
+    path_prompt: "仓库路径:"
+    path_help: "留空则使用当前目录"
+    name_prompt: "自定义名称:"
+    name_help: "留空则使用目录名"
+  repos_rm:
+    select_repo: "选择要注销的仓库:"
+    name_prompt: "仓库名称:"
+    empty_name: "请输入仓库名称"
   input_failed: "输入失败"

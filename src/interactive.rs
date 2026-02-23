@@ -3,7 +3,9 @@ use inquire::{Select, Text};
 use rust_i18n::t;
 use std::process::Command;
 
+use crate::cli::WsCommand;
 use crate::commands::worktree::generate_name;
+use crate::config::load_config;
 use crate::git::{find_bare_dir, git_output, is_inside_git_worktree};
 use crate::store::{read_manifest, require_store};
 
@@ -15,6 +17,7 @@ pub(crate) fn interactive_mode() -> Result<()> {
         format!("list      {}", t!("interactive.menu.list")),
         format!("status    {}", t!("interactive.menu.status")),
         format!("store     {}", t!("interactive.menu.store")),
+        format!("repos     {}", t!("interactive.menu.repos")),
     ];
 
     let items_ref: Vec<&str> = top_items.iter().map(|s| s.as_str()).collect();
@@ -39,6 +42,7 @@ pub(crate) fn interactive_mode() -> Result<()> {
         "list" => vec!["list".to_string()],
         "status" => vec!["status".to_string()],
         "store" => interactive_store()?,
+        "repos" => interactive_repos()?,
         _ => bail!("{}", t!("interactive.unknown_command", cmd = cmd)),
     };
 
@@ -270,4 +274,103 @@ fn interactive_store_untrack() -> Result<Vec<String>> {
     }
 
     Ok(vec!["store".to_string(), "untrack".to_string(), file])
+}
+
+fn interactive_repos() -> Result<Vec<String>> {
+    let repos_items: Vec<String> = vec![
+        format!("add       {}", t!("interactive.repos_menu.add")),
+        format!("list      {}", t!("interactive.repos_menu.list")),
+        format!("rm        {}", t!("interactive.repos_menu.rm")),
+    ];
+
+    let items_ref: Vec<&str> = repos_items.iter().map(|s| s.as_str()).collect();
+    let selected = Select::new(&t!("interactive.repos_select"), items_ref)
+        .prompt_skippable()
+        .context(t!("interactive.selection_failed").to_string())?;
+
+    let selected = match selected {
+        Some(s) => s,
+        None => bail!("{}", t!("interactive.cancelled")),
+    };
+
+    let cmd = selected.split_whitespace().next().unwrap_or("");
+
+    match cmd {
+        "add" => interactive_repos_add(),
+        "list" => Ok(vec!["repos".to_string(), "list".to_string()]),
+        "rm" => interactive_repos_rm(),
+        _ => bail!("{}", t!("interactive.unknown_command", cmd = cmd)),
+    }
+}
+
+fn interactive_repos_add() -> Result<Vec<String>> {
+    let path_input = Text::new(&t!("interactive.repos_add.path_prompt"))
+        .with_help_message(&t!("interactive.repos_add.path_help"))
+        .prompt_skippable()
+        .context(t!("interactive.input_failed").to_string())?
+        .unwrap_or_default();
+
+    let name_input = Text::new(&t!("interactive.repos_add.name_prompt"))
+        .with_help_message(&t!("interactive.repos_add.name_help"))
+        .prompt_skippable()
+        .context(t!("interactive.input_failed").to_string())?
+        .unwrap_or_default();
+
+    let mut args = vec!["repos".to_string(), "add".to_string()];
+    if !path_input.is_empty() {
+        args.push(path_input);
+    }
+    if !name_input.is_empty() {
+        args.push("--name".to_string());
+        args.push(name_input);
+    }
+    Ok(args)
+}
+
+fn interactive_repos_rm() -> Result<Vec<String>> {
+    if let Ok(config) = load_config() {
+        if !config.repos.is_empty() {
+            let names: Vec<String> = config.repos.keys().cloned().collect();
+            let items_ref: Vec<&str> = names.iter().map(|s| s.as_str()).collect();
+            let selected = Select::new(&t!("interactive.repos_rm.select_repo"), items_ref)
+                .prompt_skippable()
+                .context(t!("interactive.selection_failed").to_string())?;
+
+            return match selected {
+                Some(s) => Ok(vec![
+                    "repos".to_string(),
+                    "rm".to_string(),
+                    s.to_string(),
+                ]),
+                None => bail!("{}", t!("interactive.cancelled")),
+            };
+        }
+    }
+
+    // config 読み込み失敗 or リポジトリ未登録の場合はテキスト入力にフォールバック
+    let name = Text::new(&t!("interactive.repos_rm.name_prompt"))
+        .prompt()
+        .context(t!("interactive.input_failed").to_string())?;
+
+    if name.is_empty() {
+        bail!("{}", t!("interactive.repos_rm.empty_name"));
+    }
+
+    Ok(vec!["repos".to_string(), "rm".to_string(), name])
+}
+
+/// WsCommand に新バリアントが追加されるとここでコンパイルエラーになる。
+/// 対話メニュー (interactive_mode) も更新すること。
+#[allow(dead_code)]
+fn _ensure_all_commands_in_interactive(cmd: &WsCommand) -> &'static str {
+    match cmd {
+        WsCommand::Clone(_) => "clone",
+        WsCommand::New(_) => "new",
+        WsCommand::Rm(_) => "rm",
+        WsCommand::List(_) => "list",
+        WsCommand::Status(_) => "status",
+        WsCommand::Store(_) => "store",
+        WsCommand::Repos(_) => "repos",
+        WsCommand::I(_) => "i",
+    }
 }

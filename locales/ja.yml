@@ -139,6 +139,7 @@ interactive:
     list: "worktree 一覧表示"
     status: "全体の状態表示"
     store: "共有ファイル管理"
+    repos: "登録済みリポジトリ管理"
   select_command: "コマンドを選択:"
   cancelled: "キャンセルしました"
   selection_failed: "選択に失敗しました"
@@ -178,4 +179,18 @@ interactive:
     select_file: "登録解除するファイルを選択:"
     file_prompt: "登録解除するファイルパス:"
     empty_file: "ファイルパスを入力してください"
+  repos_menu:
+    add: "リポジトリを登録"
+    list: "登録済みリポジトリの一覧表示"
+    rm: "リポジトリの登録を解除"
+  repos_select: "repos コマンドを選択:"
+  repos_add:
+    path_prompt: "リポジトリのパス:"
+    path_help: "空でカレントディレクトリ"
+    name_prompt: "カスタム名:"
+    name_help: "空でディレクトリ名"
+  repos_rm:
+    select_repo: "登録解除するリポジトリを選択:"
+    name_prompt: "リポジトリ名:"
+    empty_name: "リポジトリ名を入力してください"
   input_failed: "入力に失敗しました"

@@ -139,6 +139,7 @@ interactive:
     list: "List worktrees"
     status: "Show overall status"
     store: "Manage shared files"
+    repos: "Manage registered repositories"
   select_command: "Select command:"
   cancelled: "Cancelled"
   selection_failed: "Selection failed"
@@ -178,4 +179,18 @@ interactive:
     select_file: "Select file to untrack:"
     file_prompt: "File path to untrack:"
     empty_file: "Please enter a file path"
+  repos_menu:
+    add: "Register a repository"
+    list: "List registered repositories"
+    rm: "Unregister a repository"
+  repos_select: "Select repos command:"
+  repos_add:
+    path_prompt: "Repository path:"
+    path_help: "Leave empty for current directory"
+    name_prompt: "Custom name:"
+    name_help: "Leave empty for directory name"
+  repos_rm:
+    select_repo: "Select repository to unregister:"
+    name_prompt: "Repository name:"
+    empty_name: "Please enter a repository name"
   input_failed: "Input failed"
