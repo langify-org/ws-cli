@@ -11,10 +11,7 @@ pub fn cmd_status(ctx: &AppContext) -> Result<()> {
 
     // --- Repositories section ---
     if !ctx.config.repos.is_empty() {
-        anstream::println!(
-            "{}",
-            ui::styled(ui::STYLE_HEADER, &t!("status.repositories"))
-        );
+        anstream::println!("{}", ui::section_header(&t!("status.repositories")));
         has_output = true;
 
         let headers = ["NAME", "PATH", "TYPE"];
@@ -133,10 +130,7 @@ pub fn cmd_status(ctx: &AppContext) -> Result<()> {
 
         anstream::println!(
             "{}",
-            ui::styled(
-                ui::STYLE_HEADER,
-                &t!("status.current_repository", name = &display_name)
-            )
+            ui::section_header(&t!("status.current_repository", name = &display_name))
         );
         anstream::println!("  Path: {}", abbreviate_home(&repo.root));
 
@@ -200,13 +194,10 @@ pub fn cmd_status(ctx: &AppContext) -> Result<()> {
             .unwrap_or("unknown");
         anstream::println!(
             "{}",
-            ui::styled(
-                ui::STYLE_HEADER,
-                &t!(
-                    "status.current_workspace",
-                    name = format!("{} [{}]", ws_name, ws.branch)
-                )
-            )
+            ui::section_header(&t!(
+                "status.current_workspace",
+                name = format!("{} [{}]", ws_name, ws.branch)
+            ))
         );
 
         let store = ws.store_dir.as_ref().unwrap();

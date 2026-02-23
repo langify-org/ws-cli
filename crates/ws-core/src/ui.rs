@@ -16,11 +16,29 @@ pub const STYLE_MARKER: Style = Style::new()
     .fg_color(Some(anstyle::Color::Ansi(AnsiColor::Green)))
     .effects(Effects::BOLD);
 
+/// セクションヘッダーのルーラー全体幅
+const SECTION_WIDTH: usize = 50;
+
 // --- Helper functions ---
 
 /// Apply a style to text, returning a string with ANSI escape codes.
 pub fn styled(style: Style, text: &str) -> String {
     format!("{style}{text}{style:#}")
+}
+
+/// ルーラー付きセクションヘッダーを生成する。
+/// `── Title ──────────────────` 形式で、タイトルは Bold、罫線は Dim。
+pub fn section_header(title: &str) -> String {
+    let prefix = "\u{2500}\u{2500} ";
+    let suffix_start = format!("{prefix}{title} ");
+    let remaining = SECTION_WIDTH.saturating_sub(suffix_start.len());
+    let trail = "\u{2500}".repeat(remaining.max(3));
+    format!(
+        "{} {} {}",
+        styled(STYLE_DIM, "\u{2500}\u{2500}"),
+        styled(STYLE_HEADER, title),
+        styled(STYLE_DIM, &trail),
+    )
 }
 
 /// Return the appropriate style for a file status value.
