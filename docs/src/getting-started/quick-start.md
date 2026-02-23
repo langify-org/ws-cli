@@ -51,13 +51,12 @@ ws new master                      # Create a worktree with an orphan branch
 
 ## Setting up shared files
 
-To share `.envrc` or `.mcp.json` across worktrees:
+To share `.env` or `.claude/settings.local.json` across worktrees:
 
 ```bash
 # Run inside a worktree
-ws store track -s symlink .envrc
-ws store track -s symlink .mcp.json
-ws store track -s copy .env.local
+ws store track -s symlink .claude/settings.local.json
+ws store track -s copy .env
 ```
 
 From now on, every time you create a new worktree with `ws new`, these files are automatically distributed.

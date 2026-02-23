@@ -42,8 +42,8 @@ ws store track -s <strategy> <file>
 ### 例
 
 ```bash
-ws store track -s symlink .envrc
-ws store track -s copy .env.local
+ws store track -s symlink .claude/settings.local.json
+ws store track -s copy .env
 ```
 
 ---
@@ -65,9 +65,8 @@ Store: ~/my-project/.bare/worktree-store
 
 STRATEGY  FILE        STATUS
 ────────  ────        ──────
-symlink   .envrc      OK
-symlink   .mcp.json   OK
-copy      .env.local  MODIFIED
+symlink   .claude/settings.local.json  OK
+copy      .env                        MODIFIED
 ```
 
 ---
@@ -124,7 +123,7 @@ ws store pull [file] [-f]
 
 ```bash
 ws store pull              # 全追跡ファイルを pull
-ws store pull .envrc       # 特定ファイルのみ
+ws store pull .env         # 特定ファイルのみ
 ws store pull -f           # 既存ファイルを上書き
 ```
 
@@ -155,6 +154,6 @@ ws store untrack <file>
 ### 例
 
 ```bash
-ws store untrack .envrc
-ws store untrack .env.local
+ws store untrack .claude/settings.local.json
+ws store untrack .env
 ```

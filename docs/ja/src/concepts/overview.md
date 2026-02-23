@@ -28,8 +28,8 @@ Registry、Repository、Workspace は**包含関係の階層**を形成します
 │  │  │  ┌─ Store ─────────────────────────────────────┐  │   │   │
 │  │  │  │  worktree-store/                            │  │   │   │
 │  │  │  │  ├── manifest                               │  │   │   │
-│  │  │  │  ├── .mcp.json    (マスターコピー)            │  │   │   │
-│  │  │  │  └── .env         (マスターコピー)            │  │   │   │
+│  │  │  │  ├── .claude/settings.local.json            │  │   │   │
+│  │  │  │  └── .env                                   │  │   │   │
 │  │  │  └─────────────────────────────────────────────┘  │   │   │
 │  │  └───────────────────────────────────────────────────┘   │   │
 │  │                    │ 配布                                 │   │
@@ -37,8 +37,6 @@ Registry、Repository、Workspace は**包含関係の階層**を形成します
 │  │          ▼         ▼         ▼                           │   │
 │  │  ┌─ Workspace ┐ ┌─ Workspace ┐ ┌─ Workspace ┐          │   │
 │  │  │ main/      │ │ feature-a/ │ │ fix-bug/    │          │   │
-│  │  │ .mcp.json→ │ │ .mcp.json→ │ │ .mcp.json→  │          │   │
-│  │  │  (symlink) │ │  (symlink) │ │  (symlink)  │          │   │
 │  │  │ .env       │ │ .env       │ │ .env        │          │   │
 │  │  │  (copy)    │ │  (copy)    │ │  (copy)     │          │   │
 │  │  └────────────┘ └────────────┘ └─────────────┘          │   │
@@ -89,7 +87,7 @@ ws repos clone https://github.com/example/my-project.git
 `main/` Workspace 内で、共有したいファイルを登録します:
 
 ```bash
-ws store track -s symlink .envrc
+ws store track -s symlink .claude/settings.local.json
 ws store track -s copy .env
 ```
 
@@ -101,7 +99,7 @@ Store は最初の `track` コマンドで自動的に初期化されます。
 ws new feature/auth
 ```
 
-ws は `feature-auth/` Workspace を作成し、Store からトラック済みファイルを自動的に配布します — `.envrc` は symlink として、`.env` は copy として。
+ws は `feature-auth/` Workspace を作成し、Store からトラック済みファイルを自動的に配布します — `.claude/settings.local.json` は symlink として、`.env` は copy として。
 
 ### 4. 全体の状態確認（全概念）
 

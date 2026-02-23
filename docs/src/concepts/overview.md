@@ -28,8 +28,8 @@ Registry, Repository, and Workspace form a **containment hierarchy** — each ne
 │  │  │  ┌─ Store ─────────────────────────────────────┐  │   │   │
 │  │  │  │  worktree-store/                            │  │   │   │
 │  │  │  │  ├── manifest                               │  │   │   │
-│  │  │  │  ├── .mcp.json    (master copy)             │  │   │   │
-│  │  │  │  └── .env         (master copy)             │  │   │   │
+│  │  │  │  ├── .claude/settings.local.json            │  │   │   │
+│  │  │  │  └── .env                                   │  │   │   │
 │  │  │  └─────────────────────────────────────────────┘  │   │   │
 │  │  └───────────────────────────────────────────────────┘   │   │
 │  │                    │ distribute                           │   │
@@ -37,8 +37,6 @@ Registry, Repository, and Workspace form a **containment hierarchy** — each ne
 │  │          ▼         ▼         ▼                           │   │
 │  │  ┌─ Workspace ┐ ┌─ Workspace ┐ ┌─ Workspace ┐          │   │
 │  │  │ main/      │ │ feature-a/ │ │ fix-bug/    │          │   │
-│  │  │ .mcp.json→ │ │ .mcp.json→ │ │ .mcp.json→  │          │   │
-│  │  │  (symlink) │ │  (symlink) │ │  (symlink)  │          │   │
 │  │  │ .env       │ │ .env       │ │ .env        │          │   │
 │  │  │  (copy)    │ │  (copy)    │ │  (copy)     │          │   │
 │  │  └────────────┘ └────────────┘ └─────────────┘          │   │
@@ -89,7 +87,7 @@ This does three things:
 Inside the `main/` Workspace, register files that should be shared:
 
 ```bash
-ws store track -s symlink .envrc
+ws store track -s symlink .claude/settings.local.json
 ws store track -s copy .env
 ```
 
@@ -101,7 +99,7 @@ The Store is initialized automatically on the first `track` command.
 ws new feature/auth
 ```
 
-ws creates the `feature-auth/` Workspace and automatically distributes tracked files from the Store — `.envrc` as a symlink, `.env` as a copy.
+ws creates the `feature-auth/` Workspace and automatically distributes tracked files from the Store — `.claude/settings.local.json` as a symlink, `.env` as a copy.
 
 ### 4. Check overall status (all concepts)
 

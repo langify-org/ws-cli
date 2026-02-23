@@ -65,7 +65,7 @@ git リポジトリ内で実行した場合に表示（config に未登録でも
 ── Current Workspace: master [master] ────
   STRATEGY  FILE       STATUS
   ────────  ────       ──────
-  symlink   .mcp.json  OK
+  symlink   .claude/settings.local.json  OK
 ```
 
 ## ステータスの意味

@@ -1,4 +1,4 @@
-# ws - AI-ready workspace & repository manager
+# ws - workspace & repository manager
 
 > **[日本語版はこちら](ja/)**
 
@@ -9,7 +9,7 @@
 Working across multiple repositories and branches involves persistent friction. Common pain points include:
 
 - **Tedious bare clone initialization** — After `git clone --bare`, you need to manually add worktrees
-- **Managing gitignored files** — Files like `.envrc`, `.mcp.json`, and `.env.local` are outside git, so you must manually copy or link them every time you create a new worktree
+- **Managing gitignored files** — Files like `.env` and `.claude/settings.local.json` are outside git, so you must manually copy or link them every time you create a new worktree
 - **Scattered repository management** — Repositories live in different directories with no unified way to track or inspect them
 
 ws solves these problems by providing a single CLI for repository registration, worktree management, and gitignored file sharing.
@@ -19,7 +19,6 @@ ws solves these problems by providing a single CLI for repository registration, 
 - **Repository registry** — Register and manage all your repositories with `ws repos` for system-wide visibility
 - **Bare clone + worktree management** — One-step setup with just `ws repos clone` then `ws new`
 - **Shared store** — Automatically share gitignored files across worktrees (symlink / copy strategies)
-- **AI agent integration** — Share agent config across worktrees; give agents system-wide repository awareness
 - **Interactive mode** — Build and run commands interactively
 
 ## Quick Start

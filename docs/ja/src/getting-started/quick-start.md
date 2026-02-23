@@ -51,13 +51,12 @@ ws new master                      # orphan ブランチで worktree を作成
 
 ## 共有ファイルのセットアップ
 
-worktree 間で `.envrc` や `.mcp.json` を共有したい場合:
+worktree 間で `.env` や `.claude/settings.local.json` を共有したい場合:
 
 ```bash
 # worktree 内で実行
-ws store track -s symlink .envrc
-ws store track -s symlink .mcp.json
-ws store track -s copy .env.local
+ws store track -s symlink .claude/settings.local.json
+ws store track -s copy .env
 ```
 
 以降、`ws new` で新しい worktree を作成するたびに、これらのファイルが自動的に配布されます。

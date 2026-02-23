@@ -42,8 +42,8 @@ ws store track -s <strategy> <file>
 ### Examples
 
 ```bash
-ws store track -s symlink .envrc
-ws store track -s copy .env.local
+ws store track -s symlink .claude/settings.local.json
+ws store track -s copy .env
 ```
 
 ---
@@ -65,9 +65,8 @@ Store: ~/my-project/.bare/worktree-store
 
 STRATEGY  FILE        STATUS
 ────────  ────        ──────
-symlink   .envrc      OK
-symlink   .mcp.json   OK
-copy      .env.local  MODIFIED
+symlink   .claude/settings.local.json  OK
+copy      .env                        MODIFIED
 ```
 
 ---
@@ -124,7 +123,7 @@ ws store pull [file] [-f]
 
 ```bash
 ws store pull              # Pull all tracked files
-ws store pull .envrc       # Specific file only
+ws store pull .env         # Specific file only
 ws store pull -f           # Overwrite existing files
 ```
 
@@ -155,6 +154,6 @@ ws store untrack <file>
 ### Examples
 
 ```bash
-ws store untrack .envrc
-ws store untrack .env.local
+ws store untrack .claude/settings.local.json
+ws store untrack .env
 ```

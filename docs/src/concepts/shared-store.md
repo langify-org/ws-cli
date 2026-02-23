@@ -2,7 +2,7 @@
 
 ## Overview
 
-The shared store is a mechanism for centrally managing gitignored files across worktrees. By registering files like `.envrc`, `.mcp.json`, and `.env.local` in the store, they are automatically distributed when new worktrees are created.
+The shared store is a mechanism for centrally managing gitignored files across worktrees. By registering files like `.env` and `.claude/settings.local.json` in the store, they are automatically distributed when new worktrees are created.
 
 ## Store structure
 
@@ -11,9 +11,8 @@ The store is located at `<git-common-dir>/worktree-store/`. In a bare setup, thi
 ```
 .bare/worktree-store/
 ├── manifest         # Line format: "strategy:filepath"
-├── .mcp.json        # Master copy
-├── .envrc           # Master copy
-└── .env.local       # Master copy
+├── .claude/settings.local.json  # Master copy
+└── .env.local                   # Master copy
 ```
 
 ### Manifest
@@ -21,8 +20,7 @@ The store is located at `<git-common-dir>/worktree-store/`. In a bare setup, thi
 The manifest is a text file that records each tracked file and its strategy, one per line.
 
 ```
-symlink:.envrc
-symlink:.mcp.json
+symlink:.claude/settings.local.json
 copy:.env.local
 ```
 
@@ -35,13 +33,13 @@ The shared store supports two distribution strategies.
 Creates symbolic links in worktrees pointing to the file in the store.
 
 ```bash
-ws store track -s symlink .envrc
+ws store track -s symlink .claude/settings.local.json
 ```
 
 - **All worktrees share the same content** — Editing the store file is reflected across all worktrees
 - On `track`, the existing file is moved to the store and replaced with a symbolic link
 
-**Use for:** `.envrc`, `.mcp.json`, and other config files shared across all worktrees
+**Use for:** `.claude/settings.local.json` and other config files shared across all worktrees
 
 ### copy
 
@@ -72,8 +70,7 @@ ws store track -s copy .env.local
 Register files you want to track from inside a worktree.
 
 ```bash
-ws store track -s symlink .envrc
-ws store track -s symlink .mcp.json
+ws store track -s symlink .claude/settings.local.json
 ws store track -s copy .env.local
 ```
 
@@ -85,7 +82,7 @@ When you run `ws new`, tracked files are automatically distributed from the stor
 
 ```bash
 ws new feature/bar
-# → .envrc (symlink), .mcp.json (symlink), .env.local (copy) are distributed from the store
+# → .claude/settings.local.json (symlink), .env.local (copy) are distributed from the store
 ```
 
 ### Checking status
@@ -114,7 +111,7 @@ ws store push .env.local          # Specific file only
 
 # Pull from store to worktree
 ws store pull
-ws store pull .envrc              # Specific file only
+ws store pull .env.local          # Specific file only
 ws store pull -f                  # Overwrite existing files
 ```
 
@@ -123,6 +120,6 @@ ws store pull -f                  # Overwrite existing files
 To stop tracking a file and remove it from the store:
 
 ```bash
-ws store untrack .envrc            # Symlinks are restored to regular files
+ws store untrack .claude/settings.local.json  # Symlinks are restored to regular files
 ws store untrack .env.local        # Copy files in worktrees are left as-is
 ```

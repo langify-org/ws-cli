@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-**ws** は git bare clone + worktree パターンでの開発を支援する Rust CLI ツール。worktree の作成・削除に加え、gitignored ファイル（`.envrc`, `.mcp.json` 等）を worktree 間で共有する store 機能を持つ。
+**ws** は git bare clone + worktree パターンでの開発を支援する Rust CLI ツール。worktree の作成・削除に加え、gitignored ファイル（`.env`, `.claude/settings.local.json` 等）を worktree 間で共有する store 機能を持つ。
 
 ## 開発環境
 
@@ -96,8 +96,8 @@ crates/
 `<git-common-dir>/worktree-store/` に manifest（`strategy:filepath` の行形式）とファイルのマスターコピーを格納。strategy は `Strategy` enum で型安全に管理され、`symlink`（全 worktree で同一内容を共有）と `copy`（worktree ごとにカスタマイズ可能）の2種がある。`ws new` 実行時に store から自動配布される。
 
 strategy の使い分け:
-- `symlink` の典型例: `.envrc`, `.tool-versions` など全 worktree で共通の設定ファイル
-- `copy` の典型例: `.mcp.json`, `.env` など worktree ごとにカスタマイズが必要なファイル
+- `symlink` の典型例: `.claude/settings.local.json` など全 worktree で共通の設定ファイル
+- `copy` の典型例: `.env`, `.env.local` など worktree ごとにカスタマイズが必要なファイル
 
 ### リポジトリルート解決
 

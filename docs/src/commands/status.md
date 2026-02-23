@@ -65,7 +65,7 @@ Output is colorized when connected to a terminal. Colors are automatically strip
 ── Current Workspace: master [master] ────
   STRATEGY  FILE       STATUS
   ────────  ────       ──────
-  symlink   .mcp.json  OK
+  symlink   .claude/settings.local.json  OK
 ```
 
 ## Status values

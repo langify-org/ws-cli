@@ -2,7 +2,7 @@
 
 ## 概要
 
-共有ストア（shared store）は、worktree 間で gitignored ファイルを一元管理する仕組みです。`.envrc`, `.mcp.json`, `.env.local` など git 管理外のファイルを store に登録しておくことで、新しい worktree 作成時に自動的に配布されます。
+共有ストア（shared store）は、worktree 間で gitignored ファイルを一元管理する仕組みです。`.env`, `.claude/settings.local.json` など git 管理外のファイルを store に登録しておくことで、新しい worktree 作成時に自動的に配布されます。
 
 ## store の構造
 
@@ -11,9 +11,8 @@ store は `<git-common-dir>/worktree-store/` に作成されます。bare 構成
 ```
 .bare/worktree-store/
 ├── manifest         # "strategy:filepath" の行形式
-├── .mcp.json        # マスターコピー
-├── .envrc           # マスターコピー
-└── .env.local       # マスターコピー
+├── .claude/settings.local.json  # マスターコピー
+└── .env.local                   # マスターコピー
 ```
 
 ### manifest
@@ -21,8 +20,7 @@ store は `<git-common-dir>/worktree-store/` に作成されます。bare 構成
 manifest はテキストファイルで、追跡するファイルとその strategy を1行ずつ記録します。
 
 ```
-symlink:.envrc
-symlink:.mcp.json
+symlink:.claude/settings.local.json
 copy:.env.local
 ```
 
@@ -35,13 +33,13 @@ copy:.env.local
 store 内のファイルへのシンボリックリンクを worktree に作成します。
 
 ```bash
-ws store track -s symlink .envrc
+ws store track -s symlink .claude/settings.local.json
 ```
 
 - **全 worktree で同じ内容を共有** — store のファイルを編集すると全 worktree に反映される
 - `track` 実行時に既存ファイルは store に移動され、シンボリックリンクに置き換えられる
 
-**用途:** `.envrc`, `.mcp.json` など、全 worktree で共通の設定ファイル
+**用途:** `.claude/settings.local.json` など、全 worktree で共通の設定ファイル
 
 ### copy
 
@@ -72,8 +70,7 @@ ws store track -s copy .env.local
 worktree 内で追跡したいファイルを登録します。
 
 ```bash
-ws store track -s symlink .envrc
-ws store track -s symlink .mcp.json
+ws store track -s symlink .claude/settings.local.json
 ws store track -s copy .env.local
 ```
 
@@ -85,7 +82,7 @@ ws store track -s copy .env.local
 
 ```bash
 ws new feature/bar
-# → store から .envrc (symlink), .mcp.json (symlink), .env.local (copy) が配布される
+# → store から .claude/settings.local.json (symlink), .env.local (copy) が配布される
 ```
 
 ### 状態の確認
@@ -114,7 +111,7 @@ ws store push .env.local          # 特定ファイルのみ
 
 # store から worktree に配布
 ws store pull
-ws store pull .envrc              # 特定ファイルのみ
+ws store pull .env.local          # 特定ファイルのみ
 ws store pull -f                  # 既存ファイルを上書き
 ```
 
@@ -123,6 +120,6 @@ ws store pull -f                  # 既存ファイルを上書き
 ファイルの追跡を停止し、store から削除するには:
 
 ```bash
-ws store untrack .envrc            # シンボリックリンクは実ファイルに復元される
+ws store untrack .claude/settings.local.json  # シンボリックリンクは実ファイルに復元される
 ws store untrack .env.local        # copy ファイルは worktree にそのまま残る
 ```
