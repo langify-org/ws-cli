@@ -100,6 +100,12 @@ brew install langify-org/tap/ws
 
 ### Nix flake
 
+[Cachix](https://app.cachix.org/cache/langify-org) でバイナリキャッシュを提供しています。ソースからのビルドを省略できます:
+
+```bash
+cachix use langify-org
+```
+
 ```bash
 nix run github:langify-org/ws-cli
 ```
@@ -124,6 +130,16 @@ programs.ws = {
   };
 };
 ```
+
+> [!TIP]
+> Home Manager、nix-darwin、NixOS の場合は `cachix use` の代わりに Nix の設定に substituter を追加してください:
+>
+> ```nix
+> nix.settings = {
+>   substituters = [ "https://langify-org.cachix.org" ];
+>   trusted-public-keys = [ "langify-org.cachix.org-1:zO6Hf3s6e3Ex7PDSazL1A7XwR/3Deui7G3LUrs4+nq4=" ];
+> };
+> ```
 
 ### cargo
 

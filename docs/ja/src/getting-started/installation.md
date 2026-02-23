@@ -4,6 +4,23 @@
 
 ws は Nix flake として提供されています。
 
+### バイナリキャッシュ (Cachix)
+
+[Cachix](https://app.cachix.org/cache/langify-org) でバイナリキャッシュを提供しています。以下を一度実行するとソースからのビルドを省略できます:
+
+```bash
+cachix use langify-org
+```
+
+**Home Manager**、**nix-darwin**、**NixOS** の場合は、Nix の設定に substituter を追加してください:
+
+```nix
+nix.settings = {
+  substituters = [ "https://langify-org.cachix.org" ];
+  trusted-public-keys = [ "langify-org.cachix.org-1:zO6Hf3s6e3Ex7PDSazL1A7XwR/3Deui7G3LUrs4+nq4=" ];
+};
+```
+
 ### 直接実行
 
 ```bash

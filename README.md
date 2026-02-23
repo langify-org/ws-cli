@@ -100,6 +100,12 @@ brew install langify-org/tap/ws
 
 ### Nix flake
 
+A binary cache is available via [Cachix](https://app.cachix.org/cache/langify-org) to avoid building from source:
+
+```bash
+cachix use langify-org
+```
+
 ```bash
 nix run github:langify-org/ws-cli
 ```
@@ -124,6 +130,16 @@ programs.ws = {
   };
 };
 ```
+
+> [!TIP]
+> To use the binary cache with Home Manager, nix-darwin, or NixOS, add the Cachix substituter to your Nix configuration instead of running `cachix use`:
+>
+> ```nix
+> nix.settings = {
+>   substituters = [ "https://langify-org.cachix.org" ];
+>   trusted-public-keys = [ "langify-org.cachix.org-1:zO6Hf3s6e3Ex7PDSazL1A7XwR/3Deui7G3LUrs4+nq4=" ];
+> };
+> ```
 
 ### cargo
 

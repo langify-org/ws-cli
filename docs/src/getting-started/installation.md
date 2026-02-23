@@ -4,6 +4,23 @@
 
 ws is available as a Nix flake.
 
+### Binary cache (Cachix)
+
+A binary cache is available via [Cachix](https://app.cachix.org/cache/langify-org) to avoid building from source. Run the following once to configure it:
+
+```bash
+cachix use langify-org
+```
+
+For **Home Manager**, **nix-darwin**, or **NixOS**, add the substituter to your Nix configuration instead:
+
+```nix
+nix.settings = {
+  substituters = [ "https://langify-org.cachix.org" ];
+  trusted-public-keys = [ "langify-org.cachix.org-1:zO6Hf3s6e3Ex7PDSazL1A7XwR/3Deui7G3LUrs4+nq4=" ];
+};
+```
+
 ### Run directly
 
 ```bash
