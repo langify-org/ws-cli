@@ -92,20 +92,20 @@ pub fn cmd_repos_add(cmd: &ReposAddCmd) -> Result<()> {
     Ok(())
 }
 
-pub fn cmd_repos_list() -> Result<()> {
-    let config = load_config()?;
-
-    if config.repos.is_empty() {
+pub fn cmd_repos_list(ctx: &crate::context::AppContext) -> Result<()> {
+    if ctx.config.repos.is_empty() {
         println!("{}", t!("repos.no_repos"));
         return Ok(());
     }
 
-    for (name, entry) in &config.repos {
-        match &entry.url {
-            Some(url) => println!("{:<20} {} ({})", name, entry.path.display(), url),
-            None => println!("{:<20} {}", name, entry.path.display()),
-        }
+    let mut rows = Vec::new();
+    for (name, entry) in &ctx.config.repos {
+        let display_path = crate::context::abbreviate_home(&entry.path);
+        let url = entry.url.as_deref().unwrap_or("").to_string();
+        rows.push(vec![name.clone(), display_path, url]);
     }
+
+    crate::context::print_table(&["NAME", "PATH", "URL"], &rows, 0);
 
     Ok(())
 }

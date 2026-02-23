@@ -11,20 +11,24 @@ fn ws_with_config(config_path: &std::path::Path) -> assert_cmd::Command {
     cmd
 }
 
-/// worktree 内から status を実行すると Current workspace セクションが表示される
+/// worktree 内から status を実行すると Current Repository セクションが表示される
 #[test]
-fn status_shows_current_workspace_from_worktree() {
+fn status_shows_current_repository_from_worktree() {
     let repo = TestRepo::new();
     repo.ws_cmd_in("main")
         .arg("status")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Current workspace:"));
+        .stdout(
+            predicate::str::contains("Current Repository:")
+                .and(predicate::str::contains("Path:"))
+                .and(predicate::str::contains("Worktrees:")),
+        );
 }
 
-/// store が初期化されていて tracked ファイルがある場合、Shared files セクションが表示される
+/// store が初期化されていて tracked ファイルがある場合、Current Workspace セクションが表示される
 #[test]
-fn status_shows_shared_files_when_store_exists() {
+fn status_shows_current_workspace_when_store_exists() {
     let repo = TestRepo::new();
     repo.init_store();
     repo.add_manifest_entry("symlink", ".envrc");
@@ -35,15 +39,15 @@ fn status_shows_shared_files_when_store_exists() {
         .assert()
         .success()
         .stdout(
-            predicate::str::contains("Shared files:")
+            predicate::str::contains("Current Workspace:")
                 .and(predicate::str::contains(".envrc"))
                 .and(predicate::str::contains("symlink")),
         );
 }
 
-/// store がない場合は Shared files セクションが表示されない
+/// store がない場合は Current Workspace セクションが表示されない
 #[test]
-fn status_without_store_omits_shared_files() {
+fn status_without_store_omits_workspace_section() {
     let repo = TestRepo::new();
     let output = repo.ws_cmd_in("main").arg("status").output().unwrap();
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -53,8 +57,8 @@ fn status_without_store_omits_shared_files() {
         stdout
     );
     assert!(
-        !stdout.contains("Shared files:"),
-        "Expected no Shared files section without store, got: {}",
+        !stdout.contains("Current Workspace:"),
+        "Expected no Current Workspace section without store, got: {}",
         stdout
     );
 }
@@ -78,7 +82,7 @@ fn status_shows_repositories_when_registered() {
         .stdout(
             predicate::str::contains("Repositories:")
                 .and(predicate::str::contains("test-repo"))
-                .and(predicate::str::contains("GIT_DIR: .bare"))
+                .and(predicate::str::contains("bare"))
                 .and(predicate::str::contains("Worktrees:")),
         );
 }
@@ -114,4 +118,48 @@ path = "/tmp/nonexistent-ws-test-repo-path"
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("broken-repo").and(predicate::str::contains("NOT_FOUND")));
+}
+
+/// Repositories テーブルで現在のリポジトリに * マーカーが付く
+#[test]
+fn status_marks_current_repo_with_asterisk() {
+    let repo = TestRepo::new();
+
+    // リポジトリを登録
+    repo.ws_cmd_in("main")
+        .args(["repos", "add", "--name", "test-repo"])
+        .assert()
+        .success();
+
+    let output = repo.ws_cmd_in("main").arg("status").output().unwrap();
+    let stdout = String::from_utf8_lossy(&output.stdout);
+
+    // * マーカーのある行に test-repo が含まれる
+    let has_marked_line = stdout
+        .lines()
+        .any(|line| line.starts_with("*") && line.contains("test-repo"));
+    assert!(
+        has_marked_line,
+        "Expected * marker on current repo line, got:\n{}",
+        stdout
+    );
+}
+
+/// Current Repository セクションで現在の worktree に * マーカーが付く
+#[test]
+fn status_marks_current_worktree_with_asterisk() {
+    let repo = TestRepo::new();
+
+    let output = repo.ws_cmd_in("main").arg("status").output().unwrap();
+    let stdout = String::from_utf8_lossy(&output.stdout);
+
+    // worktree ツリー内に * main がある
+    let has_marked_worktree = stdout
+        .lines()
+        .any(|line| line.contains("* main") && (line.contains("├──") || line.contains("└──")));
+    assert!(
+        has_marked_worktree,
+        "Expected * marker on current worktree, got:\n{}",
+        stdout
+    );
 }

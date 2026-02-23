@@ -11,12 +11,18 @@ fn run(ws: ws_core::cli::Ws) -> Result<()> {
     match ws.command {
         WsCommand::New(cmd) => ws_core::commands::worktree::cmd_new(&cmd),
         WsCommand::Rm(cmd) => ws_core::commands::worktree::cmd_rm(&cmd),
-        WsCommand::Status(_) => ws_core::commands::status::cmd_status(),
+        WsCommand::Status(_) => {
+            let ctx = ws_core::context::AppContext::build()?;
+            ws_core::commands::status::cmd_status(&ctx)
+        }
         WsCommand::I(_) => interactive::interactive_mode(),
         WsCommand::Repos(cmd) => match cmd.command {
             ReposCommand::Clone(c) => ws_core::commands::worktree::cmd_clone(&c),
             ReposCommand::Add(c) => ws_core::commands::repos::cmd_repos_add(&c),
-            ReposCommand::List(_) => ws_core::commands::repos::cmd_repos_list(),
+            ReposCommand::List(_) => {
+                let ctx = ws_core::context::AppContext::build()?;
+                ws_core::commands::repos::cmd_repos_list(&ctx)
+            }
             ReposCommand::Rm(c) => ws_core::commands::repos::cmd_repos_rm(&c),
         },
         WsCommand::Store(cmd) => match cmd.command {

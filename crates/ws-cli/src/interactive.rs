@@ -36,7 +36,8 @@ pub(crate) fn interactive_mode() -> Result<()> {
         "rm" => interactive_rm(),
         "status" => {
             eprintln!("> ws status");
-            ws_core::commands::status::cmd_status()
+            let ctx = ws_core::context::AppContext::build()?;
+            ws_core::commands::status::cmd_status(&ctx)
         }
         "store" => interactive_store(),
         "repos" => interactive_repos(),
@@ -348,7 +349,8 @@ fn interactive_repos() -> Result<()> {
         "add" => interactive_repos_add(),
         "list" => {
             eprintln!("> ws repos list");
-            ws_core::commands::repos::cmd_repos_list()
+            let ctx = ws_core::context::AppContext::build()?;
+            ws_core::commands::repos::cmd_repos_list(&ctx)
         }
         "rm" => interactive_repos_rm(),
         _ => bail!("{}", t!("interactive.unknown_command", cmd = cmd)),

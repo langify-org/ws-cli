@@ -124,9 +124,8 @@ worktree:
 # commands/status.rs - status 表示
 status:
   repositories: "Repositories:"
-  current_workspace: "Current workspace:"
-  files_tracked: "  [%{count} files tracked]"
-  shared_files: "Shared files:"
+  current_repository: "Current Repository: %{name}"
+  current_workspace: "Current Workspace: %{name}"
 
 # interactive.rs - 対話モード
 interactive:

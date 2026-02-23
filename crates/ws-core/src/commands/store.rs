@@ -81,7 +81,7 @@ pub fn cmd_store_status() -> Result<()> {
     let store = require_store()?;
     let wt_root = worktree_root().ok();
 
-    println!("Store: {}", store.display());
+    println!("Store: {}", crate::context::abbreviate_home(&store));
     println!();
 
     let entries = read_manifest(&store)?;
@@ -90,17 +90,18 @@ pub fn cmd_store_status() -> Result<()> {
         return Ok(());
     }
 
-    println!("{:<8} {:<40} STATUS", "STRATEGY", "FILE");
-    println!(
-        "{:<8} {:<40} ----------",
-        "--------", "----------------------------------------"
-    );
-
+    let mut rows = Vec::new();
     for entry in &entries {
         let store_file = store.join(&entry.filepath);
         let status = file_status(entry, &store_file, &wt_root);
-        println!("{:<8} {:<40} {}", entry.strategy, entry.filepath, status);
+        rows.push(vec![
+            entry.strategy.to_string(),
+            entry.filepath.clone(),
+            status.to_string(),
+        ]);
     }
+
+    crate::context::print_table(&["STRATEGY", "FILE", "STATUS"], &rows, 0);
 
     Ok(())
 }
