@@ -18,7 +18,7 @@ pub(crate) fn interactive_mode() -> Result<()> {
     ];
 
     let items_ref: Vec<&str> = top_items.iter().map(|s| s.as_str()).collect();
-    let selected = Select::new(&t!("interactive.select_command").to_string(), items_ref)
+    let selected = Select::new(&t!("interactive.select_command"), items_ref)
         .prompt_skippable()
         .context(t!("interactive.selection_failed").to_string())?;
 
@@ -57,8 +57,8 @@ pub(crate) fn interactive_mode() -> Result<()> {
 }
 
 fn interactive_clone() -> Result<Vec<String>> {
-    let url_input = Text::new(&t!("interactive.clone.url_prompt").to_string())
-        .with_help_message(&t!("interactive.clone.url_help").to_string())
+    let url_input = Text::new(&t!("interactive.clone.url_prompt"))
+        .with_help_message(&t!("interactive.clone.url_help"))
         .prompt_skippable()
         .context(t!("interactive.input_failed").to_string())?
         .unwrap_or_default();
@@ -72,7 +72,7 @@ fn interactive_clone() -> Result<Vec<String>> {
 
 fn interactive_new() -> Result<Vec<String>> {
     let default_name = generate_name();
-    let name_input = Text::new(&t!("interactive.new.name_prompt").to_string())
+    let name_input = Text::new(&t!("interactive.new.name_prompt"))
         .with_default(&default_name)
         .prompt_skippable()
         .context(t!("interactive.input_failed").to_string())?
@@ -90,14 +90,14 @@ fn interactive_new() -> Result<Vec<String>> {
     } else {
         format!("../{}", name)
     };
-    let dir_input = Text::new(&t!("interactive.new.dir_prompt").to_string())
+    let dir_input = Text::new(&t!("interactive.new.dir_prompt"))
         .with_default(&default_dir)
         .prompt_skippable()
         .context(t!("interactive.input_failed").to_string())?
         .unwrap_or_default();
 
     let default_branch = name.clone();
-    let branch_input = Text::new(&t!("interactive.new.branch_prompt").to_string())
+    let branch_input = Text::new(&t!("interactive.new.branch_prompt"))
         .with_default(&default_branch)
         .prompt_skippable()
         .context(t!("interactive.input_failed").to_string())?
@@ -113,8 +113,8 @@ fn interactive_new() -> Result<Vec<String>> {
         args.push(branch_input);
     }
 
-    let from_input = Text::new(&t!("interactive.new.from_prompt").to_string())
-        .with_help_message(&t!("interactive.new.from_help").to_string())
+    let from_input = Text::new(&t!("interactive.new.from_prompt"))
+        .with_help_message(&t!("interactive.new.from_help"))
         .prompt_skippable()
         .context(t!("interactive.input_failed").to_string())?
         .unwrap_or_default();
@@ -134,7 +134,7 @@ fn interactive_rm() -> Result<Vec<String>> {
         bail!("{}", t!("interactive.rm.no_worktrees"));
     }
 
-    let selected = Select::new(&t!("interactive.rm.select_worktree").to_string(), lines)
+    let selected = Select::new(&t!("interactive.rm.select_worktree"), lines)
         .prompt_skippable()
         .context(t!("interactive.selection_failed").to_string())?;
 
@@ -162,7 +162,7 @@ fn interactive_store() -> Result<Vec<String>> {
     ];
 
     let items_ref: Vec<&str> = store_items.iter().map(|s| s.as_str()).collect();
-    let selected = Select::new(&t!("interactive.store_select").to_string(), items_ref)
+    let selected = Select::new(&t!("interactive.store_select"), items_ref)
         .prompt_skippable()
         .context(t!("interactive.selection_failed").to_string())?;
 
@@ -177,8 +177,8 @@ fn interactive_store() -> Result<Vec<String>> {
         "track" => interactive_store_track(),
         "status" => Ok(vec!["store".to_string(), "status".to_string()]),
         "push" => {
-            let file_input = Text::new(&t!("interactive.store_push.file_prompt").to_string())
-                .with_help_message(&t!("interactive.store_push.file_help").to_string())
+            let file_input = Text::new(&t!("interactive.store_push.file_prompt"))
+                .with_help_message(&t!("interactive.store_push.file_help"))
                 .prompt_skippable()
                 .context(t!("interactive.input_failed").to_string())?
                 .unwrap_or_default();
@@ -190,8 +190,8 @@ fn interactive_store() -> Result<Vec<String>> {
             Ok(args)
         }
         "pull" => {
-            let file_input = Text::new(&t!("interactive.store_pull.file_prompt").to_string())
-                .with_help_message(&t!("interactive.store_pull.file_help").to_string())
+            let file_input = Text::new(&t!("interactive.store_pull.file_prompt"))
+                .with_help_message(&t!("interactive.store_pull.file_help"))
                 .prompt_skippable()
                 .context(t!("interactive.input_failed").to_string())?
                 .unwrap_or_default();
@@ -209,16 +209,19 @@ fn interactive_store() -> Result<Vec<String>> {
 
 fn interactive_store_track() -> Result<Vec<String>> {
     let strategy_items = vec!["symlink", "copy"];
-    let strategy = Select::new(&t!("interactive.store_track.select_strategy").to_string(), strategy_items)
-        .prompt_skippable()
-        .context(t!("interactive.selection_failed").to_string())?;
+    let strategy = Select::new(
+        &t!("interactive.store_track.select_strategy"),
+        strategy_items,
+    )
+    .prompt_skippable()
+    .context(t!("interactive.selection_failed").to_string())?;
 
     let strategy = match strategy {
         Some(s) => s.to_string(),
         None => bail!("{}", t!("interactive.cancelled")),
     };
 
-    let file = Text::new(&t!("interactive.store_track.file_prompt").to_string())
+    let file = Text::new(&t!("interactive.store_track.file_prompt"))
         .prompt()
         .context(t!("interactive.input_failed").to_string())?;
 
@@ -242,12 +245,9 @@ fn interactive_store_untrack() -> Result<Vec<String>> {
         if !entries.is_empty() {
             let file_list: Vec<String> = entries.iter().map(|e| e.filepath.clone()).collect();
             let items_ref: Vec<&str> = file_list.iter().map(|s| s.as_str()).collect();
-            let selected = Select::new(
-                &t!("interactive.store_untrack.select_file").to_string(),
-                items_ref,
-            )
-            .prompt_skippable()
-            .context(t!("interactive.selection_failed").to_string())?;
+            let selected = Select::new(&t!("interactive.store_untrack.select_file"), items_ref)
+                .prompt_skippable()
+                .context(t!("interactive.selection_failed").to_string())?;
 
             return match selected {
                 Some(s) => Ok(vec![
@@ -261,7 +261,7 @@ fn interactive_store_untrack() -> Result<Vec<String>> {
     }
 
     // store 未初期化 or 追跡ファイルなしの場合はテキスト入力にフォールバック
-    let file = Text::new(&t!("interactive.store_untrack.file_prompt").to_string())
+    let file = Text::new(&t!("interactive.store_untrack.file_prompt"))
         .prompt()
         .context(t!("interactive.input_failed").to_string())?;
 
@@ -269,9 +269,5 @@ fn interactive_store_untrack() -> Result<Vec<String>> {
         bail!("{}", t!("interactive.store_untrack.empty_file"));
     }
 
-    Ok(vec![
-        "store".to_string(),
-        "untrack".to_string(),
-        file,
-    ])
+    Ok(vec!["store".to_string(), "untrack".to_string(), file])
 }

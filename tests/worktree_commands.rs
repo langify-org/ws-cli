@@ -41,10 +41,7 @@ fn clone_fails_if_bare_exists() {
 fn new_creates_worktree() {
     let repo = TestRepo::new();
 
-    repo.ws_cmd()
-        .args(["new", "feat-x"])
-        .assert()
-        .success();
+    repo.ws_cmd().args(["new", "feat-x"]).assert().success();
 
     assert!(repo.path().join("feat-x").is_dir());
 }
@@ -59,10 +56,7 @@ fn new_applies_store_files() {
     repo.add_store_file(".mcp.json", r#"{"key":"value"}"#);
 
     // 新しい worktree を作成
-    repo.ws_cmd()
-        .args(["new", "feat-y"])
-        .assert()
-        .success();
+    repo.ws_cmd().args(["new", "feat-y"]).assert().success();
 
     // store ファイルが自動配布されている
     let wt_file = repo.path().join("feat-y").join(".mcp.json");
@@ -95,7 +89,12 @@ fn new_auto_name() {
     assert_eq!(entries.len(), 1, "Expected exactly one auto-named worktree");
     let name = entries[0].file_name().to_string_lossy().to_string();
     let parts: Vec<&str> = name.split('-').collect();
-    assert_eq!(parts.len(), 3, "Expected 3 hyphen-separated words, got: {}", name);
+    assert_eq!(
+        parts.len(),
+        3,
+        "Expected 3 hyphen-separated words, got: {}",
+        name
+    );
 }
 
 // ---- ws rm ----
@@ -105,10 +104,7 @@ fn rm_removes_worktree() {
     let repo = TestRepo::new();
 
     // worktree を作成
-    repo.ws_cmd()
-        .args(["new", "to-remove"])
-        .assert()
-        .success();
+    repo.ws_cmd().args(["new", "to-remove"]).assert().success();
 
     assert!(repo.path().join("to-remove").is_dir());
 

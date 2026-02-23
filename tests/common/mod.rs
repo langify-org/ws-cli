@@ -27,7 +27,14 @@ impl TestRepo {
         // orphan worktree を作成
         let out = Command::new("git")
             .args([
-                "--git-dir", ".bare", "worktree", "add", "--orphan", "-b", "main", "main",
+                "--git-dir",
+                ".bare",
+                "worktree",
+                "add",
+                "--orphan",
+                "-b",
+                "main",
+                "main",
             ])
             .current_dir(&root)
             .output()

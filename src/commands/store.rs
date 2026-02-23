@@ -5,7 +5,9 @@ use std::os::unix::fs as unix_fs;
 
 use crate::cli::{StorePullCmd, StorePushCmd, StoreTrackCmd, StoreUntrackCmd};
 use crate::git::{git_output, worktree_root};
-use crate::store::{ensure_store, file_status, read_manifest, require_store, write_manifest, ManifestEntry};
+use crate::store::{
+    ensure_store, file_status, read_manifest, require_store, write_manifest, ManifestEntry,
+};
 
 pub(crate) fn cmd_store_track(cmd: &StoreTrackCmd) -> Result<()> {
     let store = ensure_store()?;
@@ -61,7 +63,14 @@ pub(crate) fn cmd_store_track(cmd: &StoreTrackCmd) -> Result<()> {
         fs::copy(&source, &store_file).context(t!("store.copy_to_store_failed").to_string())?;
     }
 
-    println!("{}", t!("store.tracking_started", strategy = &cmd.strategy, file = &cmd.file));
+    println!(
+        "{}",
+        t!(
+            "store.tracking_started",
+            strategy = &cmd.strategy,
+            file = &cmd.file
+        )
+    );
     Ok(())
 }
 
@@ -78,10 +87,10 @@ pub(crate) fn cmd_store_status() -> Result<()> {
         return Ok(());
     }
 
-    println!("{:<8} {:<40} {}", "STRATEGY", "FILE", "STATUS");
+    println!("{:<8} {:<40} STATUS", "STRATEGY", "FILE");
     println!(
-        "{:<8} {:<40} {}",
-        "--------", "----------------------------------------", "----------"
+        "{:<8} {:<40} ----------",
+        "--------", "----------------------------------------"
     );
 
     for entry in &entries {
@@ -113,7 +122,10 @@ pub(crate) fn cmd_store_push(cmd: &StorePushCmd) -> Result<()> {
 
         let wt_file = wt_root.join(&entry.filepath);
         if !wt_file.is_file() {
-            eprintln!("{}", t!("store.skip_not_in_worktree", file = &entry.filepath));
+            eprintln!(
+                "{}",
+                t!("store.skip_not_in_worktree", file = &entry.filepath)
+            );
             continue;
         }
 
@@ -237,11 +249,19 @@ pub(crate) fn cmd_store_untrack(cmd: &StoreUntrackCmd) -> Result<()> {
                     match fs::copy(&store_file, &target) {
                         Ok(_) => println!(
                             "{}",
-                            t!("store.symlink_restored", file = &entry.filepath, path = wt_path)
+                            t!(
+                                "store.symlink_restored",
+                                file = &entry.filepath,
+                                path = wt_path
+                            )
                         ),
                         Err(_) => eprintln!(
                             "{}",
-                            t!("store.restore_copy_failed", file = &entry.filepath, path = wt_path)
+                            t!(
+                                "store.restore_copy_failed",
+                                file = &entry.filepath,
+                                path = wt_path
+                            )
                         ),
                     }
                 }
@@ -265,7 +285,10 @@ pub(crate) fn cmd_store_untrack(cmd: &StoreUntrackCmd) -> Result<()> {
         if *d == store {
             break;
         }
-        if d.read_dir().map(|mut rd| rd.next().is_none()).unwrap_or(true) {
+        if d.read_dir()
+            .map(|mut rd| rd.next().is_none())
+            .unwrap_or(true)
+        {
             let _ = fs::remove_dir(d);
             dir = d.parent().map(|p| p.to_path_buf());
         } else {

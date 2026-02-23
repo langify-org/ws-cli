@@ -24,9 +24,7 @@ fn detect_and_set_locale() {
                 Some(v)
             }
         })
-        .unwrap_or_else(|| {
-            sys_locale::get_locale().unwrap_or_else(|| "en".to_string())
-        });
+        .unwrap_or_else(|| sys_locale::get_locale().unwrap_or_else(|| "en".to_string()));
 
     let normalized = if locale.starts_with("ja") {
         "ja"

@@ -77,10 +77,7 @@ pub(crate) fn cmd_clone(cmd: &CloneCmd) -> Result<()> {
                 },
             );
             if let Err(e) = crate::config::save_config(&config) {
-                eprintln!(
-                    "{}",
-                    t!("config.save_warning", detail = format!("{:#}", e))
-                );
+                eprintln!("{}", t!("config.save_warning", detail = format!("{:#}", e)));
             }
         }
     }
@@ -110,7 +107,12 @@ pub(crate) fn cmd_new(cmd: &NewCmd) -> Result<()> {
         check_cmd.arg("--git-dir").arg(".bare");
     }
     let branch_exists = check_cmd
-        .args(["show-ref", "--verify", "--quiet", &format!("refs/heads/{}", branch)])
+        .args([
+            "show-ref",
+            "--verify",
+            "--quiet",
+            &format!("refs/heads/{}", branch),
+        ])
         .status()
         .map(|s| s.success())
         .unwrap_or(false);
@@ -140,7 +142,10 @@ pub(crate) fn cmd_new(cmd: &NewCmd) -> Result<()> {
         // --from 省略 & HEAD が無効（空リポジトリ等）→ orphan ブランチで作成
         vec!["worktree", "add", "--orphan", "-b", &branch, &directory]
     } else {
-        bail!("{}", t!("worktree.start_point_not_found", point = start_point));
+        bail!(
+            "{}",
+            t!("worktree.start_point_not_found", point = start_point)
+        );
     };
 
     let mut git_cmd = Command::new("git");
@@ -159,8 +164,9 @@ pub(crate) fn cmd_new(cmd: &NewCmd) -> Result<()> {
     // store が存在すればファイルを適用
     if let Ok(sd) = store::store_dir() {
         if sd.is_dir() && sd.join("manifest").is_file() {
-            let abs_directory = fs::canonicalize(&directory)
-                .with_context(|| t!("worktree.dir_canonicalize_failed", dir = &directory).to_string())?;
+            let abs_directory = fs::canonicalize(&directory).with_context(|| {
+                t!("worktree.dir_canonicalize_failed", dir = &directory).to_string()
+            })?;
             println!("{}", t!("worktree.applying_store_files"));
             let entries = store::read_manifest(&sd)?;
             for entry in &entries {
@@ -180,7 +186,12 @@ mod tests {
     fn generate_name_format() {
         let name = generate_name();
         let parts: Vec<&str> = name.split('-').collect();
-        assert_eq!(parts.len(), 3, "Expected 3 hyphen-separated words, got: {}", name);
+        assert_eq!(
+            parts.len(),
+            3,
+            "Expected 3 hyphen-separated words, got: {}",
+            name
+        );
         for part in &parts {
             assert!(!part.is_empty(), "Empty part in name: {}", name);
             assert!(

@@ -41,7 +41,14 @@ pub(crate) fn git_output(args: &[&str]) -> Result<String> {
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        bail!("{}", t!("git.command_failed", args = args.join(" "), stderr = stderr.trim()));
+        bail!(
+            "{}",
+            t!(
+                "git.command_failed",
+                args = args.join(" "),
+                stderr = stderr.trim()
+            )
+        );
     }
 
     Ok(String::from_utf8(output.stdout)?.trim().to_string())

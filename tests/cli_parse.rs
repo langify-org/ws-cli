@@ -8,32 +8,26 @@ fn ws() -> assert_cmd::Command {
 
 #[test]
 fn help_shows_all_subcommands() {
-    ws().arg("--help")
-        .assert()
-        .success()
-        .stdout(
-            predicate::str::contains("clone")
-                .and(predicate::str::contains("new"))
-                .and(predicate::str::contains("rm"))
-                .and(predicate::str::contains("list"))
-                .and(predicate::str::contains("status"))
-                .and(predicate::str::contains("store"))
-                .and(predicate::str::contains("repos")),
-        );
+    ws().arg("--help").assert().success().stdout(
+        predicate::str::contains("clone")
+            .and(predicate::str::contains("new"))
+            .and(predicate::str::contains("rm"))
+            .and(predicate::str::contains("list"))
+            .and(predicate::str::contains("status"))
+            .and(predicate::str::contains("store"))
+            .and(predicate::str::contains("repos")),
+    );
 }
 
 #[test]
 fn store_help_shows_subcommands() {
-    ws().args(["store", "--help"])
-        .assert()
-        .success()
-        .stdout(
-            predicate::str::contains("track")
-                .and(predicate::str::contains("status"))
-                .and(predicate::str::contains("push"))
-                .and(predicate::str::contains("pull"))
-                .and(predicate::str::contains("untrack")),
-        );
+    ws().args(["store", "--help"]).assert().success().stdout(
+        predicate::str::contains("track")
+            .and(predicate::str::contains("status"))
+            .and(predicate::str::contains("push"))
+            .and(predicate::str::contains("pull"))
+            .and(predicate::str::contains("untrack")),
+    );
 }
 
 #[test]
@@ -48,14 +42,11 @@ fn unknown_subcommand_fails() {
 
 #[test]
 fn repos_help_shows_subcommands() {
-    ws().args(["repos", "--help"])
-        .assert()
-        .success()
-        .stdout(
-            predicate::str::contains("add")
-                .and(predicate::str::contains("list"))
-                .and(predicate::str::contains("rm")),
-        );
+    ws().args(["repos", "--help"]).assert().success().stdout(
+        predicate::str::contains("add")
+            .and(predicate::str::contains("list"))
+            .and(predicate::str::contains("rm")),
+    );
 }
 
 #[test]
@@ -71,9 +62,7 @@ fn repos_rm_missing_name_fails() {
 #[test]
 fn store_track_missing_args_fails() {
     // -s なし
-    ws().args(["store", "track", ".envrc"])
-        .assert()
-        .failure();
+    ws().args(["store", "track", ".envrc"]).assert().failure();
 
     // file なし
     ws().args(["store", "track", "-s", "symlink"])

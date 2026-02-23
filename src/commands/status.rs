@@ -51,13 +51,10 @@ pub(crate) fn cmd_status() -> Result<()> {
         if !entries.is_empty() {
             println!();
             println!("{}", t!("status.shared_files"));
+            println!("  {:<8} {:<40} STATUS", "STRATEGY", "FILE");
             println!(
-                "  {:<8} {:<40} {}",
-                "STRATEGY", "FILE", "STATUS"
-            );
-            println!(
-                "  {:<8} {:<40} {}",
-                "--------", "----------------------------------------", "----------"
+                "  {:<8} {:<40} ----------",
+                "--------", "----------------------------------------"
             );
 
             let wt_root = worktree_root().ok();
@@ -65,10 +62,7 @@ pub(crate) fn cmd_status() -> Result<()> {
             for entry in &entries {
                 let store_file = store.join(&entry.filepath);
                 let status = file_status(entry, &store_file, &wt_root);
-                println!(
-                    "  {:<8} {:<40} {}",
-                    entry.strategy, entry.filepath, status
-                );
+                println!("  {:<8} {:<40} {}", entry.strategy, entry.filepath, status);
             }
         }
     }

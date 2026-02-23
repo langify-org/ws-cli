@@ -27,8 +27,7 @@ pub(crate) fn config_path() -> Result<PathBuf> {
     let config_dir = std::env::var("XDG_CONFIG_HOME")
         .map(PathBuf::from)
         .unwrap_or_else(|_| {
-            PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "~".to_string()))
-                .join(".config")
+            PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "~".to_string())).join(".config")
         });
     Ok(config_dir.join("ws").join("config.toml"))
 }
@@ -39,20 +38,23 @@ fn load_config_from(path: &Path) -> Result<Config> {
     }
     let content = std::fs::read_to_string(path)
         .with_context(|| t!("config.read_failed", path = path.display().to_string()).to_string())?;
-    let config: Config = toml::from_str(&content)
-        .with_context(|| t!("config.parse_failed", path = path.display().to_string()).to_string())?;
+    let config: Config = toml::from_str(&content).with_context(|| {
+        t!("config.parse_failed", path = path.display().to_string()).to_string()
+    })?;
     Ok(config)
 }
 
 fn save_config_to(config: &Config, path: &Path) -> Result<()> {
     if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)
-            .with_context(|| t!("config.mkdir_failed", path = parent.display().to_string()).to_string())?;
+        std::fs::create_dir_all(parent).with_context(|| {
+            t!("config.mkdir_failed", path = parent.display().to_string()).to_string()
+        })?;
     }
-    let content = toml::to_string_pretty(config)
-        .context(t!("config.serialize_failed").to_string())?;
-    std::fs::write(path, content)
-        .with_context(|| t!("config.write_failed", path = path.display().to_string()).to_string())?;
+    let content =
+        toml::to_string_pretty(config).context(t!("config.serialize_failed").to_string())?;
+    std::fs::write(path, content).with_context(|| {
+        t!("config.write_failed", path = path.display().to_string()).to_string()
+    })?;
     Ok(())
 }
 

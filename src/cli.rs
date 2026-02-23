@@ -149,15 +149,9 @@ pub(crate) fn parse_with_i18n() -> Ws {
                 .mut_arg("directory", |a| a.help(t!("cli.rm.directory").to_string()))
                 .mut_arg("force", |a| a.help(t!("cli.rm.force").to_string()))
         })
-        .mut_subcommand("list", |s| {
-            s.about(t!("cli.list.about").to_string())
-        })
-        .mut_subcommand("status", |s| {
-            s.about(t!("cli.status.about").to_string())
-        })
-        .mut_subcommand("i", |s| {
-            s.about(t!("cli.i.about").to_string())
-        })
+        .mut_subcommand("list", |s| s.about(t!("cli.list.about").to_string()))
+        .mut_subcommand("status", |s| s.about(t!("cli.status.about").to_string()))
+        .mut_subcommand("i", |s| s.about(t!("cli.i.about").to_string()))
         .mut_subcommand("store", |s| {
             s.about(t!("cli.store.about").to_string())
                 .mut_subcommand("track", |ss| {
@@ -165,33 +159,23 @@ pub(crate) fn parse_with_i18n() -> Ws {
                         .mut_arg("strategy", |a| {
                             a.help(t!("cli.store.track.strategy").to_string())
                         })
-                        .mut_arg("file", |a| {
-                            a.help(t!("cli.store.track.file").to_string())
-                        })
+                        .mut_arg("file", |a| a.help(t!("cli.store.track.file").to_string()))
                 })
                 .mut_subcommand("status", |ss| {
                     ss.about(t!("cli.store.status.about").to_string())
                 })
                 .mut_subcommand("push", |ss| {
                     ss.about(t!("cli.store.push.about").to_string())
-                        .mut_arg("file", |a| {
-                            a.help(t!("cli.store.push.file").to_string())
-                        })
+                        .mut_arg("file", |a| a.help(t!("cli.store.push.file").to_string()))
                 })
                 .mut_subcommand("pull", |ss| {
                     ss.about(t!("cli.store.pull.about").to_string())
-                        .mut_arg("file", |a| {
-                            a.help(t!("cli.store.pull.file").to_string())
-                        })
-                        .mut_arg("force", |a| {
-                            a.help(t!("cli.store.pull.force").to_string())
-                        })
+                        .mut_arg("file", |a| a.help(t!("cli.store.pull.file").to_string()))
+                        .mut_arg("force", |a| a.help(t!("cli.store.pull.force").to_string()))
                 })
                 .mut_subcommand("untrack", |ss| {
                     ss.about(t!("cli.store.untrack.about").to_string())
-                        .mut_arg("file", |a| {
-                            a.help(t!("cli.store.untrack.file").to_string())
-                        })
+                        .mut_arg("file", |a| a.help(t!("cli.store.untrack.file").to_string()))
                 })
         })
         .mut_subcommand("repos", |s| {

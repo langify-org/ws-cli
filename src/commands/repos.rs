@@ -12,9 +12,15 @@ pub(crate) fn cmd_repos_add(cmd: &ReposAddCmd) -> Result<()> {
         None => std::env::current_dir()?,
     };
 
-    let path = raw_path
-        .canonicalize()
-        .map_err(|_| anyhow::anyhow!("{}", t!("repos.path_not_found", path = raw_path.display().to_string())))?;
+    let path = raw_path.canonicalize().map_err(|_| {
+        anyhow::anyhow!(
+            "{}",
+            t!(
+                "repos.path_not_found",
+                path = raw_path.display().to_string()
+            )
+        )
+    })?;
 
     // git リポジトリか検証
     let git_check = Command::new("git")
@@ -26,7 +32,10 @@ pub(crate) fn cmd_repos_add(cmd: &ReposAddCmd) -> Result<()> {
 
     match git_check {
         Ok(s) if s.success() => {}
-        _ => bail!("{}", t!("repos.not_a_git_repo", path = path.display().to_string())),
+        _ => bail!(
+            "{}",
+            t!("repos.not_a_git_repo", path = path.display().to_string())
+        ),
     }
 
     // 名前を決定
@@ -60,10 +69,23 @@ pub(crate) fn cmd_repos_add(cmd: &ReposAddCmd) -> Result<()> {
         })
         .filter(|s| !s.is_empty());
 
-    config.repos.insert(name.clone(), RepoEntry { path: path.clone(), url });
+    config.repos.insert(
+        name.clone(),
+        RepoEntry {
+            path: path.clone(),
+            url,
+        },
+    );
     save_config(&config)?;
 
-    println!("{}", t!("repos.added", name = &name, path = path.display().to_string()));
+    println!(
+        "{}",
+        t!(
+            "repos.added",
+            name = &name,
+            path = path.display().to_string()
+        )
+    );
     Ok(())
 }
 

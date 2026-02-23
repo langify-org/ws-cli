@@ -15,15 +15,21 @@ pub(crate) struct ManifestEntry {
 pub(crate) fn store_dir() -> Result<PathBuf> {
     // まず git rev-parse --git-common-dir を試す
     if let Ok(common_dir) = git::git_output(&["rev-parse", "--git-common-dir"]) {
-        let canonical = fs::canonicalize(&common_dir)
-            .with_context(|| t!("store.path_canonicalize_failed", path = &common_dir).to_string())?;
+        let canonical = fs::canonicalize(&common_dir).with_context(|| {
+            t!("store.path_canonicalize_failed", path = &common_dir).to_string()
+        })?;
         return Ok(canonical.join("worktree-store"));
     }
 
     // フォールバック: .bare ディレクトリを探す
     if let Some(bare_dir) = git::find_bare_dir() {
-        let canonical = fs::canonicalize(&bare_dir)
-            .with_context(|| t!("store.path_canonicalize_failed", path = bare_dir.display().to_string()).to_string())?;
+        let canonical = fs::canonicalize(&bare_dir).with_context(|| {
+            t!(
+                "store.path_canonicalize_failed",
+                path = bare_dir.display().to_string()
+            )
+            .to_string()
+        })?;
         return Ok(canonical.join("worktree-store"));
     }
 
@@ -50,8 +56,13 @@ pub(crate) fn ensure_store() -> Result<PathBuf> {
 
 pub(crate) fn read_manifest(store: &Path) -> Result<Vec<ManifestEntry>> {
     let manifest_path = store.join("manifest");
-    let content = fs::read_to_string(&manifest_path)
-        .with_context(|| t!("store.manifest_read_failed", path = manifest_path.display().to_string()).to_string())?;
+    let content = fs::read_to_string(&manifest_path).with_context(|| {
+        t!(
+            "store.manifest_read_failed",
+            path = manifest_path.display().to_string()
+        )
+        .to_string()
+    })?;
 
     let mut entries = Vec::new();
     for line in content.lines() {
@@ -72,8 +83,13 @@ pub(crate) fn read_manifest(store: &Path) -> Result<Vec<ManifestEntry>> {
 
 pub(crate) fn write_manifest(store: &Path, entries: &[ManifestEntry]) -> Result<()> {
     let manifest_path = store.join("manifest");
-    let mut file = fs::File::create(&manifest_path)
-        .with_context(|| t!("store.manifest_write_failed", path = manifest_path.display().to_string()).to_string())?;
+    let mut file = fs::File::create(&manifest_path).with_context(|| {
+        t!(
+            "store.manifest_write_failed",
+            path = manifest_path.display().to_string()
+        )
+        .to_string()
+    })?;
 
     for entry in entries {
         writeln!(file, "{}:{}", entry.strategy, entry.filepath)?;
@@ -81,7 +97,12 @@ pub(crate) fn write_manifest(store: &Path, entries: &[ManifestEntry]) -> Result<
     Ok(())
 }
 
-pub(crate) fn apply_file(strategy: &str, filepath: &str, store: &Path, target_root: &Path) -> Result<()> {
+pub(crate) fn apply_file(
+    strategy: &str,
+    filepath: &str,
+    store: &Path,
+    target_root: &Path,
+) -> Result<()> {
     let target = target_root.join(filepath);
     let source = store.join(filepath);
 
@@ -279,10 +300,7 @@ mod tests {
             strategy: "symlink".into(),
             filepath: "missing_file".into(),
         };
-        assert_eq!(
-            file_status(&entry, &store_file, &Some(wt_root)),
-            "MISSING"
-        );
+        assert_eq!(file_status(&entry, &store_file, &Some(wt_root)), "MISSING");
     }
 
     #[test]
@@ -299,10 +317,7 @@ mod tests {
             strategy: "symlink".into(),
             filepath: ".envrc".into(),
         };
-        assert_eq!(
-            file_status(&entry, &store_file, &Some(wt_root)),
-            "NOT_LINK"
-        );
+        assert_eq!(file_status(&entry, &store_file, &Some(wt_root)), "NOT_LINK");
     }
 
     #[test]
@@ -359,10 +374,7 @@ mod tests {
             strategy: "copy".into(),
             filepath: ".mcp.json".into(),
         };
-        assert_eq!(
-            file_status(&entry, &store_file, &Some(wt_root)),
-            "MODIFIED"
-        );
+        assert_eq!(file_status(&entry, &store_file, &Some(wt_root)), "MODIFIED");
     }
 
     #[test]
