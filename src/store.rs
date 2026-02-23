@@ -160,3 +160,295 @@ pub(crate) fn file_status(
         "OK"
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::os::unix::fs as unix_fs;
+    use tempfile::TempDir;
+
+    /// store ディレクトリと manifest を構築するヘルパー
+    fn setup_store() -> (TempDir, PathBuf) {
+        let tmp = TempDir::new().unwrap();
+        let store = tmp.path().join("worktree-store");
+        fs::create_dir_all(&store).unwrap();
+        fs::write(store.join("manifest"), "").unwrap();
+        (tmp, store)
+    }
+
+    // ---- read_manifest ----
+
+    #[test]
+    fn read_manifest_parses_entries() {
+        let (_tmp, store) = setup_store();
+        fs::write(store.join("manifest"), "symlink:.envrc\ncopy:.mcp.json\n").unwrap();
+
+        let entries = read_manifest(&store).unwrap();
+        assert_eq!(entries.len(), 2);
+        assert_eq!(entries[0].strategy, "symlink");
+        assert_eq!(entries[0].filepath, ".envrc");
+        assert_eq!(entries[1].strategy, "copy");
+        assert_eq!(entries[1].filepath, ".mcp.json");
+    }
+
+    #[test]
+    fn read_manifest_skips_empty_and_malformed() {
+        let (_tmp, store) = setup_store();
+        fs::write(
+            store.join("manifest"),
+            "\nsymlink:.envrc\n\nno_colon_here\n:empty_strategy\n",
+        )
+        .unwrap();
+
+        let entries = read_manifest(&store).unwrap();
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].filepath, ".envrc");
+    }
+
+    #[test]
+    fn read_manifest_filepath_with_colon() {
+        let (_tmp, store) = setup_store();
+        fs::write(store.join("manifest"), "symlink:path:with:colon\n").unwrap();
+
+        let entries = read_manifest(&store).unwrap();
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].strategy, "symlink");
+        assert_eq!(entries[0].filepath, "path:with:colon");
+    }
+
+    #[test]
+    fn write_then_read_roundtrip() {
+        let (_tmp, store) = setup_store();
+        let original = vec![
+            ManifestEntry {
+                strategy: "symlink".into(),
+                filepath: ".envrc".into(),
+            },
+            ManifestEntry {
+                strategy: "copy".into(),
+                filepath: ".mcp.json".into(),
+            },
+        ];
+
+        write_manifest(&store, &original).unwrap();
+        let read_back = read_manifest(&store).unwrap();
+
+        assert_eq!(read_back.len(), 2);
+        assert_eq!(read_back[0].strategy, "symlink");
+        assert_eq!(read_back[0].filepath, ".envrc");
+        assert_eq!(read_back[1].strategy, "copy");
+        assert_eq!(read_back[1].filepath, ".mcp.json");
+    }
+
+    // ---- file_status ----
+
+    #[test]
+    fn file_status_missing_store() {
+        let tmp = TempDir::new().unwrap();
+        let store_file = tmp.path().join("nonexistent");
+        let entry = ManifestEntry {
+            strategy: "symlink".into(),
+            filepath: "test".into(),
+        };
+        assert_eq!(file_status(&entry, &store_file, &None), "MISSING(store)");
+    }
+
+    #[test]
+    fn file_status_store_only() {
+        let tmp = TempDir::new().unwrap();
+        let store_file = tmp.path().join("test_file");
+        fs::write(&store_file, "content").unwrap();
+
+        let entry = ManifestEntry {
+            strategy: "symlink".into(),
+            filepath: "test_file".into(),
+        };
+        assert_eq!(file_status(&entry, &store_file, &None), "(store only)");
+    }
+
+    #[test]
+    fn file_status_missing_in_worktree() {
+        let tmp = TempDir::new().unwrap();
+        let store_file = tmp.path().join("store_copy");
+        fs::write(&store_file, "content").unwrap();
+
+        let wt_root = tmp.path().join("worktree");
+        fs::create_dir_all(&wt_root).unwrap();
+
+        let entry = ManifestEntry {
+            strategy: "symlink".into(),
+            filepath: "missing_file".into(),
+        };
+        assert_eq!(
+            file_status(&entry, &store_file, &Some(wt_root)),
+            "MISSING"
+        );
+    }
+
+    #[test]
+    fn file_status_symlink_not_link() {
+        let tmp = TempDir::new().unwrap();
+        let store_file = tmp.path().join("store_copy");
+        fs::write(&store_file, "content").unwrap();
+
+        let wt_root = tmp.path().join("worktree");
+        fs::create_dir_all(&wt_root).unwrap();
+        fs::write(wt_root.join(".envrc"), "regular file").unwrap();
+
+        let entry = ManifestEntry {
+            strategy: "symlink".into(),
+            filepath: ".envrc".into(),
+        };
+        assert_eq!(
+            file_status(&entry, &store_file, &Some(wt_root)),
+            "NOT_LINK"
+        );
+    }
+
+    #[test]
+    fn file_status_symlink_wrong_target() {
+        let tmp = TempDir::new().unwrap();
+        let store_file = tmp.path().join("store_copy");
+        fs::write(&store_file, "content").unwrap();
+
+        let wt_root = tmp.path().join("worktree");
+        fs::create_dir_all(&wt_root).unwrap();
+
+        let wrong_target = tmp.path().join("wrong_target");
+        fs::write(&wrong_target, "wrong").unwrap();
+        unix_fs::symlink(&wrong_target, wt_root.join(".envrc")).unwrap();
+
+        let entry = ManifestEntry {
+            strategy: "symlink".into(),
+            filepath: ".envrc".into(),
+        };
+        assert_eq!(
+            file_status(&entry, &store_file, &Some(wt_root)),
+            "WRONG_LINK"
+        );
+    }
+
+    #[test]
+    fn file_status_symlink_ok() {
+        let tmp = TempDir::new().unwrap();
+        let store_file = tmp.path().join("store_copy");
+        fs::write(&store_file, "content").unwrap();
+
+        let wt_root = tmp.path().join("worktree");
+        fs::create_dir_all(&wt_root).unwrap();
+        unix_fs::symlink(&store_file, wt_root.join(".envrc")).unwrap();
+
+        let entry = ManifestEntry {
+            strategy: "symlink".into(),
+            filepath: ".envrc".into(),
+        };
+        assert_eq!(file_status(&entry, &store_file, &Some(wt_root)), "OK");
+    }
+
+    #[test]
+    fn file_status_copy_modified() {
+        let tmp = TempDir::new().unwrap();
+        let store_file = tmp.path().join("store_copy");
+        fs::write(&store_file, "original").unwrap();
+
+        let wt_root = tmp.path().join("worktree");
+        fs::create_dir_all(&wt_root).unwrap();
+        fs::write(wt_root.join(".mcp.json"), "modified").unwrap();
+
+        let entry = ManifestEntry {
+            strategy: "copy".into(),
+            filepath: ".mcp.json".into(),
+        };
+        assert_eq!(
+            file_status(&entry, &store_file, &Some(wt_root)),
+            "MODIFIED"
+        );
+    }
+
+    #[test]
+    fn file_status_copy_ok() {
+        let tmp = TempDir::new().unwrap();
+        let store_file = tmp.path().join("store_copy");
+        fs::write(&store_file, "same content").unwrap();
+
+        let wt_root = tmp.path().join("worktree");
+        fs::create_dir_all(&wt_root).unwrap();
+        fs::write(wt_root.join(".mcp.json"), "same content").unwrap();
+
+        let entry = ManifestEntry {
+            strategy: "copy".into(),
+            filepath: ".mcp.json".into(),
+        };
+        assert_eq!(file_status(&entry, &store_file, &Some(wt_root)), "OK");
+    }
+
+    // ---- apply_file ----
+
+    #[test]
+    fn apply_file_symlink_creates_symlink() {
+        let tmp = TempDir::new().unwrap();
+        let store = tmp.path().join("store");
+        fs::create_dir_all(&store).unwrap();
+        fs::write(store.join(".envrc"), "content").unwrap();
+
+        let target_root = tmp.path().join("target");
+        fs::create_dir_all(&target_root).unwrap();
+
+        apply_file("symlink", ".envrc", &store, &target_root).unwrap();
+
+        let target = target_root.join(".envrc");
+        assert!(target.symlink_metadata().unwrap().file_type().is_symlink());
+    }
+
+    #[test]
+    fn apply_file_copy_creates_regular_file() {
+        let tmp = TempDir::new().unwrap();
+        let store = tmp.path().join("store");
+        fs::create_dir_all(&store).unwrap();
+        fs::write(store.join(".mcp.json"), "content").unwrap();
+
+        let target_root = tmp.path().join("target");
+        fs::create_dir_all(&target_root).unwrap();
+
+        apply_file("copy", ".mcp.json", &store, &target_root).unwrap();
+
+        let target = target_root.join(".mcp.json");
+        assert!(target.is_file());
+        assert_eq!(fs::read_to_string(&target).unwrap(), "content");
+    }
+
+    #[test]
+    fn apply_file_skips_existing() {
+        let tmp = TempDir::new().unwrap();
+        let store = tmp.path().join("store");
+        fs::create_dir_all(&store).unwrap();
+        fs::write(store.join(".envrc"), "new content").unwrap();
+
+        let target_root = tmp.path().join("target");
+        fs::create_dir_all(&target_root).unwrap();
+        fs::write(target_root.join(".envrc"), "existing").unwrap();
+
+        apply_file("symlink", ".envrc", &store, &target_root).unwrap();
+
+        // 既存ファイルが変更されていないこと
+        assert_eq!(
+            fs::read_to_string(target_root.join(".envrc")).unwrap(),
+            "existing"
+        );
+    }
+
+    #[test]
+    fn apply_file_creates_parent_dirs() {
+        let tmp = TempDir::new().unwrap();
+        let store = tmp.path().join("store");
+        fs::create_dir_all(store.join("sub/dir")).unwrap();
+        fs::write(store.join("sub/dir/file"), "content").unwrap();
+
+        let target_root = tmp.path().join("target");
+        fs::create_dir_all(&target_root).unwrap();
+
+        apply_file("copy", "sub/dir/file", &store, &target_root).unwrap();
+
+        assert!(target_root.join("sub/dir/file").is_file());
+    }
+}

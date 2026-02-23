@@ -23,7 +23,15 @@ nix build
 cargo watch -x build
 ```
 
-テストスイートは未整備。
+## テスト
+
+```bash
+cargo test
+```
+
+- ユニットテスト: `src/store.rs`, `src/commands/worktree.rs` にインライン (`#[cfg(test)] mod tests`)
+- E2E テスト: `tests/` ディレクトリに `assert_cmd` でバイナリ実行（`tempfile` で一時 git リポジトリを構築）
+- E2E テストのロケールは `LC_ALL=en` で英語固定
 
 ## アーキテクチャ
 
