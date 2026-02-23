@@ -27,7 +27,7 @@ pub struct CloneCmd {
 
 #[derive(Parser)]
 pub struct NewCmd {
-    pub name: Option<String>,
+    pub name: String,
 
     #[arg(short = 'd', long)]
     pub directory: Option<String>,

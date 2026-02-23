@@ -8,7 +8,7 @@ cli:
     url: "リモート URL（省略で空の bare リポジトリを作成）"
   new:
     about: "worktree を作成する"
-    name: "ワークスペース名（省略で自動生成）"
+    name: "ワークスペース名"
     directory: "worktree を作成するパス (default: ../<name>)"
     branch: "ブランチ名 (default: name と同じ)"
     from: "新規ブランチの起点 (default: HEAD)"
@@ -72,7 +72,6 @@ store:
   manifest_read_failed: "manifest の読み込みに失敗しました: %{path}"
   manifest_write_failed: "manifest の書き込みに失敗しました: %{path}"
   skip_exists: "  スキップ: %{file} (既に存在します)"
-  name_generation_failed: "名前の生成に失敗しました"
   invalid_strategy: "strategy は 'symlink' または 'copy' を指定してください"
   file_not_found: "ファイルが見つかりません: %{file}"
   copy_to_store_failed: "store へのコピーに失敗しました"
@@ -152,6 +151,7 @@ interactive:
     url_help: "空で空の bare リポジトリ"
   new:
     name_prompt: "名前:"
+    empty_name: "ワークスペース名を入力してください"
     dir_prompt: "場所:"
     branch_prompt: "branch:"
     from_prompt: "起点:"

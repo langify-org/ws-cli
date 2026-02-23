@@ -3,7 +3,6 @@ use inquire::{Select, Text};
 use rust_i18n::t;
 
 use ws_core::cli::WsCommand;
-use ws_core::commands::worktree::generate_name;
 use ws_core::config::load_config;
 use ws_core::git::{find_bare_dir, git_output, is_inside_git_worktree};
 use ws_core::store::{read_manifest, require_store};
@@ -78,18 +77,13 @@ fn interactive_clone() -> Result<()> {
 }
 
 fn interactive_new() -> Result<()> {
-    let default_name = generate_name();
-    let name_input = Text::new(&t!("interactive.new.name_prompt"))
-        .with_default(&default_name)
-        .prompt_skippable()
-        .context(t!("interactive.input_failed").to_string())?
-        .unwrap_or(default_name.clone());
+    let name = Text::new(&t!("interactive.new.name_prompt"))
+        .prompt()
+        .context(t!("interactive.input_failed").to_string())?;
 
-    let name = if name_input.is_empty() {
-        default_name
-    } else {
-        name_input
-    };
+    if name.is_empty() {
+        bail!("{}", t!("interactive.new.empty_name"));
+    }
 
     let is_bare_root = !is_inside_git_worktree() && find_bare_dir().is_some();
     let default_dir = if is_bare_root {
@@ -135,7 +129,7 @@ fn interactive_new() -> Result<()> {
     };
 
     let cmd = ws_core::cli::NewCmd {
-        name: Some(name.clone()),
+        name: name.clone(),
         directory,
         branch,
         from,

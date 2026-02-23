@@ -8,10 +8,6 @@ use crate::cli::{CloneCmd, NewCmd, RmCmd};
 use crate::git::{find_bare_dir, is_inside_git_worktree};
 use crate::store;
 
-pub fn generate_name() -> String {
-    petname::petname(3, "-").expect(&t!("store.name_generation_failed"))
-}
-
 pub fn cmd_clone(cmd: &CloneCmd) -> Result<()> {
     let bare_dir = PathBuf::from(".bare");
     if bare_dir.exists() {
@@ -46,7 +42,7 @@ pub fn cmd_clone(cmd: &CloneCmd) -> Result<()> {
                         t!("worktree.creating_default_worktree", branch = branch)
                     );
                     let new_cmd = NewCmd {
-                        name: Some(branch.to_string()),
+                        name: branch.to_string(),
                         directory: None,
                         branch: None,
                         from: None,
@@ -86,10 +82,7 @@ pub fn cmd_clone(cmd: &CloneCmd) -> Result<()> {
 }
 
 pub fn cmd_new(cmd: &NewCmd) -> Result<()> {
-    let name = match &cmd.name {
-        Some(n) => n.clone(),
-        None => generate_name(),
-    };
+    let name = cmd.name.clone();
 
     let branch = cmd.branch.clone().unwrap_or_else(|| name.clone());
 
@@ -202,29 +195,4 @@ pub fn cmd_rm(cmd: &RmCmd) -> Result<()> {
     }
 
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn generate_name_format() {
-        let name = generate_name();
-        let parts: Vec<&str> = name.split('-').collect();
-        assert_eq!(
-            parts.len(),
-            3,
-            "Expected 3 hyphen-separated words, got: {}",
-            name
-        );
-        for part in &parts {
-            assert!(!part.is_empty(), "Empty part in name: {}", name);
-            assert!(
-                part.chars().all(|c| c.is_alphabetic()),
-                "Non-alphabetic character in: {}",
-                name
-            );
-        }
-    }
 }

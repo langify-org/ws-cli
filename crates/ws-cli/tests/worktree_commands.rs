@@ -69,36 +69,10 @@ fn new_applies_store_files() {
 }
 
 #[test]
-fn new_auto_name() {
+fn new_requires_name() {
     let repo = TestRepo::new();
 
-    let output = repo
-        .ws_cmd()
-        .arg("new")
-        .output()
-        .expect("failed to run ws new");
-    assert!(output.status.success());
-
-    // bare root 直下に petname 形式のディレクトリが作成されているはず
-    let entries: Vec<_> = fs::read_dir(repo.path())
-        .unwrap()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.file_type().map(|t| t.is_dir()).unwrap_or(false))
-        .filter(|e| {
-            let name = e.file_name().to_string_lossy().to_string();
-            name != ".bare" && name != "main"
-        })
-        .collect();
-
-    assert_eq!(entries.len(), 1, "Expected exactly one auto-named worktree");
-    let name = entries[0].file_name().to_string_lossy().to_string();
-    let parts: Vec<&str> = name.split('-').collect();
-    assert_eq!(
-        parts.len(),
-        3,
-        "Expected 3 hyphen-separated words, got: {}",
-        name
-    );
+    repo.ws_cmd().arg("new").assert().failure();
 }
 
 // ---- ws rm ----

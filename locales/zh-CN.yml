@@ -8,7 +8,7 @@ cli:
     url: "远程 URL（省略则创建空裸仓库）"
   new:
     about: "创建 worktree"
-    name: "工作区名称（省略则自动生成）"
+    name: "工作区名称"
     directory: "worktree 路径 (默认: ../<name>)"
     branch: "分支名 (默认: 与名称相同)"
     from: "新分支的起点 (默认: HEAD)"
@@ -72,7 +72,6 @@ store:
   manifest_read_failed: "读取 manifest 失败: %{path}"
   manifest_write_failed: "写入 manifest 失败: %{path}"
   skip_exists: "  跳过: %{file} (已存在)"
-  name_generation_failed: "名称生成失败"
   invalid_strategy: "strategy 必须是 'symlink' 或 'copy'"
   file_not_found: "找不到文件: %{file}"
   copy_to_store_failed: "复制到 store 失败"
@@ -152,6 +151,7 @@ interactive:
     url_help: "留空则创建空裸仓库"
   new:
     name_prompt: "名称:"
+    empty_name: "请输入工作区名称"
     dir_prompt: "位置:"
     branch_prompt: "分支:"
     from_prompt: "起点:"
