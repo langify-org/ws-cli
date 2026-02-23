@@ -8,6 +8,7 @@ use tempfile::TempDir;
 pub struct TestRepo {
     pub tempdir: TempDir,
     pub root: PathBuf,
+    pub config_path: PathBuf,
 }
 
 impl TestRepo {
@@ -67,7 +68,13 @@ impl TestRepo {
             .expect("git commit failed");
         assert!(out.status.success(), "git commit failed");
 
-        TestRepo { tempdir, root }
+        let config_path = root.join("ws-config.toml");
+
+        TestRepo {
+            tempdir,
+            root,
+            config_path,
+        }
     }
 
     /// bare root のパス
@@ -122,6 +129,7 @@ impl TestRepo {
         let mut cmd = assert_cmd::cargo_bin_cmd!("ws");
         cmd.current_dir(&self.root);
         cmd.env("LC_ALL", "en");
+        cmd.env("WS_CONFIG_PATH", &self.config_path);
         cmd
     }
 
@@ -130,6 +138,7 @@ impl TestRepo {
         let mut cmd = assert_cmd::cargo_bin_cmd!("ws");
         cmd.current_dir(self.root.join(worktree));
         cmd.env("LC_ALL", "en");
+        cmd.env("WS_CONFIG_PATH", &self.config_path);
         cmd
     }
 }

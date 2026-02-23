@@ -26,12 +26,19 @@ fn repos_add_registers_current_dir() {
         .success()
         .stdout(predicate::str::contains("Registered:"));
 
-    // config に登録されている
+    // config に登録されている（bare worktree パターンなので bare root が登録される）
     let content = std::fs::read_to_string(&config_path).unwrap();
     let config: toml::Value = toml::from_str(&content).unwrap();
     let repos = config.get("repos").unwrap().as_table().unwrap();
     assert_eq!(repos.len(), 1);
-    assert!(repos.contains_key("main"));
+    let (_name, entry) = repos.iter().next().unwrap();
+    let registered_path = entry.get("path").unwrap().as_str().unwrap();
+    let bare_root = repo.path().canonicalize().unwrap();
+    assert_eq!(
+        std::path::Path::new(registered_path),
+        bare_root.as_path(),
+        "Should register bare root, not worktree"
+    );
 }
 
 #[test]
