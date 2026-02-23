@@ -10,10 +10,8 @@ pub struct Ws {
 
 #[derive(Subcommand)]
 pub enum WsCommand {
-    Clone(CloneCmd),
     New(NewCmd),
     Rm(RmCmd),
-    List(ListCmd),
     Status(StatusCmd),
     Store(StoreCmd),
     Repos(ReposCmd),
@@ -46,9 +44,6 @@ pub struct RmCmd {
     #[arg(short = 'f', long)]
     pub force: bool,
 }
-
-#[derive(Parser)]
-pub struct ListCmd {}
 
 #[derive(Parser)]
 pub struct InteractiveCmd {}
@@ -108,9 +103,9 @@ pub struct ReposCmd {
 
 #[derive(Subcommand)]
 pub enum ReposCommand {
+    Clone(CloneCmd),
     Add(ReposAddCmd),
     List(ReposListCmd),
-    Status(ReposStatusCmd),
     Rm(ReposRmCmd),
 }
 
@@ -126,9 +121,6 @@ pub struct ReposAddCmd {
 pub struct ReposListCmd {}
 
 #[derive(Parser)]
-pub struct ReposStatusCmd {}
-
-#[derive(Parser)]
 pub struct ReposRmCmd {
     pub name: String,
 }
@@ -137,10 +129,6 @@ pub struct ReposRmCmd {
 pub fn parse_with_i18n() -> Ws {
     let cmd = Ws::command()
         .about(t!("cli.about").to_string())
-        .mut_subcommand("clone", |s| {
-            s.about(t!("cli.clone.about").to_string())
-                .mut_arg("url", |a| a.help(t!("cli.clone.url").to_string()))
-        })
         .mut_subcommand("new", |s| {
             s.about(t!("cli.new.about").to_string())
                 .mut_arg("name", |a| a.help(t!("cli.new.name").to_string()))
@@ -153,7 +141,6 @@ pub fn parse_with_i18n() -> Ws {
                 .mut_arg("directory", |a| a.help(t!("cli.rm.directory").to_string()))
                 .mut_arg("force", |a| a.help(t!("cli.rm.force").to_string()))
         })
-        .mut_subcommand("list", |s| s.about(t!("cli.list.about").to_string()))
         .mut_subcommand("status", |s| s.about(t!("cli.status.about").to_string()))
         .mut_subcommand("i", |s| s.about(t!("cli.i.about").to_string()))
         .mut_subcommand("store", |s| {
@@ -184,6 +171,10 @@ pub fn parse_with_i18n() -> Ws {
         })
         .mut_subcommand("repos", |s| {
             s.about(t!("cli.repos.about").to_string())
+                .mut_subcommand("clone", |ss| {
+                    ss.about(t!("cli.repos.clone.about").to_string())
+                        .mut_arg("url", |a| a.help(t!("cli.repos.clone.url").to_string()))
+                })
                 .mut_subcommand("add", |ss| {
                     ss.about(t!("cli.repos.add.about").to_string())
                         .mut_arg("path", |a| a.help(t!("cli.repos.add.path").to_string()))
@@ -191,9 +182,6 @@ pub fn parse_with_i18n() -> Ws {
                 })
                 .mut_subcommand("list", |ss| {
                     ss.about(t!("cli.repos.list.about").to_string())
-                })
-                .mut_subcommand("status", |ss| {
-                    ss.about(t!("cli.repos.status.about").to_string())
                 })
                 .mut_subcommand("rm", |ss| {
                     ss.about(t!("cli.repos.rm.about").to_string())

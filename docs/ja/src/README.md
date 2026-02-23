@@ -17,7 +17,7 @@ ws はリポジトリの登録、worktree の管理、gitignored ファイルの
 ## 特徴
 
 - **リポジトリレジストリ** — `ws repos` でシステム全体のリポジトリを登録・管理
-- **bare clone + worktree の一括セットアップ** — `ws clone` → `ws new` の2コマンドで開発開始
+- **bare clone + worktree の一括セットアップ** — `ws repos clone` → `ws new` の2コマンドで開発開始
 - **共有ストア** — gitignored ファイルを worktree 間で自動共有（symlink / copy の2戦略）
 - **AI エージェント連携** — エージェント設定の worktree 間共有 + システム全体のリポジトリ認識
 - **インタラクティブモード** — 対話的なコマンド選択
@@ -26,7 +26,7 @@ ws はリポジトリの登録、worktree の管理、gitignored ファイルの
 
 ```bash
 # リポジトリを bare clone（デフォルトブランチの worktree は自動作成）
-ws clone https://github.com/example/repo.git
+ws repos clone https://github.com/example/repo.git
 
 # 機能ブランチを作成
 ws new feature/awesome

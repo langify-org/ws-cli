@@ -172,12 +172,6 @@ pub fn cmd_new(cmd: &NewCmd) -> Result<()> {
     Ok(())
 }
 
-pub fn cmd_list() -> Result<()> {
-    let output = crate::git::git_output(&["worktree", "list"])?;
-    println!("{}", output);
-    Ok(())
-}
-
 pub fn cmd_rm(cmd: &RmCmd) -> Result<()> {
     let mut args = vec!["worktree", "remove"];
     if cmd.force {

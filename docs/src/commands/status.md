@@ -1,6 +1,6 @@
 # ws status
 
-Display an integrated view of worktrees and shared file status.
+Display an integrated status dashboard covering repositories, the current workspace, and shared files.
 
 ## Usage
 
@@ -10,22 +10,41 @@ ws status
 
 ## Behavior
 
-Displays two sections:
+Displays up to three sections depending on context:
 
-### Workspaces section
+### Repositories section
 
-Lists all worktrees. The current worktree is marked with `*`. If a shared store exists, the number of tracked files is also shown.
+Shown when repositories are registered in `~/.config/ws/config.toml`. Lists each repository with its path, GIT_DIR type, and worktree tree. The current repository (if any) is marked with `*`.
+
+### Current workspace section
+
+Shown when running inside a worktree. Displays the current worktree path, branch, and tracked file count.
 
 ### Shared files section
 
-Shown only when a shared store exists and files are being tracked. Lists each file's strategy and status.
+Shown when a shared store exists and files are being tracked. Lists each file's strategy and status.
+
+When running outside any repository with no registered repositories, a "No registered repositories" message is shown.
 
 ## Example output
 
 ```
-Workspaces:
-  * /Users/user/my-project/main              [main]  [3 files tracked]
-    /Users/user/my-project/feature-foo       [feature/foo]  [3 files tracked]
+Repositories:
+  web
+    Path: /Users/user/projects/web
+    GIT_DIR: .bare
+    Worktrees:
+      └── release   [release] 9946e77
+
+* my-project
+    Path: /Users/user/projects/my-project
+    GIT_DIR: .bare
+    Worktrees:
+      ├── main   [main] abc1234
+      └── feature-foo   [feature/foo] def5678
+
+Current workspace:
+  * /Users/user/projects/my-project/main [main]  [3 files tracked]
 
 Shared files:
   STRATEGY FILE                                     STATUS

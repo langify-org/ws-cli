@@ -9,10 +9,51 @@
 
 | サブコマンド | 説明 |
 |-------------|------|
+| [`ws repos clone`](#ws-repos-clone) | bare リポジトリを作成 |
 | [`ws repos add`](#ws-repos-add) | リポジトリを登録 |
 | [`ws repos list`](#ws-repos-list) | 登録済みリポジトリの一覧表示 |
-| [`ws repos status`](#ws-repos-status) | 登録済み全リポジトリの詳細ステータスを表示 |
 | [`ws repos rm`](#ws-repos-rm) | リポジトリの登録解除 |
+
+---
+
+## ws repos clone
+
+bare リポジトリを作成します。
+
+### 使い方
+
+```bash
+ws repos clone [url]
+```
+
+### 引数
+
+| 引数 | 必須 | 説明 |
+|------|------|------|
+| `url` | いいえ | リモート URL。省略すると空の bare リポジトリを作成 |
+
+### 動作
+
+カレントディレクトリに `.bare/` ディレクトリを作成します。
+
+- URL を指定した場合: `git clone --bare <url> .bare` を実行し、デフォルトブランチ（例: `main` や `master`）の worktree を自動作成
+- URL を省略した場合: `git init --bare .bare` を実行（コミットが存在しないため worktree は作成されない）
+
+`.bare` が既に存在する場合はエラーになります。リポジトリは config に自動登録されます。
+
+### 例
+
+```bash
+mkdir my-project && cd my-project
+ws repos clone https://github.com/example/repo.git
+# .bare/ が作成され、デフォルトブランチの worktree が自動的にセットアップされる
+```
+
+```bash
+mkdir my-project && cd my-project
+ws repos clone                  # 空の bare リポジトリを作成
+ws new master                   # orphan ブランチで worktree を作成
+```
 
 ---
 
@@ -68,67 +109,6 @@ ws repos list
 my-repo              /Users/user/projects/my-repo (git@github.com:user/my-repo.git)
 another              /Users/user/projects/another
 ```
-
----
-
-## ws repos status
-
-登録済み全リポジトリの詳細ステータスを表示します。GIT_DIR の種類や worktree のツリー表示を含みます。
-
-### 使い方
-
-```bash
-ws repos status
-```
-
-### 動作
-
-登録済みリポジトリごとに以下を表示します:
-
-1. **リポジトリ名とパス**
-2. **GIT_DIR** — bare worktree パターンの場合は `.bare`、通常の clone の場合は `.git`
-3. **worktree ツリー** — 全 worktree のブランチ名とコミットハッシュ
-
-登録済みリポジトリのパスが存在しない場合は `NOT_FOUND` が表示されます。
-
-### 出力例
-
-**bare worktree パターン:**
-
-```
-my-project (/Users/user/projects/my-project)
-  GIT_DIR: .bare
-  Worktrees:
-    ├── main   [main] abc1234
-    ├── feature-foo   [feature/foo] def5678
-    └── fix-bar   [fix/bar] 9ab0123
-```
-
-**通常の clone:**
-
-```
-another-repo (/Users/user/projects/another-repo)
-  GIT_DIR: .git
-  Main worktree:
-    .   [main] abc1234
-  Linked worktrees:
-    └── ../another-repo-feature   [feature/x] def5678
-```
-
-**パスが存在しない場合:**
-
-```
-old-repo (/Users/user/projects/old-repo)
-  NOT_FOUND
-```
-
-### ステータス値
-
-| 値 | 説明 |
-|----|------|
-| `GIT_DIR: .bare` | bare worktree パターンのリポジトリ |
-| `GIT_DIR: .git` | 通常の git clone |
-| `NOT_FOUND` | 登録済みパスがディスク上に存在しない |
 
 ---
 

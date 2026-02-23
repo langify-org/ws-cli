@@ -17,7 +17,7 @@ ws solves these problems by providing a single CLI for repository registration, 
 ## Features
 
 - **Repository registry** — Register and manage all your repositories with `ws repos` for system-wide visibility
-- **Bare clone + worktree management** — One-step setup with just `ws clone` then `ws new`
+- **Bare clone + worktree management** — One-step setup with just `ws repos clone` then `ws new`
 - **Shared store** — Automatically share gitignored files across worktrees (symlink / copy strategies)
 - **AI agent integration** — Share agent config across worktrees; give agents system-wide repository awareness
 - **Interactive mode** — Build and run commands interactively
@@ -26,7 +26,7 @@ ws solves these problems by providing a single CLI for repository registration, 
 
 ```bash
 # Bare clone the repository (default branch worktree is created automatically)
-ws clone https://github.com/example/repo.git
+ws repos clone https://github.com/example/repo.git
 
 # Create a feature branch
 ws new feature/awesome

@@ -9,16 +9,14 @@ rust_i18n::i18n!("../../locales", fallback = "en");
 
 fn run(ws: ws_core::cli::Ws) -> Result<()> {
     match ws.command {
-        WsCommand::Clone(cmd) => ws_core::commands::worktree::cmd_clone(&cmd),
         WsCommand::New(cmd) => ws_core::commands::worktree::cmd_new(&cmd),
         WsCommand::Rm(cmd) => ws_core::commands::worktree::cmd_rm(&cmd),
-        WsCommand::List(_) => ws_core::commands::worktree::cmd_list(),
         WsCommand::Status(_) => ws_core::commands::status::cmd_status(),
         WsCommand::I(_) => interactive::interactive_mode(),
         WsCommand::Repos(cmd) => match cmd.command {
+            ReposCommand::Clone(c) => ws_core::commands::worktree::cmd_clone(&c),
             ReposCommand::Add(c) => ws_core::commands::repos::cmd_repos_add(&c),
             ReposCommand::List(_) => ws_core::commands::repos::cmd_repos_list(),
-            ReposCommand::Status(_) => ws_core::commands::repos::cmd_repos_status(),
             ReposCommand::Rm(c) => ws_core::commands::repos::cmd_repos_rm(&c),
         },
         WsCommand::Store(cmd) => match cmd.command {

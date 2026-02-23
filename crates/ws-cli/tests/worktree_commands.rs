@@ -4,7 +4,7 @@ use common::TestRepo;
 use std::fs;
 use tempfile::TempDir;
 
-// ---- ws clone ----
+// ---- ws repos clone ----
 
 #[test]
 fn clone_creates_bare_repo() {
@@ -12,7 +12,7 @@ fn clone_creates_bare_repo() {
     let config_path = tmp.path().join("ws-config.toml");
 
     let mut cmd = assert_cmd::cargo_bin_cmd!("ws");
-    cmd.arg("clone")
+    cmd.args(["repos", "clone"])
         .current_dir(tmp.path())
         .env("LC_ALL", "en")
         .env("WS_CONFIG_PATH", &config_path)
@@ -27,11 +27,9 @@ fn clone_fails_if_bare_exists() {
     let tmp = TempDir::new().unwrap();
     let config_path = tmp.path().join("ws-config.toml");
     fs::create_dir(tmp.path().join(".bare")).unwrap();
-    // .bare/HEAD を作成して bare repo に見せかける必要はない
-    // ws は .bare ディレクトリの存在だけでエラーにする
 
     let mut cmd = assert_cmd::cargo_bin_cmd!("ws");
-    cmd.arg("clone")
+    cmd.args(["repos", "clone"])
         .current_dir(tmp.path())
         .env("LC_ALL", "en")
         .env("WS_CONFIG_PATH", &config_path)
@@ -104,7 +102,7 @@ fn clone_registers_in_config() {
     let config_path = tmp.path().join("ws-config.toml");
 
     let mut cmd = assert_cmd::cargo_bin_cmd!("ws");
-    cmd.arg("clone")
+    cmd.args(["repos", "clone"])
         .current_dir(tmp.path())
         .env("LC_ALL", "en")
         .env("WS_CONFIG_PATH", &config_path)

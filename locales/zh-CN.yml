@@ -3,9 +3,6 @@ _version: 1
 # cli.rs - CLI 帮助文本
 cli:
   about: "管理工作区 (git worktree)"
-  clone:
-    about: "创建裸仓库（省略 URL 则创建空裸仓库）"
-    url: "远程 URL（省略则创建空裸仓库）"
   new:
     about: "创建 worktree"
     name: "工作区名称"
@@ -16,10 +13,8 @@ cli:
     about: "删除指定的 worktree"
     directory: "要删除的 worktree 路径"
     force: "即使有未提交的更改也强制删除"
-  list:
-    about: "列出 worktree"
   status:
-    about: "显示工作区列表和共享文件状态"
+    about: "显示集成状态仪表板"
   store:
     about: "管理共享文件"
     track:
@@ -40,14 +35,15 @@ cli:
       file: "要注销的文件路径"
   repos:
     about: "管理已注册的仓库"
+    clone:
+      about: "创建裸仓库（省略 URL 则创建空裸仓库）"
+      url: "远程 URL（省略则创建空裸仓库）"
     add:
       about: "注册现有仓库"
       path: "仓库路径（默认: 当前目录）"
       name: "自定义名称（默认: 目录名）"
     list:
       about: "列出已注册的仓库"
-    status:
-      about: "显示已注册仓库的状态"
     rm:
       about: "注销仓库（不删除仓库本身）"
       name: "要注销的仓库名称"
@@ -127,17 +123,16 @@ worktree:
 
 # commands/status.rs - status 显示
 status:
-  workspaces: "Workspaces:"
+  repositories: "Repositories:"
+  current_workspace: "Current workspace:"
   files_tracked: "  [%{count} files tracked]"
   shared_files: "Shared files:"
 
 # interactive.rs - 交互模式
 interactive:
   menu:
-    clone: "创建裸仓库"
     new: "创建工作区"
     rm: "删除工作区"
-    list: "列出 worktree"
     status: "显示整体状态"
     store: "管理共享文件"
     repos: "管理已注册的仓库"
@@ -182,9 +177,9 @@ interactive:
     file_prompt: "要注销的文件路径:"
     empty_file: "请输入文件路径"
   repos_menu:
+    clone: "创建裸仓库"
     add: "注册仓库"
     list: "列出已注册的仓库"
-    status: "显示仓库状态"
     rm: "注销仓库"
   repos_select: "选择 repos 命令:"
   repos_add:

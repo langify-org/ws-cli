@@ -9,10 +9,51 @@ Manage the repository registry. Registered repositories are stored in `~/.config
 
 | Subcommand | Description |
 |------------|-------------|
+| [`ws repos clone`](#ws-repos-clone) | Create a bare repository |
 | [`ws repos add`](#ws-repos-add) | Register a repository |
 | [`ws repos list`](#ws-repos-list) | List registered repositories |
-| [`ws repos status`](#ws-repos-status) | Show detailed status of all registered repositories |
 | [`ws repos rm`](#ws-repos-rm) | Unregister a repository |
+
+---
+
+## ws repos clone
+
+Create a bare repository.
+
+### Usage
+
+```bash
+ws repos clone [url]
+```
+
+### Arguments
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `url` | No | Remote URL. If omitted, creates an empty bare repository |
+
+### Behavior
+
+Creates a `.bare/` directory in the current directory.
+
+- With a URL: runs `git clone --bare <url> .bare`, then automatically creates a worktree for the default branch (e.g. `main` or `master`)
+- Without a URL: runs `git init --bare .bare` (no worktree is created since no commits exist)
+
+Fails with an error if `.bare` already exists. The repository is automatically registered in the config.
+
+### Examples
+
+```bash
+mkdir my-project && cd my-project
+ws repos clone https://github.com/example/repo.git
+# .bare/ is created and a worktree for the default branch is set up automatically
+```
+
+```bash
+mkdir my-project && cd my-project
+ws repos clone                  # Create an empty bare repository
+ws new master                   # Create a worktree with an orphan branch
+```
 
 ---
 
@@ -68,67 +109,6 @@ ws repos list
 my-repo              /Users/user/projects/my-repo (git@github.com:user/my-repo.git)
 another              /Users/user/projects/another
 ```
-
----
-
-## ws repos status
-
-Show detailed status of all registered repositories, including GIT_DIR type and worktree tree.
-
-### Usage
-
-```bash
-ws repos status
-```
-
-### Behavior
-
-For each registered repository, displays:
-
-1. **Repository name and path**
-2. **GIT_DIR** — `.bare` for bare worktree pattern, `.git` for normal clones
-3. **Worktree tree** — Lists all worktrees with their branch and commit hash
-
-If a registered repository's path no longer exists, `NOT_FOUND` is displayed.
-
-### Example output
-
-**Bare worktree pattern:**
-
-```
-my-project (/Users/user/projects/my-project)
-  GIT_DIR: .bare
-  Worktrees:
-    ├── main   [main] abc1234
-    ├── feature-foo   [feature/foo] def5678
-    └── fix-bar   [fix/bar] 9ab0123
-```
-
-**Normal clone:**
-
-```
-another-repo (/Users/user/projects/another-repo)
-  GIT_DIR: .git
-  Main worktree:
-    .   [main] abc1234
-  Linked worktrees:
-    └── ../another-repo-feature   [feature/x] def5678
-```
-
-**Missing repository:**
-
-```
-old-repo (/Users/user/projects/old-repo)
-  NOT_FOUND
-```
-
-### Status values
-
-| Value | Description |
-|-------|-------------|
-| `GIT_DIR: .bare` | Repository uses the bare worktree pattern |
-| `GIT_DIR: .git` | Repository is a normal git clone |
-| `NOT_FOUND` | Registered path does not exist on disk |
 
 ---
 

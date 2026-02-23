@@ -4,15 +4,13 @@ use rust_i18n::t;
 
 use ws_core::cli::WsCommand;
 use ws_core::config::load_config;
-use ws_core::git::{find_bare_dir, git_output, is_inside_git_worktree};
+use ws_core::git::{find_bare_dir, is_inside_git_worktree};
 use ws_core::store::{read_manifest, require_store};
 
 pub(crate) fn interactive_mode() -> Result<()> {
     let top_items: Vec<String> = vec![
-        format!("clone     {}", t!("interactive.menu.clone")),
         format!("new       {}", t!("interactive.menu.new")),
         format!("rm        {}", t!("interactive.menu.rm")),
-        format!("list      {}", t!("interactive.menu.list")),
         format!("status    {}", t!("interactive.menu.status")),
         format!("store     {}", t!("interactive.menu.store")),
         format!("repos     {}", t!("interactive.menu.repos")),
@@ -34,13 +32,8 @@ pub(crate) fn interactive_mode() -> Result<()> {
     let cmd = selected.split_whitespace().next().unwrap_or("");
 
     match cmd {
-        "clone" => interactive_clone(),
         "new" => interactive_new(),
         "rm" => interactive_rm(),
-        "list" => {
-            eprintln!("> ws list");
-            ws_core::commands::worktree::cmd_list()
-        }
         "status" => {
             eprintln!("> ws status");
             ws_core::commands::status::cmd_status()
@@ -66,7 +59,7 @@ fn interactive_clone() -> Result<()> {
         },
     };
     eprintln!(
-        "> ws clone{}",
+        "> ws repos clone{}",
         if url_input.is_empty() {
             String::new()
         } else {
@@ -151,7 +144,7 @@ fn interactive_new() -> Result<()> {
 }
 
 fn interactive_rm() -> Result<()> {
-    let worktree_list = git_output(&["worktree", "list"])?;
+    let worktree_list = ws_core::git::git_output(&["worktree", "list"])?;
     let lines: Vec<&str> = worktree_list.lines().skip(1).collect();
 
     if lines.is_empty() {
@@ -332,9 +325,9 @@ fn interactive_store_untrack() -> Result<()> {
 
 fn interactive_repos() -> Result<()> {
     let repos_items: Vec<String> = vec![
+        format!("clone     {}", t!("interactive.repos_menu.clone")),
         format!("add       {}", t!("interactive.repos_menu.add")),
         format!("list      {}", t!("interactive.repos_menu.list")),
-        format!("status    {}", t!("interactive.repos_menu.status")),
         format!("rm        {}", t!("interactive.repos_menu.rm")),
     ];
 
@@ -351,14 +344,11 @@ fn interactive_repos() -> Result<()> {
     let cmd = selected.split_whitespace().next().unwrap_or("");
 
     match cmd {
+        "clone" => interactive_clone(),
         "add" => interactive_repos_add(),
         "list" => {
             eprintln!("> ws repos list");
             ws_core::commands::repos::cmd_repos_list()
-        }
-        "status" => {
-            eprintln!("> ws repos status");
-            ws_core::commands::repos::cmd_repos_status()
         }
         "rm" => interactive_repos_rm(),
         _ => bail!("{}", t!("interactive.unknown_command", cmd = cmd)),
@@ -444,10 +434,8 @@ fn interactive_repos_rm() -> Result<()> {
 #[allow(dead_code)]
 fn _ensure_all_commands_in_interactive(cmd: &WsCommand) -> &'static str {
     match cmd {
-        WsCommand::Clone(_) => "clone",
         WsCommand::New(_) => "new",
         WsCommand::Rm(_) => "rm",
-        WsCommand::List(_) => "list",
         WsCommand::Status(_) => "status",
         WsCommand::Store(_) => "store",
         WsCommand::Repos(_) => "repos",

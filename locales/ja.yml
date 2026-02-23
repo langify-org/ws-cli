@@ -3,9 +3,6 @@ _version: 1
 # cli.rs - CLI ヘルプテキスト
 cli:
   about: "workspace (git worktree) を管理する"
-  clone:
-    about: "bare リポジトリを作成する（URL 省略で空の bare リポジトリ）"
-    url: "リモート URL（省略で空の bare リポジトリを作成）"
   new:
     about: "worktree を作成する"
     name: "ワークスペース名"
@@ -16,10 +13,8 @@ cli:
     about: "指定した worktree を削除する"
     directory: "削除する worktree のパス"
     force: "未コミットの変更があっても強制削除する"
-  list:
-    about: "worktree 一覧を表示する"
   status:
-    about: "workspace 一覧と shared ファイル状態を統合表示する"
+    about: "統合ステータスダッシュボードを表示する"
   store:
     about: "共有ファイル管理"
     track:
@@ -40,14 +35,15 @@ cli:
       file: "登録解除するファイルパス"
   repos:
     about: "登録済みリポジトリを管理する"
+    clone:
+      about: "bare リポジトリを作成する（URL 省略で空の bare リポジトリ）"
+      url: "リモート URL（省略で空の bare リポジトリを作成）"
     add:
       about: "既存リポジトリを登録する"
       path: "リポジトリのパス（省略でカレントディレクトリ）"
       name: "カスタム名（省略でディレクトリ名）"
     list:
       about: "登録済みリポジトリの一覧を表示する"
-    status:
-      about: "登録済みリポジトリの状態を表示する"
     rm:
       about: "リポジトリの登録を解除する（リポジトリ自体は削除しない）"
       name: "登録解除するリポジトリの名前"
@@ -127,17 +123,16 @@ worktree:
 
 # commands/status.rs - status 表示
 status:
-  workspaces: "Workspaces:"
+  repositories: "Repositories:"
+  current_workspace: "Current workspace:"
   files_tracked: "  [%{count} files tracked]"
   shared_files: "Shared files:"
 
 # interactive.rs - 対話モード
 interactive:
   menu:
-    clone: "bare リポジトリを作成"
     new: "workspace を作成"
     rm: "workspace を削除"
-    list: "worktree 一覧表示"
     status: "全体の状態表示"
     store: "共有ファイル管理"
     repos: "登録済みリポジトリ管理"
@@ -182,9 +177,9 @@ interactive:
     file_prompt: "登録解除するファイルパス:"
     empty_file: "ファイルパスを入力してください"
   repos_menu:
+    clone: "bare リポジトリを作成"
     add: "リポジトリを登録"
     list: "登録済みリポジトリの一覧表示"
-    status: "リポジトリの状態表示"
     rm: "リポジトリの登録を解除"
   repos_select: "repos コマンドを選択:"
   repos_add:

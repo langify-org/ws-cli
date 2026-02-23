@@ -42,10 +42,10 @@ Having multiple branches open at once offers several advantages:
 
 ```bash
 mkdir my-project && cd my-project
-ws clone https://github.com/example/repo.git
+ws repos clone https://github.com/example/repo.git
 ```
 
-`ws clone` runs `git clone --bare <url> .bare` internally.
+`ws repos clone` runs `git clone --bare <url> .bare` internally.
 
 ### Creating worktrees
 
@@ -53,7 +53,7 @@ ws clone https://github.com/example/repo.git
 ws new feature/foo                 # Create a new branch from HEAD
 ```
 
-`ws clone` automatically creates a worktree for the default branch (e.g. `main`). `ws new` runs `git worktree add` internally.
+`ws repos clone` automatically creates a worktree for the default branch (e.g. `main`). `ws new` runs `git worktree add` internally.
 
 ### Removing worktrees
 
@@ -78,13 +78,13 @@ If you omit the name, a random name is generated automatically (e.g., `gentle-ha
 
 ## Repository root resolution
 
-Several `ws` commands (e.g., `ws repos add`, automatic registration on `ws clone`) need to determine the **repository root** — the top-level directory that represents the project.
+Several `ws` commands (e.g., `ws repos add`, automatic registration on `ws repos clone`) need to determine the **repository root** — the top-level directory that represents the project.
 
 ### Resolution rules
 
 | Repository type | How the root is determined | Result |
 |---|---|---|
-| **Bare worktree** (`ws clone`) | `git rev-parse --git-common-dir` → if it ends in `.bare`, use its parent | `my-project/` |
+| **Bare worktree** (`ws repos clone`) | `git rev-parse --git-common-dir` → if it ends in `.bare`, use its parent | `my-project/` |
 | **Normal clone** | `git rev-parse --show-toplevel` | `my-project/` |
 
 ### Example: bare worktree

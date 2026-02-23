@@ -53,10 +53,10 @@ crates/
       config.rs           設定ファイル（~/.config/ws/config.toml）の読み書き
       commands/
         mod.rs            サブモジュール宣言
-        worktree.rs       clone, new, rm, list, generate_name
-        status.rs         status（統合表示）
+        worktree.rs       clone, new, rm
+        status.rs         status（全レイヤー統合ダッシュボード: Repositories / Current workspace / Shared files）
         store.rs          store track/status/push/pull/untrack
-        repos.rs          repos add/list/rm（リポジトリ登録管理）
+        repos.rs          repos add/list/rm（リポジトリ登録管理）+ WorktreeEntry/parse_worktree_list（status.rs と共有）
   ws-cli/                 バイナリクレート（package name = "ws"）
     src/
       main.rs             エントリポイント + run() ディスパッチ
@@ -69,7 +69,7 @@ crates/
 - `store` → `git`
 - `config` — 依存なし
 - `commands/worktree` → `cli`, `git`, `store`, `config`
-- `commands/status` → `git`, `store`
+- `commands/status` → `git`, `store`, `config`, `commands/repos`
 - `commands/store` → `cli`, `git`, `store`
 - `commands/repos` → `cli`, `config`
 - `ws-cli/interactive` → `ws_core::cli`, `ws_core::config`, `ws_core::git`, `ws_core::store`, `ws_core::commands::*`
@@ -92,7 +92,7 @@ strategy の使い分け:
 2. それ以外 → `git rev-parse --show-toplevel`（通常の clone）
 3. どちらも失敗 → 指定パスをそのまま使用
 
-これにより worktree 内から実行しても bare root が登録され、`ws clone` の自動登録と一致する。
+これにより worktree 内から実行しても bare root が登録され、`ws repos clone` の自動登録と一致する。
 
 ### 対話モードの関数直接呼び出し
 

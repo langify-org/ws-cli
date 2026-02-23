@@ -1,6 +1,6 @@
 # ws status
 
-worktree 一覧と共有ファイルの状態を統合表示します。
+リポジトリ、現在のワークスペース、共有ファイルを統合表示するステータスダッシュボードです。
 
 ## 使い方
 
@@ -10,22 +10,41 @@ ws status
 
 ## 動作
 
-以下の2つのセクションを表示します:
+コンテキストに応じて最大3つのセクションを表示します:
 
-### Workspaces セクション
+### Repositories セクション
 
-全 worktree の一覧を表示します。現在の worktree には `*` マーカーが付きます。共有ストアが存在する場合、追跡ファイル数も表示されます。
+`~/.config/ws/config.toml` にリポジトリが登録されている場合に表示。各リポジトリのパス、GIT_DIR タイプ、worktree ツリーを一覧します。現在のリポジトリ（いる場合）には `*` マーカーが付きます。
+
+### Current workspace セクション
+
+worktree 内で実行した場合に表示。現在の worktree のパス、ブランチ、追跡ファイル数を表示します。
 
 ### Shared files セクション
 
-共有ストアが存在し、追跡ファイルがある場合に表示されます。各ファイルの strategy と状態を一覧します。
+共有ストアが存在し、追跡ファイルがある場合に表示。各ファイルの strategy と状態を一覧します。
+
+リポジトリ外で登録済みリポジトリもない場合は、「登録済みリポジトリはありません」メッセージが表示されます。
 
 ## 出力例
 
 ```
-Workspaces:
-  * /Users/user/my-project/main              [main]  [3 files tracked]
-    /Users/user/my-project/feature-foo       [feature/foo]  [3 files tracked]
+Repositories:
+  web
+    Path: /Users/user/projects/web
+    GIT_DIR: .bare
+    Worktrees:
+      └── release   [release] 9946e77
+
+* my-project
+    Path: /Users/user/projects/my-project
+    GIT_DIR: .bare
+    Worktrees:
+      ├── main   [main] abc1234
+      └── feature-foo   [feature/foo] def5678
+
+Current workspace:
+  * /Users/user/projects/my-project/main [main]  [3 files tracked]
 
 Shared files:
   STRATEGY FILE                                     STATUS

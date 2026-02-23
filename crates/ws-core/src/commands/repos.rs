@@ -151,113 +151,14 @@ fn resolve_repo_root(path: &std::path::Path) -> Option<PathBuf> {
     None
 }
 
-pub fn cmd_repos_status() -> Result<()> {
-    let config = load_config()?;
-
-    if config.repos.is_empty() {
-        println!("{}", t!("repos.no_repos"));
-        return Ok(());
-    }
-
-    let mut first = true;
-    for (name, entry) in &config.repos {
-        if !first {
-            println!();
-        }
-        first = false;
-
-        println!("{} ({})", name, entry.path.display());
-
-        if !entry.path.exists() {
-            println!("  NOT_FOUND");
-            continue;
-        }
-
-        let is_bare = entry.path.join(".bare").is_dir();
-
-        // GIT_DIR を表示
-        if is_bare {
-            println!("  GIT_DIR: .bare");
-        } else {
-            println!("  GIT_DIR: .git");
-        }
-
-        // worktree 一覧を取得
-        let wt_output = if is_bare {
-            Command::new("git")
-                .args(["--git-dir", ".bare", "worktree", "list"])
-                .current_dir(&entry.path)
-                .output()
-        } else {
-            Command::new("git")
-                .args(["worktree", "list"])
-                .current_dir(&entry.path)
-                .output()
-        };
-
-        let entries = match wt_output {
-            Ok(output) if output.status.success() => {
-                parse_worktree_list(&String::from_utf8_lossy(&output.stdout), &entry.path)
-            }
-            _ => vec![],
-        };
-
-        if is_bare {
-            // bare パターン: (bare) を除外し Worktrees: で一括表示
-            let worktrees: Vec<&WorktreeEntry> = entries.iter().filter(|e| !e.is_bare).collect();
-            if !worktrees.is_empty() {
-                println!("  Worktrees:");
-                for (i, wt) in worktrees.iter().enumerate() {
-                    let connector = if i == worktrees.len() - 1 {
-                        "└──"
-                    } else {
-                        "├──"
-                    };
-                    println!(
-                        "    {} {}   [{}] {}",
-                        connector, wt.rel_path, wt.branch, wt.hash
-                    );
-                }
-            }
-        } else {
-            // 通常 clone: 最初が Main worktree、残りが Linked worktrees
-            if let Some(main_wt) = entries.first() {
-                println!("  Main worktree:");
-                println!(
-                    "    {}   [{}] {}",
-                    main_wt.rel_path, main_wt.branch, main_wt.hash
-                );
-
-                let linked: Vec<&WorktreeEntry> = entries[1..].iter().collect();
-                if !linked.is_empty() {
-                    println!("  Linked worktrees:");
-                    for (i, wt) in linked.iter().enumerate() {
-                        let connector = if i == linked.len() - 1 {
-                            "└──"
-                        } else {
-                            "├──"
-                        };
-                        println!(
-                            "    {} {}   [{}] {}",
-                            connector, wt.rel_path, wt.branch, wt.hash
-                        );
-                    }
-                }
-            }
-        }
-    }
-
-    Ok(())
+pub struct WorktreeEntry {
+    pub rel_path: String,
+    pub branch: String,
+    pub hash: String,
+    pub is_bare: bool,
 }
 
-struct WorktreeEntry {
-    rel_path: String,
-    branch: String,
-    hash: String,
-    is_bare: bool,
-}
-
-fn parse_worktree_list(output: &str, repo_root: &std::path::Path) -> Vec<WorktreeEntry> {
+pub fn parse_worktree_list(output: &str, repo_root: &std::path::Path) -> Vec<WorktreeEntry> {
     let repo_root_canonical = repo_root
         .canonicalize()
         .unwrap_or_else(|_| repo_root.to_path_buf());

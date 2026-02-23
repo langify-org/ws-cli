@@ -42,10 +42,10 @@ my-project/
 
 ```bash
 mkdir my-project && cd my-project
-ws clone https://github.com/example/repo.git
+ws repos clone https://github.com/example/repo.git
 ```
 
-`ws clone` は内部で `git clone --bare <url> .bare` を実行します。
+`ws repos clone` は内部で `git clone --bare <url> .bare` を実行します。
 
 ### worktree の作成
 
@@ -53,7 +53,7 @@ ws clone https://github.com/example/repo.git
 ws new feature/foo                 # HEAD から新規ブランチを作成
 ```
 
-`ws clone` はデフォルトブランチ（例: `main`）の worktree を自動作成します。`ws new` は内部で `git worktree add` を実行します。
+`ws repos clone` はデフォルトブランチ（例: `main`）の worktree を自動作成します。`ws new` は内部で `git worktree add` を実行します。
 
 ### worktree の削除
 
@@ -78,13 +78,13 @@ ws rm feature-foo
 
 ## リポジトリルートの解決
 
-`ws` のいくつかのコマンド（`ws repos add`、`ws clone` 時の自動登録など）は、プロジェクトを代表する最上位ディレクトリである**リポジトリルート**を特定する必要があります。
+`ws` のいくつかのコマンド（`ws repos add`、`ws repos clone` 時の自動登録など）は、プロジェクトを代表する最上位ディレクトリである**リポジトリルート**を特定する必要があります。
 
 ### 解決ルール
 
 | リポジトリの種類 | 解決方法 | 結果 |
 |---|---|---|
-| **bare worktree**（`ws clone`） | `git rev-parse --git-common-dir` → `.bare` で終わる場合、その親ディレクトリ | `my-project/` |
+| **bare worktree**（`ws repos clone`） | `git rev-parse --git-common-dir` → `.bare` で終わる場合、その親ディレクトリ | `my-project/` |
 | **通常の clone** | `git rev-parse --show-toplevel` | `my-project/` |
 
 ### 例: bare worktree

@@ -14,10 +14,8 @@
 
 # Reference
 
-- [ws clone](commands/ws-clone.md)
 - [ws new](commands/new.md)
 - [ws rm](commands/rm.md)
-- [ws list](commands/list.md)
 - [ws status](commands/status.md)
 - [ws i (Interactive)](commands/interactive.md)
 - [ws store](commands/store.md)

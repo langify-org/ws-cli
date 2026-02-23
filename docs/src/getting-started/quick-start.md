@@ -6,7 +6,7 @@
 
 ```bash
 mkdir my-project && cd my-project
-ws clone https://github.com/example/repo.git
+ws repos clone https://github.com/example/repo.git
 ```
 
 A bare repository is created in the `.bare/` directory, and a worktree for the default branch (e.g. `main`) is automatically set up.
@@ -45,7 +45,7 @@ To start a new project without a remote:
 
 ```bash
 mkdir my-project && cd my-project
-ws clone                            # Create an empty bare repository
+ws repos clone                            # Create an empty bare repository
 ws new master                      # Create a worktree with an orphan branch
 ```
 

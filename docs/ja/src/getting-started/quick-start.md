@@ -6,7 +6,7 @@
 
 ```bash
 mkdir my-project && cd my-project
-ws clone https://github.com/example/repo.git
+ws repos clone https://github.com/example/repo.git
 ```
 
 `.bare/` ディレクトリに bare リポジトリが作成され、デフォルトブランチ（例: `main`）の worktree が自動的にセットアップされます。
@@ -45,7 +45,7 @@ parent/
 
 ```bash
 mkdir my-project && cd my-project
-ws clone                            # 空の bare リポジトリを作成
+ws repos clone                            # 空の bare リポジトリを作成
 ws new master                      # orphan ブランチで worktree を作成
 ```
 

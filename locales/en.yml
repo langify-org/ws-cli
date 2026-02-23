@@ -3,9 +3,6 @@ _version: 1
 # cli.rs - CLI help texts
 cli:
   about: "Manage workspaces (git worktree)"
-  clone:
-    about: "Create a bare repository (omit URL for empty bare repo)"
-    url: "Remote URL (omit for empty bare repository)"
   new:
     about: "Create a new worktree"
     name: "Workspace name"
@@ -16,10 +13,8 @@ cli:
     about: "Remove a worktree"
     directory: "Path of the worktree to remove"
     force: "Force removal even with uncommitted changes"
-  list:
-    about: "List worktrees"
   status:
-    about: "Show workspace list and shared file status"
+    about: "Show integrated status dashboard"
   store:
     about: "Manage shared files"
     track:
@@ -40,14 +35,15 @@ cli:
       file: "File path to untrack"
   repos:
     about: "Manage registered repositories"
+    clone:
+      about: "Create a bare repository (omit URL for empty bare repo)"
+      url: "Remote URL (omit for empty bare repository)"
     add:
       about: "Register an existing repository"
       path: "Repository path (default: current directory)"
       name: "Custom name (default: directory name)"
     list:
       about: "List registered repositories"
-    status:
-      about: "Show status of registered repositories"
     rm:
       about: "Unregister a repository (does not delete the repository)"
       name: "Name of the repository to unregister"
@@ -127,17 +123,16 @@ worktree:
 
 # commands/status.rs - Status display
 status:
-  workspaces: "Workspaces:"
+  repositories: "Repositories:"
+  current_workspace: "Current workspace:"
   files_tracked: "  [%{count} files tracked]"
   shared_files: "Shared files:"
 
 # interactive.rs - Interactive mode
 interactive:
   menu:
-    clone: "Create a bare repository"
     new: "Create a workspace"
     rm: "Remove a workspace"
-    list: "List worktrees"
     status: "Show overall status"
     store: "Manage shared files"
     repos: "Manage registered repositories"
@@ -182,9 +177,9 @@ interactive:
     file_prompt: "File path to untrack:"
     empty_file: "Please enter a file path"
   repos_menu:
+    clone: "Create a bare repository"
     add: "Register a repository"
     list: "List registered repositories"
-    status: "Show repository status"
     rm: "Unregister a repository"
   repos_select: "Select repos command:"
   repos_add:

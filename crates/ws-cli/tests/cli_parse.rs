@@ -9,10 +9,8 @@ fn ws() -> assert_cmd::Command {
 #[test]
 fn help_shows_all_subcommands() {
     ws().arg("--help").assert().success().stdout(
-        predicate::str::contains("clone")
-            .and(predicate::str::contains("new"))
+        predicate::str::contains("new")
             .and(predicate::str::contains("rm"))
-            .and(predicate::str::contains("list"))
             .and(predicate::str::contains("status"))
             .and(predicate::str::contains("store"))
             .and(predicate::str::contains("repos")),
@@ -43,7 +41,8 @@ fn unknown_subcommand_fails() {
 #[test]
 fn repos_help_shows_subcommands() {
     ws().args(["repos", "--help"]).assert().success().stdout(
-        predicate::str::contains("add")
+        predicate::str::contains("clone")
+            .and(predicate::str::contains("add"))
             .and(predicate::str::contains("list"))
             .and(predicate::str::contains("rm")),
     );
@@ -68,4 +67,14 @@ fn store_track_missing_args_fails() {
     ws().args(["store", "track", "-s", "symlink"])
         .assert()
         .failure();
+}
+
+#[test]
+fn old_clone_command_fails() {
+    ws().arg("clone").assert().failure();
+}
+
+#[test]
+fn old_list_command_fails() {
+    ws().arg("list").assert().failure();
 }
