@@ -46,6 +46,8 @@ cli:
       name: "カスタム名（省略でディレクトリ名）"
     list:
       about: "登録済みリポジトリの一覧を表示する"
+    status:
+      about: "登録済みリポジトリの状態を表示する"
     rm:
       about: "リポジトリの登録を解除する（リポジトリ自体は削除しない）"
       name: "登録解除するリポジトリの名前"
@@ -182,6 +184,7 @@ interactive:
   repos_menu:
     add: "リポジトリを登録"
     list: "登録済みリポジトリの一覧表示"
+    status: "リポジトリの状態表示"
     rm: "リポジトリの登録を解除"
   repos_select: "repos コマンドを選択:"
   repos_add:

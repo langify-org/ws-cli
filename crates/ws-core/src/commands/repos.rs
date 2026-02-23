@@ -151,6 +151,176 @@ fn resolve_repo_root(path: &std::path::Path) -> Option<PathBuf> {
     None
 }
 
+pub fn cmd_repos_status() -> Result<()> {
+    let config = load_config()?;
+
+    if config.repos.is_empty() {
+        println!("{}", t!("repos.no_repos"));
+        return Ok(());
+    }
+
+    let mut first = true;
+    for (name, entry) in &config.repos {
+        if !first {
+            println!();
+        }
+        first = false;
+
+        println!("{} ({})", name, entry.path.display());
+
+        if !entry.path.exists() {
+            println!("  NOT_FOUND");
+            continue;
+        }
+
+        let is_bare = entry.path.join(".bare").is_dir();
+
+        // GIT_DIR を表示
+        if is_bare {
+            println!("  GIT_DIR: .bare");
+        } else {
+            println!("  GIT_DIR: .git");
+        }
+
+        // worktree 一覧を取得
+        let wt_output = if is_bare {
+            Command::new("git")
+                .args(["--git-dir", ".bare", "worktree", "list"])
+                .current_dir(&entry.path)
+                .output()
+        } else {
+            Command::new("git")
+                .args(["worktree", "list"])
+                .current_dir(&entry.path)
+                .output()
+        };
+
+        let entries = match wt_output {
+            Ok(output) if output.status.success() => {
+                parse_worktree_list(&String::from_utf8_lossy(&output.stdout), &entry.path)
+            }
+            _ => vec![],
+        };
+
+        if is_bare {
+            // bare パターン: (bare) を除外し Worktrees: で一括表示
+            let worktrees: Vec<&WorktreeEntry> = entries.iter().filter(|e| !e.is_bare).collect();
+            if !worktrees.is_empty() {
+                println!("  Worktrees:");
+                for (i, wt) in worktrees.iter().enumerate() {
+                    let connector = if i == worktrees.len() - 1 {
+                        "└──"
+                    } else {
+                        "├──"
+                    };
+                    println!(
+                        "    {} {}   [{}] {}",
+                        connector, wt.rel_path, wt.branch, wt.hash
+                    );
+                }
+            }
+        } else {
+            // 通常 clone: 最初が Main worktree、残りが Linked worktrees
+            if let Some(main_wt) = entries.first() {
+                println!("  Main worktree:");
+                println!(
+                    "    {}   [{}] {}",
+                    main_wt.rel_path, main_wt.branch, main_wt.hash
+                );
+
+                let linked: Vec<&WorktreeEntry> = entries[1..].iter().collect();
+                if !linked.is_empty() {
+                    println!("  Linked worktrees:");
+                    for (i, wt) in linked.iter().enumerate() {
+                        let connector = if i == linked.len() - 1 {
+                            "└──"
+                        } else {
+                            "├──"
+                        };
+                        println!(
+                            "    {} {}   [{}] {}",
+                            connector, wt.rel_path, wt.branch, wt.hash
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+struct WorktreeEntry {
+    rel_path: String,
+    branch: String,
+    hash: String,
+    is_bare: bool,
+}
+
+fn parse_worktree_list(output: &str, repo_root: &std::path::Path) -> Vec<WorktreeEntry> {
+    let repo_root_canonical = repo_root
+        .canonicalize()
+        .unwrap_or_else(|_| repo_root.to_path_buf());
+
+    output
+        .lines()
+        .filter_map(|line| {
+            let tokens: Vec<&str> = line.split_whitespace().collect();
+            if tokens.len() < 2 {
+                return None;
+            }
+
+            let abs_path = PathBuf::from(tokens[0]);
+
+            // (bare) エントリ
+            if tokens.get(1) == Some(&"(bare)") {
+                return Some(WorktreeEntry {
+                    rel_path: String::new(),
+                    branch: String::new(),
+                    hash: String::new(),
+                    is_bare: true,
+                });
+            }
+
+            // 通常エントリ: <path> <hash> [<branch>]
+            if tokens.len() < 3 {
+                return None;
+            }
+            let hash = tokens[1].to_string();
+            // branch は [branch] 形式 → [] を除去
+            let branch_raw = tokens[2..].join(" ");
+            let branch = branch_raw
+                .trim_start_matches('[')
+                .trim_end_matches(']')
+                .to_string();
+
+            // 相対パスに変換
+            let rel_path = abs_path
+                .canonicalize()
+                .ok()
+                .and_then(|canonical| {
+                    canonical.strip_prefix(&repo_root_canonical).ok().map(|p| {
+                        let s = p.to_string_lossy().to_string();
+                        if s.is_empty() { ".".to_string() } else { s }
+                    })
+                })
+                .unwrap_or_else(|| {
+                    // prefix 外の場合: リポジトリルートからの相対パスを試みる
+                    pathdiff::diff_paths(&abs_path, &repo_root_canonical)
+                        .map(|p| p.to_string_lossy().to_string())
+                        .unwrap_or_else(|| abs_path.to_string_lossy().to_string())
+                });
+
+            Some(WorktreeEntry {
+                rel_path,
+                branch,
+                hash,
+                is_bare: false,
+            })
+        })
+        .collect()
+}
+
 pub fn cmd_repos_rm(cmd: &ReposRmCmd) -> Result<()> {
     let mut config = load_config()?;
 

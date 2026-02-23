@@ -46,6 +46,8 @@ cli:
       name: "Custom name (default: directory name)"
     list:
       about: "List registered repositories"
+    status:
+      about: "Show status of registered repositories"
     rm:
       about: "Unregister a repository (does not delete the repository)"
       name: "Name of the repository to unregister"
@@ -182,6 +184,7 @@ interactive:
   repos_menu:
     add: "Register a repository"
     list: "List registered repositories"
+    status: "Show repository status"
     rm: "Unregister a repository"
   repos_select: "Select repos command:"
   repos_add:

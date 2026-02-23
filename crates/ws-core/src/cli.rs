@@ -110,6 +110,7 @@ pub struct ReposCmd {
 pub enum ReposCommand {
     Add(ReposAddCmd),
     List(ReposListCmd),
+    Status(ReposStatusCmd),
     Rm(ReposRmCmd),
 }
 
@@ -123,6 +124,9 @@ pub struct ReposAddCmd {
 
 #[derive(Parser)]
 pub struct ReposListCmd {}
+
+#[derive(Parser)]
+pub struct ReposStatusCmd {}
 
 #[derive(Parser)]
 pub struct ReposRmCmd {
@@ -187,6 +191,9 @@ pub fn parse_with_i18n() -> Ws {
                 })
                 .mut_subcommand("list", |ss| {
                     ss.about(t!("cli.repos.list.about").to_string())
+                })
+                .mut_subcommand("status", |ss| {
+                    ss.about(t!("cli.repos.status.about").to_string())
                 })
                 .mut_subcommand("rm", |ss| {
                     ss.about(t!("cli.repos.rm.about").to_string())

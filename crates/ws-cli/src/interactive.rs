@@ -340,6 +340,7 @@ fn interactive_repos() -> Result<()> {
     let repos_items: Vec<String> = vec![
         format!("add       {}", t!("interactive.repos_menu.add")),
         format!("list      {}", t!("interactive.repos_menu.list")),
+        format!("status    {}", t!("interactive.repos_menu.status")),
         format!("rm        {}", t!("interactive.repos_menu.rm")),
     ];
 
@@ -360,6 +361,10 @@ fn interactive_repos() -> Result<()> {
         "list" => {
             eprintln!("> ws repos list");
             ws_core::commands::repos::cmd_repos_list()
+        }
+        "status" => {
+            eprintln!("> ws repos status");
+            ws_core::commands::repos::cmd_repos_status()
         }
         "rm" => interactive_repos_rm(),
         _ => bail!("{}", t!("interactive.unknown_command", cmd = cmd)),

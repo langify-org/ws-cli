@@ -18,6 +18,7 @@ fn run(ws: ws_core::cli::Ws) -> Result<()> {
         WsCommand::Repos(cmd) => match cmd.command {
             ReposCommand::Add(c) => ws_core::commands::repos::cmd_repos_add(&c),
             ReposCommand::List(_) => ws_core::commands::repos::cmd_repos_list(),
+            ReposCommand::Status(_) => ws_core::commands::repos::cmd_repos_status(),
             ReposCommand::Rm(c) => ws_core::commands::repos::cmd_repos_rm(&c),
         },
         WsCommand::Store(cmd) => match cmd.command {

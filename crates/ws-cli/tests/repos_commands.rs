@@ -148,6 +148,61 @@ fn repos_list_empty() {
         .stdout(predicate::str::contains("No registered repositories"));
 }
 
+// ---- ws repos status ----
+
+#[test]
+fn repos_status_shows_worktrees() {
+    let repo = TestRepo::new();
+    let config_dir = TempDir::new().unwrap();
+    let config_path = config_dir.path().join("config.toml");
+
+    // 登録
+    let mut cmd = ws_with_config(&config_path);
+    cmd.current_dir(repo.main_worktree());
+    cmd.args(["repos", "add", "--name", "test-repo"]);
+    cmd.assert().success();
+
+    // status 表示
+    let mut cmd = ws_with_config(&config_path);
+    cmd.args(["repos", "status"]);
+    cmd.assert().success().stdout(
+        predicate::str::contains("test-repo")
+            .and(predicate::str::contains("GIT_DIR: .bare"))
+            .and(predicate::str::contains("Worktrees:")),
+    );
+}
+
+#[test]
+fn repos_status_empty() {
+    let config_dir = TempDir::new().unwrap();
+    let config_path = config_dir.path().join("config.toml");
+
+    let mut cmd = ws_with_config(&config_path);
+    cmd.args(["repos", "status"]);
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("No registered repositories"));
+}
+
+#[test]
+fn repos_status_not_found() {
+    let config_dir = TempDir::new().unwrap();
+    let config_path = config_dir.path().join("config.toml");
+
+    // 存在しないパスを config に直接書き込み
+    let config_content = r#"
+[repos.broken-repo]
+path = "/tmp/nonexistent-ws-test-repo-path"
+"#;
+    std::fs::write(&config_path, config_content).unwrap();
+
+    let mut cmd = ws_with_config(&config_path);
+    cmd.args(["repos", "status"]);
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("broken-repo").and(predicate::str::contains("NOT_FOUND")));
+}
+
 // ---- ws repos rm ----
 
 #[test]

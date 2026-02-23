@@ -46,6 +46,8 @@ cli:
       name: "自定义名称（默认: 目录名）"
     list:
       about: "列出已注册的仓库"
+    status:
+      about: "显示已注册仓库的状态"
     rm:
       about: "注销仓库（不删除仓库本身）"
       name: "要注销的仓库名称"
@@ -182,6 +184,7 @@ interactive:
   repos_menu:
     add: "注册仓库"
     list: "列出已注册的仓库"
+    status: "显示仓库状态"
     rm: "注销仓库"
   repos_select: "选择 repos 命令:"
   repos_add:
