@@ -75,3 +75,38 @@ The name passed to `ws new` becomes both the worktree directory name and the bra
 Use the `--branch` option to explicitly set a different branch name.
 
 If you omit the name, a random name is generated automatically (e.g., `gentle-happy-fox`).
+
+## Repository root resolution
+
+Several `ws` commands (e.g., `ws repos add`, automatic registration on `ws clone`) need to determine the **repository root** — the top-level directory that represents the project.
+
+### Resolution rules
+
+| Repository type | How the root is determined | Result |
+|---|---|---|
+| **Bare worktree** (`ws clone`) | `git rev-parse --git-common-dir` → if it ends in `.bare`, use its parent | `my-project/` |
+| **Normal clone** | `git rev-parse --show-toplevel` | `my-project/` |
+
+### Example: bare worktree
+
+```
+my-project/          ← repository root
+├── .bare/
+├── main/
+│   └── (you are here)
+└── feature-foo/
+```
+
+Running `ws repos add` from `main/` registers `my-project/`, not `main/`.
+
+### Example: normal clone
+
+```
+my-project/          ← repository root
+├── .git/
+├── src/
+│   └── (you are here)
+└── ...
+```
+
+Running `ws repos add` from `src/` registers `my-project/`.

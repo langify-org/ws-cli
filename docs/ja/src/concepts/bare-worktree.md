@@ -75,3 +75,38 @@ ws rm feature-foo
 `--branch` オプションでブランチ名を明示的に変更できます。
 
 名前を省略した場合は、ランダムな名前（例: `gentle-happy-fox`）が自動生成されます。
+
+## リポジトリルートの解決
+
+`ws` のいくつかのコマンド（`ws repos add`、`ws clone` 時の自動登録など）は、プロジェクトを代表する最上位ディレクトリである**リポジトリルート**を特定する必要があります。
+
+### 解決ルール
+
+| リポジトリの種類 | 解決方法 | 結果 |
+|---|---|---|
+| **bare worktree**（`ws clone`） | `git rev-parse --git-common-dir` → `.bare` で終わる場合、その親ディレクトリ | `my-project/` |
+| **通常の clone** | `git rev-parse --show-toplevel` | `my-project/` |
+
+### 例: bare worktree
+
+```
+my-project/          ← リポジトリルート
+├── .bare/
+├── main/
+│   └── （ここにいる）
+└── feature-foo/
+```
+
+`main/` 内で `ws repos add` を実行すると、`main/` ではなく `my-project/` が登録されます。
+
+### 例: 通常の clone
+
+```
+my-project/          ← リポジトリルート
+├── .git/
+├── src/
+│   └── （ここにいる）
+└── ...
+```
+
+`src/` 内で `ws repos add` を実行すると `my-project/` が登録されます。

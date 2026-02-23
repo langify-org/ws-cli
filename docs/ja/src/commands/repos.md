@@ -34,9 +34,10 @@ ws repos add [path] [--name <name>]
 
 ### 動作
 
-1. パスを解決して検証（git リポジトリである必要あり）
-2. `origin` からリモート URL を自動検出
-3. `~/.config/ws/config.toml` にエントリを追加
+1. パスを[リポジトリルート](../concepts/bare-worktree.md#リポジトリルートの解決)に解決（任意の worktree やサブディレクトリから実行可能）
+2. パスを検証（git リポジトリである必要あり）
+3. `origin` からリモート URL を自動検出
+4. `~/.config/ws/config.toml` にエントリを追加
 
 同名のリポジトリが既に登録されている場合はエラーになります。
 

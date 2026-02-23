@@ -34,9 +34,10 @@ ws repos add [path] [--name <name>]
 
 ### Behavior
 
-1. Resolves and validates the path (must be a git repository)
-2. Auto-detects the remote URL from `origin`
-3. Adds the entry to `~/.config/ws/config.toml`
+1. Resolves the path to the [repository root](../concepts/bare-worktree.md#repository-root-resolution) (works from any worktree or subdirectory)
+2. Validates the path (must be a git repository)
+3. Auto-detects the remote URL from `origin`
+4. Adds the entry to `~/.config/ws/config.toml`
 
 Duplicate names are rejected.
 
