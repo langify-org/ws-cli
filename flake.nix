@@ -64,6 +64,17 @@
               '';
               dontInstall = true;
             };
+            demo = pkgs.writeShellApplication {
+              name = "ws-demo";
+              runtimeInputs = [
+                ws
+                pkgs.vhs
+                pkgs.git
+              ];
+              text = ''
+                vhs "''${1:-demo.tape}"
+              '';
+            };
           };
 
           # nix flake check で実行
@@ -85,6 +96,7 @@
               mdbook
               rust-analyzer
               rustPlatform.rustLibSrc
+              vhs
             ];
 
             RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";

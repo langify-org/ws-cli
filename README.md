@@ -4,6 +4,8 @@
 
 A CLI tool that manages your system's repositories, worktrees, and shared configuration in one place.
 
+![demo](demo.gif)
+
 ## Why ws?
 
 Working across multiple repositories and branches involves persistent friction:
@@ -45,12 +47,26 @@ ws store track -s copy .env.development
 
 ## Quick Start
 
-```bash
-# Bare clone the repository (default branch worktree is created automatically)
-ws repos clone https://github.com/example/repo.git
+### Already have a cloned repository?
 
-# Create a feature branch
+```bash
+cd my-project
+ws new feature/awesome       # Create a worktree for a new branch
+```
+
+### Cloning a new repository?
+
+```bash
+ws repos clone https://github.com/example/repo.git
 ws new feature/awesome
+```
+
+### Starting a new project from scratch?
+
+```bash
+mkdir my-project && cd my-project
+ws repos clone               # Create an empty bare repository
+ws new main                  # Create a worktree with an orphan branch
 ```
 
 > [!TIP]
@@ -122,6 +138,22 @@ programs.ws = {
 ```bash
 cargo install --git https://github.com/langify-org/ws-cli.git
 ```
+
+## Development
+
+### Regenerating demo GIFs
+
+The demo GIFs are generated from [VHS](https://github.com/charmbracelet/vhs) tape files. No local build or tool installation is required — everything runs through Nix:
+
+```bash
+# English (demo.gif)
+nix run .#demo
+
+# Japanese (demo.ja.gif)
+nix run .#demo -- demo.ja.tape
+```
+
+The tape files (`demo.tape`, `demo.ja.tape`) are self-contained scripts that create an isolated environment, so they don't affect your local configuration.
 
 ## License
 

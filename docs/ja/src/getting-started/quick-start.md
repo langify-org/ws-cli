@@ -1,52 +1,53 @@
 # クイックスタート
 
-## bare 構成（推奨）
+## clone 済みのリポジトリがある場合
 
-### 1. bare clone
+既存の `git clone` リポジトリ内で `ws new` が使えます。worktree はリポジトリの親ディレクトリに作成されます。
+
+```bash
+cd my-project
+ws new feature/foo
+```
+
+```
+parent/
+├── my-project/                    # 既存のリポジトリ（.git/ あり）
+└── feature-foo/                   # worktree（../<name> に作成される）
+```
+
+## 新たにリポジトリを clone する場合
+
+`ws repos clone` で bare リポジトリを作成し、デフォルトブランチの worktree が自動的にセットアップされます。
 
 ```bash
 mkdir my-project && cd my-project
 ws repos clone https://github.com/example/repo.git
 ```
 
-`.bare/` ディレクトリに bare リポジトリが作成され、デフォルトブランチ（例: `main`）の worktree が自動的にセットアップされます。
-
-### 2. 機能ブランチで作業
+その後、機能ブランチの worktree を作成します:
 
 ```bash
 ws new feature/foo
 ```
 
-`feature/foo` ブランチの worktree が作成されます。
-
-### 結果のディレクトリ構造
+### ディレクトリ構造
 
 ```
 my-project/
 ├── .bare/                         # bare リポジトリ
 │   └── worktree-store/            # shared 機能の store（任意）
-├── main/                          # worktree
+├── main/                          # worktree（デフォルトブランチ）
 └── feature-foo/                   # worktree
 ```
 
-## 通常構成
-
-既存の `git clone` リポジトリ内でも `ws new` が使えます。worktree はリポジトリの親ディレクトリに作成されます。
-
-```
-parent/
-├── my-project/                    # 通常の git リポジトリ（.git/ あり）
-└── feature-foo/                   # worktree（../<name> に作成される）
-```
-
-## URL なしの bare 構成
+## 新規プロジェクトをローカルで始める場合
 
 リモートなしで新規プロジェクトを始める場合:
 
 ```bash
 mkdir my-project && cd my-project
-ws repos clone                            # 空の bare リポジトリを作成
-ws new master                      # orphan ブランチで worktree を作成
+ws repos clone               # 空の bare リポジトリを作成
+ws new main                  # orphan ブランチで worktree を作成
 ```
 
 ## 共有ファイルのセットアップ

@@ -1,52 +1,53 @@
 # Quick Start
 
-## Bare setup (Recommended)
+## Already have a cloned repository?
 
-### 1. Bare clone
+You can use `ws new` inside any existing `git clone` repository. Worktrees are created in the parent directory of the repository.
+
+```bash
+cd my-project
+ws new feature/foo
+```
+
+```
+parent/
+├── my-project/                    # Your existing repository (with .git/)
+└── feature-foo/                   # Worktree (created at ../<name>)
+```
+
+## Cloning a new repository?
+
+`ws repos clone` creates a bare repository and automatically sets up a worktree for the default branch.
 
 ```bash
 mkdir my-project && cd my-project
 ws repos clone https://github.com/example/repo.git
 ```
 
-A bare repository is created in the `.bare/` directory, and a worktree for the default branch (e.g. `main`) is automatically set up.
-
-### 2. Work on a feature branch
+Then create worktrees for feature branches:
 
 ```bash
 ws new feature/foo
 ```
 
-A worktree for a new `feature/foo` branch is created from the current HEAD.
-
-### Resulting directory structure
+### Directory structure
 
 ```
 my-project/
 ├── .bare/                         # Bare repository
 │   └── worktree-store/            # Shared store (optional)
-├── main/                          # Worktree
+├── main/                          # Worktree (default branch)
 └── feature-foo/                   # Worktree
 ```
 
-## Normal setup
-
-You can also use `ws new` inside an existing `git clone` repository. Worktrees are created in the parent directory of the repository.
-
-```
-parent/
-├── my-project/                    # Normal git repository (with .git/)
-└── feature-foo/                   # Worktree (created at ../<name>)
-```
-
-## Bare setup without a URL
+## Starting a new project from scratch?
 
 To start a new project without a remote:
 
 ```bash
 mkdir my-project && cd my-project
-ws repos clone                            # Create an empty bare repository
-ws new master                      # Create a worktree with an orphan branch
+ws repos clone               # Create an empty bare repository
+ws new main                  # Create a worktree with an orphan branch
 ```
 
 ## Setting up shared files

@@ -4,6 +4,8 @@
 
 システムのリポジトリ・worktree・共有設定を一元管理する CLI ツールです。
 
+![デモ](demo.ja.gif)
+
 ## なぜ ws？
 
 複数のリポジトリやブランチにまたがる開発には、繰り返し発生する手間があります:
@@ -45,12 +47,26 @@ ws store track -s copy .env.development
 
 ## クイックスタート
 
-```bash
-# リポジトリを bare clone（デフォルトブランチの worktree は自動作成）
-ws repos clone https://github.com/example/repo.git
+### clone 済みのリポジトリがある場合
 
-# 機能ブランチを作成
+```bash
+cd my-project
+ws new feature/awesome       # 新しいブランチの worktree を作成
+```
+
+### 新たにリポジトリを clone する場合
+
+```bash
+ws repos clone https://github.com/example/repo.git
 ws new feature/awesome
+```
+
+### 新規プロジェクトをローカルで始める場合
+
+```bash
+mkdir my-project && cd my-project
+ws repos clone               # 空の bare リポジトリを作成
+ws new main                  # orphan ブランチで worktree を作成
 ```
 
 > [!TIP]
@@ -122,6 +138,22 @@ programs.ws = {
 ```bash
 cargo install --git https://github.com/langify-org/ws-cli.git
 ```
+
+## 開発
+
+### デモ GIF の再生成
+
+デモ GIF は [VHS](https://github.com/charmbracelet/vhs) の tape ファイルから生成されます。ローカルでのビルドやツールのインストールは不要で、すべて Nix 経由で実行できます:
+
+```bash
+# 英語版 (demo.gif)
+nix run .#demo
+
+# 日本語版 (demo.ja.gif)
+nix run .#demo -- demo.ja.tape
+```
+
+tape ファイル（`demo.tape`, `demo.ja.tape`）は隔離された環境を自動構築する自己完結型スクリプトのため、ローカルの設定に影響しません。
 
 ## ライセンス
 
