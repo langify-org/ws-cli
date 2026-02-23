@@ -11,6 +11,7 @@ Manage the repository registry. Registered repositories are stored in `~/.config
 |------------|-------------|
 | [`ws repos add`](#ws-repos-add) | Register a repository |
 | [`ws repos list`](#ws-repos-list) | List registered repositories |
+| [`ws repos status`](#ws-repos-status) | Show detailed status of all registered repositories |
 | [`ws repos rm`](#ws-repos-rm) | Unregister a repository |
 
 ---
@@ -67,6 +68,67 @@ ws repos list
 my-repo              /Users/user/projects/my-repo (git@github.com:user/my-repo.git)
 another              /Users/user/projects/another
 ```
+
+---
+
+## ws repos status
+
+Show detailed status of all registered repositories, including GIT_DIR type and worktree tree.
+
+### Usage
+
+```bash
+ws repos status
+```
+
+### Behavior
+
+For each registered repository, displays:
+
+1. **Repository name and path**
+2. **GIT_DIR** — `.bare` for bare worktree pattern, `.git` for normal clones
+3. **Worktree tree** — Lists all worktrees with their branch and commit hash
+
+If a registered repository's path no longer exists, `NOT_FOUND` is displayed.
+
+### Example output
+
+**Bare worktree pattern:**
+
+```
+my-project (/Users/user/projects/my-project)
+  GIT_DIR: .bare
+  Worktrees:
+    ├── main   [main] abc1234
+    ├── feature-foo   [feature/foo] def5678
+    └── fix-bar   [fix/bar] 9ab0123
+```
+
+**Normal clone:**
+
+```
+another-repo (/Users/user/projects/another-repo)
+  GIT_DIR: .git
+  Main worktree:
+    .   [main] abc1234
+  Linked worktrees:
+    └── ../another-repo-feature   [feature/x] def5678
+```
+
+**Missing repository:**
+
+```
+old-repo (/Users/user/projects/old-repo)
+  NOT_FOUND
+```
+
+### Status values
+
+| Value | Description |
+|-------|-------------|
+| `GIT_DIR: .bare` | Repository uses the bare worktree pattern |
+| `GIT_DIR: .git` | Repository is a normal git clone |
+| `NOT_FOUND` | Registered path does not exist on disk |
 
 ---
 

@@ -1,48 +1,68 @@
-# ws - workspace (git worktree) manager
+# ws - AI-ready workspace & repository manager
 
 > **[日本語版はこちら](README.ja.md)**
 
-A CLI tool that streamlines development with the git bare clone + worktree pattern.
+A CLI tool that manages your system's repositories, worktrees, and shared configuration in one place.
 
 ## Why ws?
 
-Git worktree is a powerful feature that lets you work on multiple branches simultaneously, but setting up and managing worktrees involves friction:
+Working across multiple repositories and branches involves persistent friction:
 
 - **Tedious bare clone initialization** — After `git clone --bare`, you need to manually add worktrees
 - **Managing gitignored files** — Files like `.envrc`, `.mcp.json`, `.env`, and `.env.local` are outside git, so you must manually copy or link them every time you create a new worktree
+- **Scattered repository management** — Repositories live in different directories with no unified way to track or inspect them
 
-ws solves these problems and makes worktree-based development seamless.
+ws solves these problems by providing a single CLI for repository registration, worktree management, and gitignored file sharing.
 
 ## Features
 
-- **One-step bare clone + worktree setup** — Get started with `ws clone` then `ws new`
+- **Repository registry** — Register and manage all your repositories with `ws repos` for system-wide visibility
+- **Bare clone + worktree management** — One-step setup with `ws clone` then `ws new`
 - **Shared store** — Automatically share gitignored files across worktrees (symlink / copy strategies)
-- **Repository registry** — Register existing repositories with `ws repos add` to manage them with ws
+- **AI agent integration** — Share agent config across worktrees; give agents system-wide repository awareness
 - **Interactive mode** — Build and run commands interactively
 
-## Bare Clone + Worktree Pattern
+## AI Agent Integration
 
-Unlike a normal `git clone`, this approach uses a bare repository (with no working directory) as the central hub, and each branch is checked out as an independent directory.
+AI coding agents like Claude Code need several configuration files — `.mcp.json`, `.claude/settings.local.json`, `.env`, and more. These are all gitignored, so every new worktree starts without them. Manually copying them each time is tedious and error-prone.
 
+### Shared config across worktrees
+
+ws lets you register these files once in the shared store and automatically distributes them to every new worktree:
+
+```bash
+# Shared config — symlink keeps all worktrees in sync
+ws store track -s symlink .mcp.json
+ws store track -s symlink .claude/settings.local.json
+
+# Per-worktree secrets — copy allows independent customization
+ws store track -s copy .env
+ws store track -s copy .env.local
+
+# New worktrees are ready for AI agents from the start
+ws new feature/awesome
+cd ../feature-awesome
+# Claude Code works immediately — no setup needed
 ```
-my-project/
-├── .bare/              # Bare repository (no working directory)
-├── main/               # Worktree for the main branch
-│   ├── src/
-│   └── ...
-└── feature-foo/        # Worktree for the feature/foo branch
-    ├── src/
-    └── ...
+
+With symlink strategy, updating `.mcp.json` or `.claude/settings.local.json` in one worktree instantly applies to all others. With copy strategy, each worktree can have its own `.env` values while still starting from a working baseline.
+
+### System-wide repository awareness
+
+AI agents often need to work across repository boundaries — referencing another project's code, coordinating changes across repos, or navigating your system's project structure. `ws repos` gives agents a registry of all your repositories:
+
+```bash
+# Register your repositories
+ws repos add ~/projects/frontend
+ws repos add ~/projects/backend
+ws repos add ~/projects/shared-lib
+
+# Agents can discover your project landscape
+ws repos list
+ws repos status
 ```
 
-Having multiple branches open at once offers several advantages:
-
-- **No branch switching needed** — Each branch lives in its own directory
-- **Easy parallel work** — Keep a branch open for review while working on something else
-- **Preserved build caches** — Each branch has independent `target/`, `node_modules/`, etc.
-
-> [!TIP]
-> See [Bare Clone + Worktree Pattern](https://langify-org.github.io/ws-cli/concepts/bare-worktree.html) for details on naming conventions and more.
+With a centralized registry, an AI agent can discover where related projects live, understand your system's structure, and navigate between repositories without you having to explain paths manually each time.
 
 ## Shared Store
 

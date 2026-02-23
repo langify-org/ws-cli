@@ -1,23 +1,25 @@
-# ws - workspace manager
+# ws - AI-ready workspace & repository manager
 
 > **[日本語版はこちら](ja/)**
 
-**ws** is a CLI tool that streamlines development with the git bare clone + worktree pattern.
+**ws** is a CLI tool that manages your system's repositories, worktrees, and shared configuration in one place.
 
 ## Why ws?
 
-Git worktree is a powerful feature that lets you work on multiple branches simultaneously, but setting up and managing worktrees involves friction. Common pain points include:
+Working across multiple repositories and branches involves persistent friction. Common pain points include:
 
 - **Tedious bare clone initialization** — After `git clone --bare`, you need to manually add worktrees
 - **Managing gitignored files** — Files like `.envrc`, `.mcp.json`, and `.env.local` are outside git, so you must manually copy or link them every time you create a new worktree
+- **Scattered repository management** — Repositories live in different directories with no unified way to track or inspect them
 
-ws solves these problems and makes worktree-based development seamless.
+ws solves these problems by providing a single CLI for repository registration, worktree management, and gitignored file sharing.
 
 ## Features
 
-- **One-step bare clone + worktree setup** — Get started with just `ws clone` then `ws new`
+- **Repository registry** — Register and manage all your repositories with `ws repos` for system-wide visibility
+- **Bare clone + worktree management** — One-step setup with just `ws clone` then `ws new`
 - **Shared store** — Automatically share gitignored files across worktrees (symlink / copy strategies)
-- **Repository registry** — Register existing repositories with `ws repos add` to manage them with ws
+- **AI agent integration** — Share agent config across worktrees; give agents system-wide repository awareness
 - **Interactive mode** — Build and run commands interactively
 
 ## Quick Start

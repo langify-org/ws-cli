@@ -1,23 +1,25 @@
-# ws - workspace マネージャー
+# ws - AI-ready workspace & repository manager
 
 > **[English version](../)**
 
-**ws** は git bare clone + worktree パターンでの開発を支援する CLI ツールです。
+**ws** はシステムのリポジトリ・worktree・共有設定を一元管理する CLI ツールです。
 
 ## なぜ ws？
 
-git worktree は複数のブランチを同時に開ける強力な機能ですが、セットアップや運用に手間がかかります。特に以下の課題があります:
+複数のリポジトリやブランチにまたがる開発には、繰り返し発生する手間があります。特に以下の課題があります:
 
 - **bare clone の初期化が煩雑** — `git clone --bare` 後に worktree を手動で追加する必要がある
 - **gitignored ファイルの管理** — `.envrc`, `.mcp.json`, `.env.local` などは git 管理外のため、worktree を作るたびに手動でコピーやリンクが必要
+- **リポジトリの散在** — リポジトリがあちこちのディレクトリに存在し、統一的に把握・管理する手段がない
 
-ws はこれらの課題を解決し、worktree ベースの開発を快適にします。
+ws はリポジトリの登録、worktree の管理、gitignored ファイルの共有を単一の CLI で解決します。
 
 ## 特徴
 
+- **リポジトリレジストリ** — `ws repos` でシステム全体のリポジトリを登録・管理
 - **bare clone + worktree の一括セットアップ** — `ws clone` → `ws new` の2コマンドで開発開始
 - **共有ストア** — gitignored ファイルを worktree 間で自動共有（symlink / copy の2戦略）
-- **リポジトリ登録** — `ws repos add` で既存リポジトリを登録して ws で管理
+- **AI エージェント連携** — エージェント設定の worktree 間共有 + システム全体のリポジトリ認識
 - **インタラクティブモード** — 対話的なコマンド選択
 
 ## クイックスタート

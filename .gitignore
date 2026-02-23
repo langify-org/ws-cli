@@ -3,3 +3,4 @@
 /docs/book
 /docs/ja/book
 .claude/settings.local.json
+.mcp.json

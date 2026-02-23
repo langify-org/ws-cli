@@ -11,6 +11,7 @@
 |-------------|------|
 | [`ws repos add`](#ws-repos-add) | リポジトリを登録 |
 | [`ws repos list`](#ws-repos-list) | 登録済みリポジトリの一覧表示 |
+| [`ws repos status`](#ws-repos-status) | 登録済み全リポジトリの詳細ステータスを表示 |
 | [`ws repos rm`](#ws-repos-rm) | リポジトリの登録解除 |
 
 ---
@@ -67,6 +68,67 @@ ws repos list
 my-repo              /Users/user/projects/my-repo (git@github.com:user/my-repo.git)
 another              /Users/user/projects/another
 ```
+
+---
+
+## ws repos status
+
+登録済み全リポジトリの詳細ステータスを表示します。GIT_DIR の種類や worktree のツリー表示を含みます。
+
+### 使い方
+
+```bash
+ws repos status
+```
+
+### 動作
+
+登録済みリポジトリごとに以下を表示します:
+
+1. **リポジトリ名とパス**
+2. **GIT_DIR** — bare worktree パターンの場合は `.bare`、通常の clone の場合は `.git`
+3. **worktree ツリー** — 全 worktree のブランチ名とコミットハッシュ
+
+登録済みリポジトリのパスが存在しない場合は `NOT_FOUND` が表示されます。
+
+### 出力例
+
+**bare worktree パターン:**
+
+```
+my-project (/Users/user/projects/my-project)
+  GIT_DIR: .bare
+  Worktrees:
+    ├── main   [main] abc1234
+    ├── feature-foo   [feature/foo] def5678
+    └── fix-bar   [fix/bar] 9ab0123
+```
+
+**通常の clone:**
+
+```
+another-repo (/Users/user/projects/another-repo)
+  GIT_DIR: .git
+  Main worktree:
+    .   [main] abc1234
+  Linked worktrees:
+    └── ../another-repo-feature   [feature/x] def5678
+```
+
+**パスが存在しない場合:**
+
+```
+old-repo (/Users/user/projects/old-repo)
+  NOT_FOUND
+```
+
+### ステータス値
+
+| 値 | 説明 |
+|----|------|
+| `GIT_DIR: .bare` | bare worktree パターンのリポジトリ |
+| `GIT_DIR: .git` | 通常の git clone |
+| `NOT_FOUND` | 登録済みパスがディスク上に存在しない |
 
 ---
 

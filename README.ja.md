@@ -1,48 +1,68 @@
-# ws - workspace (git worktree) マネージャー
+# ws - AI-ready workspace & repository manager
 
 > **[English version](README.md)**
 
-git bare clone + worktree パターンでの開発を支援する CLI ツールです。
+システムのリポジトリ・worktree・共有設定を一元管理する CLI ツールです。
 
 ## なぜ ws？
 
-git worktree は複数のブランチを同時に開ける強力な機能ですが、セットアップや運用に手間がかかります:
+複数のリポジトリやブランチにまたがる開発には、繰り返し発生する手間があります:
 
 - **bare clone の初期化が煩雑** — `git clone --bare` 後に worktree を手動で追加する必要がある
 - **gitignored ファイルの管理** — `.envrc`, `.mcp.json`, `.env`, `.env.local` などは git 管理外のため、worktree を作るたびに手動でコピーやリンクが必要
+- **リポジトリの散在** — リポジトリがあちこちのディレクトリに存在し、統一的に把握・管理する手段がない
 
-ws はこれらの課題を解決し、worktree ベースの開発を快適にします。
+ws はリポジトリの登録、worktree の管理、gitignored ファイルの共有を単一の CLI で解決します。
 
 ## 特徴
 
+- **リポジトリレジストリ** — `ws repos` でシステム全体のリポジトリを登録・管理
 - **bare clone + worktree の一括セットアップ** — `ws clone` → `ws new` の2コマンドで開発開始
 - **共有ストア** — gitignored ファイルを worktree 間で自動共有（symlink / copy の2戦略）
-- **リポジトリ登録** — `ws repos add` で既存リポジトリを登録して ws で管理
+- **AI エージェント連携** — エージェント設定の worktree 間共有 + システム全体のリポジトリ認識
 - **インタラクティブモード** — 対話的なコマンド選択
 
-## bare clone + worktree パターン
+## AI エージェント連携
 
-通常の `git clone` とは異なり、作業ディレクトリを持たない bare リポジトリを中心に据え、各ブランチを独立したディレクトリとして展開します。
+Claude Code などの AI コーディングエージェントは `.mcp.json`、`.claude/settings.local.json`、`.env` など複数の設定ファイルを必要とします。これらはすべて gitignored のため、新しい worktree を作るたびに手動で配置する必要があります。
 
+### worktree 間の設定共有
+
+ws なら設定ファイルを共有ストアに一度登録するだけで、すべての worktree に自動配布されます:
+
+```bash
+# 共有設定 — symlink で全 worktree を同期
+ws store track -s symlink .mcp.json
+ws store track -s symlink .claude/settings.local.json
+
+# worktree 固有のシークレット — copy で個別カスタマイズ可能
+ws store track -s copy .env
+ws store track -s copy .env.local
+
+# 新しい worktree は最初から AI エージェント対応
+ws new feature/awesome
+cd ../feature-awesome
+# Claude Code がすぐに動く — セットアップ不要
 ```
-my-project/
-├── .bare/              # bare リポジトリ（作業ディレクトリなし）
-├── main/               # main ブランチの worktree
-│   ├── src/
-│   └── ...
-└── feature-foo/        # feature/foo ブランチの worktree
-    ├── src/
-    └── ...
+
+symlink 戦略では `.mcp.json` や `.claude/settings.local.json` を1つの worktree で更新すれば、他のすべての worktree に即座に反映されます。copy 戦略では各 worktree が独自の `.env` を持ちつつ、動作するベースラインから始められます。
+
+### システム全体のリポジトリ認識
+
+AI エージェントはリポジトリの境界を越えて作業することがよくあります — 別プロジェクトのコードを参照したり、リポジトリ間で変更を調整したり、システム全体の構造を把握したり。`ws repos` はエージェントにリポジトリのレジストリを提供します:
+
+```bash
+# リポジトリを登録
+ws repos add ~/projects/frontend
+ws repos add ~/projects/backend
+ws repos add ~/projects/shared-lib
+
+# エージェントがプロジェクト全体の構造を把握できる
+ws repos list
+ws repos status
 ```
 
-複数のブランチを同時に開けるため、以下のメリットがあります:
-
-- **ブランチ切り替え不要** — 各ブランチが独立したディレクトリ
-- **並行作業が容易** — レビュー中のブランチを開いたまま別の作業ができる
-- **ビルドキャッシュの保持** — ブランチごとに `target/` や `node_modules/` が独立
-
-> [!TIP]
-> 命名規則などの詳細は [bare clone + worktree パターン](https://langify-org.github.io/ws-cli/ja/concepts/bare-worktree.html) を参照してください。
+一元管理されたレジストリがあることで、AI エージェントは関連プロジェクトの場所を発見し、システム全体の構造を理解し、毎回パスを手動で説明しなくてもリポジトリ間を移動できるようになります。
 
 ## 共有ストア
 
