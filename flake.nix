@@ -13,6 +13,10 @@
       ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
+      flake = {
+        homeManagerModules.default = import ./nix/hm-module.nix;
+      };
+
       systems = [
         "x86_64-linux"
         "aarch64-linux"
