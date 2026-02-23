@@ -5,6 +5,7 @@ use std::process::{Command, Stdio};
 
 use crate::cli::{ReposAddCmd, ReposRmCmd};
 use crate::config::{RepoEntry, load_config, save_config};
+use crate::ui::{self, StyledCell};
 
 pub fn cmd_repos_add(cmd: &ReposAddCmd) -> Result<()> {
     let raw_path = match &cmd.path {
@@ -81,12 +82,15 @@ pub fn cmd_repos_add(cmd: &ReposAddCmd) -> Result<()> {
     );
     save_config(&config)?;
 
-    println!(
+    anstream::println!(
         "{}",
-        t!(
-            "repos.added",
-            name = &name,
-            path = path.display().to_string()
+        ui::styled(
+            ui::STYLE_OK,
+            &t!(
+                "repos.added",
+                name = &name,
+                path = path.display().to_string()
+            )
         )
     );
     Ok(())
@@ -94,7 +98,7 @@ pub fn cmd_repos_add(cmd: &ReposAddCmd) -> Result<()> {
 
 pub fn cmd_repos_list(ctx: &crate::context::AppContext) -> Result<()> {
     if ctx.config.repos.is_empty() {
-        println!("{}", t!("repos.no_repos"));
+        anstream::println!("{}", t!("repos.no_repos"));
         return Ok(());
     }
 
@@ -102,7 +106,11 @@ pub fn cmd_repos_list(ctx: &crate::context::AppContext) -> Result<()> {
     for (name, entry) in &ctx.config.repos {
         let display_path = crate::context::abbreviate_home(&entry.path);
         let url = entry.url.as_deref().unwrap_or("").to_string();
-        rows.push(vec![name.clone(), display_path, url]);
+        rows.push(vec![
+            StyledCell::plain(name.clone()),
+            StyledCell::plain(display_path),
+            StyledCell::plain(url),
+        ]);
     }
 
     crate::context::print_table(&["NAME", "PATH", "URL"], &rows, 0);
@@ -230,6 +238,9 @@ pub fn cmd_repos_rm(cmd: &ReposRmCmd) -> Result<()> {
     }
 
     save_config(&config)?;
-    println!("{}", t!("repos.removed", name = &cmd.name));
+    anstream::println!(
+        "{}",
+        ui::styled(ui::STYLE_OK, &t!("repos.removed", name = &cmd.name))
+    );
     Ok(())
 }

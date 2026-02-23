@@ -6,6 +6,7 @@ use crate::commands::repos::{WorktreeEntry, parse_worktree_list};
 use crate::config::{Config, load_config};
 use crate::git::worktree_root;
 use crate::store::{ManifestEntry, read_manifest, store_dir};
+use crate::ui::{self, StyledCell};
 
 pub struct AppContext {
     pub config: Config,
@@ -154,9 +155,9 @@ pub fn abbreviate_home(path: &Path) -> String {
 /// カラム幅を動的に計算してテーブルを表示する。
 ///
 /// - `headers`: ヘッダー文字列のスライス（英語固定）
-/// - `rows`: 各行のセルデータ
+/// - `rows`: 各行のセルデータ（`StyledCell` で plain/styled を保持）
 /// - `indent`: 全行に付与するインデント（スペース数）
-pub fn print_table(headers: &[&str], rows: &[Vec<String>], indent: usize) {
+pub fn print_table(headers: &[&str], rows: &[Vec<StyledCell>], indent: usize) {
     if headers.is_empty() {
         return;
     }
@@ -165,58 +166,65 @@ pub fn print_table(headers: &[&str], rows: &[Vec<String>], indent: usize) {
     let mut widths: Vec<usize> = headers.iter().map(|h| h.len()).collect();
     for row in rows {
         for (i, cell) in row.iter().enumerate().take(num_cols) {
-            widths[i] = widths[i].max(cell.len());
+            widths[i] = widths[i].max(cell.plain.len());
         }
     }
 
     let prefix = " ".repeat(indent);
 
-    // Header
+    // Header (bold)
     let header_line: String = headers
         .iter()
         .enumerate()
         .map(|(i, h)| {
+            let styled_h = ui::styled(ui::STYLE_TABLE_HEADER, h);
             if i == num_cols - 1 {
-                h.to_string()
+                styled_h
             } else {
-                format!("{:<width$}", h, width = widths[i])
+                let padding = widths[i].saturating_sub(h.len());
+                format!("{styled_h}{}", " ".repeat(padding))
             }
         })
         .collect::<Vec<_>>()
         .join("  ");
-    println!("{prefix}{header_line}");
+    anstream::println!("{prefix}{header_line}");
 
-    // Separator (─ をヘッダー文字数分繰り返し、カラム幅までスペースで埋める)
+    // Separator (─ をヘッダー文字数分繰り返し、カラム幅までスペースで埋める — dim)
     let sep_line: String = headers
         .iter()
         .enumerate()
         .map(|(i, h)| {
             let sep = "\u{2500}".repeat(h.len());
+            let styled_sep = ui::styled(ui::STYLE_DIM, &sep);
             if i == num_cols - 1 {
-                sep
+                styled_sep
             } else {
                 let padding = widths[i].saturating_sub(h.len());
-                format!("{sep}{}", " ".repeat(padding))
+                format!("{styled_sep}{}", " ".repeat(padding))
             }
         })
         .collect::<Vec<_>>()
         .join("  ");
-    println!("{prefix}{sep_line}");
+    anstream::println!("{prefix}{sep_line}");
 
     // Data rows
     for row in rows {
         let row_line: String = (0..num_cols)
             .map(|i| {
-                let cell = row.get(i).map(|s| s.as_str()).unwrap_or("");
+                let cell = row.get(i);
+                let (plain, styled) = cell
+                    .map(|c| (c.plain.as_str(), c.styled.as_str()))
+                    .unwrap_or(("", ""));
                 if i == num_cols - 1 {
-                    cell.to_string()
+                    styled.to_string()
                 } else {
-                    format!("{:<width$}", cell, width = widths[i])
+                    let padding = widths[i].saturating_sub(plain.len());
+                    format!("{styled}{}", " ".repeat(padding))
                 }
             })
             .collect::<Vec<_>>()
             .join("  ");
-        println!("{prefix}{row_line}");
+        anstream::println!("{prefix}{row_line}");
     }
 }
 

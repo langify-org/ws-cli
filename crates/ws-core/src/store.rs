@@ -6,6 +6,7 @@ use std::os::unix::fs as unix_fs;
 use std::path::{Path, PathBuf};
 
 use crate::git;
+use crate::ui;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Strategy {
@@ -146,7 +147,10 @@ pub fn apply_file(
     let source = store.join(filepath);
 
     if path_or_symlink_exists(&target) {
-        eprintln!("{}", t!("store.skip_exists", file = filepath));
+        anstream::eprintln!(
+            "{}",
+            ui::styled(ui::STYLE_WARN, &t!("store.skip_exists", file = filepath))
+        );
         return Ok(());
     }
 
@@ -157,11 +161,17 @@ pub fn apply_file(
     match strategy {
         Strategy::Symlink => {
             unix_fs::symlink(&source, &target)?;
-            println!("  symlink: {}", filepath);
+            anstream::println!(
+                "  {}",
+                ui::styled(ui::STYLE_OK, &format!("symlink: {}", filepath))
+            );
         }
         Strategy::Copy => {
             fs::copy(&source, &target)?;
-            println!("  copy: {}", filepath);
+            anstream::println!(
+                "  {}",
+                ui::styled(ui::STYLE_OK, &format!("copy: {}", filepath))
+            );
         }
     }
 

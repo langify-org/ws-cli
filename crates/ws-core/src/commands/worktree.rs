@@ -7,6 +7,7 @@ use std::process::{Command, Stdio};
 use crate::cli::{CloneCmd, NewCmd, RmCmd};
 use crate::git::{find_bare_dir, is_inside_git_worktree};
 use crate::store;
+use crate::ui;
 
 pub fn cmd_clone(cmd: &CloneCmd) -> Result<()> {
     let bare_dir = PathBuf::from(".bare");
@@ -30,14 +31,14 @@ pub fn cmd_clone(cmd: &CloneCmd) -> Result<()> {
         bail!("{}", t!("worktree.bare_creation_failed"));
     }
 
-    println!("{}", t!("worktree.bare_created"));
+    anstream::println!("{}", ui::styled(ui::STYLE_OK, &t!("worktree.bare_created")));
 
     // URL ありの場合のみ、default branch の worktree を自動作成
     if cmd.url.is_some() {
         match crate::git::git_output(&["symbolic-ref", "HEAD"]) {
             Ok(full_ref) => {
                 if let Some(branch) = full_ref.strip_prefix("refs/heads/") {
-                    println!(
+                    anstream::println!(
                         "{}",
                         t!("worktree.creating_default_worktree", branch = branch)
                     );
@@ -52,7 +53,10 @@ pub fn cmd_clone(cmd: &CloneCmd) -> Result<()> {
             }
             Err(_) => {
                 // default branch の検出に失敗しても clone は成功として扱う
-                eprintln!("{}", t!("worktree.default_branch_warning"));
+                anstream::eprintln!(
+                    "{}",
+                    ui::styled(ui::STYLE_WARN, &t!("worktree.default_branch_warning"))
+                );
             }
         }
     }
@@ -74,7 +78,13 @@ pub fn cmd_clone(cmd: &CloneCmd) -> Result<()> {
             },
         );
         if let Err(e) = crate::config::save_config(&config) {
-            eprintln!("{}", t!("config.save_warning", detail = format!("{:#}", e)));
+            anstream::eprintln!(
+                "{}",
+                ui::styled(
+                    ui::STYLE_WARN,
+                    &t!("config.save_warning", detail = format!("{:#}", e))
+                )
+            );
         }
     }
 
@@ -162,7 +172,7 @@ pub fn cmd_new(cmd: &NewCmd) -> Result<()> {
         let abs_directory = fs::canonicalize(&directory).with_context(|| {
             t!("worktree.dir_canonicalize_failed", dir = &directory).to_string()
         })?;
-        println!("{}", t!("worktree.applying_store_files"));
+        anstream::println!("{}", t!("worktree.applying_store_files"));
         let entries = store::read_manifest(&sd)?;
         for entry in &entries {
             store::apply_file(&entry.strategy, &entry.filepath, &sd, &abs_directory)?;

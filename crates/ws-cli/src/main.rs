@@ -39,7 +39,13 @@ fn main() {
     ws_core::detect_and_set_locale();
     let ws = ws_core::cli::parse_with_i18n();
     if let Err(e) = run(ws) {
-        eprintln!("{}", t!("error.top", detail = format!("{:#}", e)));
+        anstream::eprintln!(
+            "{}",
+            ws_core::ui::styled(
+                ws_core::ui::STYLE_ERROR_BOLD,
+                &t!("error.top", detail = format!("{:#}", e))
+            )
+        );
         std::process::exit(1);
     }
 }

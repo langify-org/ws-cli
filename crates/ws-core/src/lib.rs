@@ -4,6 +4,7 @@ pub mod config;
 pub mod context;
 pub mod git;
 pub mod store;
+pub mod ui;
 
 rust_i18n::i18n!("../../locales", fallback = "en");
 

@@ -4,19 +4,23 @@ use rust_i18n::t;
 use crate::commands::repos::WorktreeEntry;
 use crate::context::{AppContext, abbreviate_home, print_table};
 use crate::store::file_status;
+use crate::ui::{self, StyledCell};
 
 pub fn cmd_status(ctx: &AppContext) -> Result<()> {
     let mut has_output = false;
 
     // --- Repositories section ---
     if !ctx.config.repos.is_empty() {
-        println!("{}", t!("status.repositories"));
+        anstream::println!(
+            "{}",
+            ui::styled(ui::STYLE_HEADER, &t!("status.repositories"))
+        );
         has_output = true;
 
         let headers = ["NAME", "PATH", "TYPE"];
         let num_cols = headers.len();
 
-        let mut rows: Vec<(bool, Vec<String>)> = Vec::new();
+        let mut rows: Vec<(bool, Vec<StyledCell>)> = Vec::new();
         for (name, entry) in &ctx.config.repos {
             let is_current = ctx
                 .current_repo
@@ -35,7 +39,11 @@ pub fn cmd_status(ctx: &AppContext) -> Result<()> {
 
             rows.push((
                 is_current,
-                vec![name.clone(), display_path, repo_type.to_string()],
+                vec![
+                    StyledCell::plain(name.clone()),
+                    StyledCell::plain(display_path),
+                    StyledCell::new(repo_type, ui::repo_type_style(repo_type)),
+                ],
             ));
         }
 
@@ -43,64 +51,75 @@ pub fn cmd_status(ctx: &AppContext) -> Result<()> {
         let mut widths: Vec<usize> = headers.iter().map(|h| h.len()).collect();
         for (_, row) in &rows {
             for (i, cell) in row.iter().enumerate().take(num_cols) {
-                widths[i] = widths[i].max(cell.len());
+                widths[i] = widths[i].max(cell.plain.len());
             }
         }
 
-        // Header (with 2-space indent)
+        // Header (with 2-space indent, bold)
         let header_line: String = headers
             .iter()
             .enumerate()
             .map(|(i, h)| {
+                let styled_h = ui::styled(ui::STYLE_TABLE_HEADER, h);
                 if i == num_cols - 1 {
-                    h.to_string()
+                    styled_h
                 } else {
-                    format!("{:<width$}", h, width = widths[i])
+                    let padding = widths[i].saturating_sub(h.len());
+                    format!("{styled_h}{}", " ".repeat(padding))
                 }
             })
             .collect::<Vec<_>>()
             .join("  ");
-        println!("  {header_line}");
+        anstream::println!("  {header_line}");
 
-        // Separator
+        // Separator (dim)
         let sep_line: String = headers
             .iter()
             .enumerate()
             .map(|(i, h)| {
                 let sep = "\u{2500}".repeat(h.len());
+                let styled_sep = ui::styled(ui::STYLE_DIM, &sep);
                 if i == num_cols - 1 {
-                    sep
+                    styled_sep
                 } else {
                     let padding = widths[i].saturating_sub(h.len());
-                    format!("{sep}{}", " ".repeat(padding))
+                    format!("{styled_sep}{}", " ".repeat(padding))
                 }
             })
             .collect::<Vec<_>>()
             .join("  ");
-        println!("  {sep_line}");
+        anstream::println!("  {sep_line}");
 
         // Data rows (marker replaces 2-space indent)
         for (is_current, row) in &rows {
-            let marker = if *is_current { "*" } else { " " };
+            let marker = if *is_current {
+                ui::styled(ui::STYLE_MARKER, "*")
+            } else {
+                " ".to_string()
+            };
             let row_line: String = (0..num_cols)
                 .map(|i| {
-                    let cell = row.get(i).map(|s| s.as_str()).unwrap_or("");
+                    let cell = row.get(i);
+                    let (plain, styled) = cell
+                        .map(|c| (c.plain.as_str(), c.styled.as_str()))
+                        .unwrap_or(("", ""));
                     if i == num_cols - 1 {
-                        cell.to_string()
+                        styled.to_string()
                     } else {
-                        format!("{:<width$}", cell, width = widths[i])
+                        let padding = widths[i].saturating_sub(plain.len());
+                        format!("{styled}{}", " ".repeat(padding))
                     }
                 })
                 .collect::<Vec<_>>()
                 .join("  ");
-            println!("{marker} {row_line}");
+            anstream::println!("{marker} {row_line}");
         }
     }
 
     // --- Current Repository section ---
     if let Some(ref repo) = ctx.current_repo {
         if has_output {
-            println!();
+            anstream::println!();
         }
         has_output = true;
 
@@ -112,13 +131,19 @@ pub fn cmd_status(ctx: &AppContext) -> Result<()> {
                 .to_string()
         });
 
-        println!("{}", t!("status.current_repository", name = &display_name));
-        println!("  Path: {}", abbreviate_home(&repo.root));
+        anstream::println!(
+            "{}",
+            ui::styled(
+                ui::STYLE_HEADER,
+                &t!("status.current_repository", name = &display_name)
+            )
+        );
+        anstream::println!("  Path: {}", abbreviate_home(&repo.root));
 
         let worktrees: Vec<&WorktreeEntry> = repo.worktrees.iter().filter(|w| !w.is_bare).collect();
 
         if !worktrees.is_empty() {
-            println!("  Worktrees:");
+            anstream::println!("  Worktrees:");
 
             let current_rel = ctx.current_workspace.as_ref().and_then(|ws| {
                 ws.root.canonicalize().ok().and_then(|canonical_ws| {
@@ -133,15 +158,26 @@ pub fn cmd_status(ctx: &AppContext) -> Result<()> {
 
             for (i, wt) in worktrees.iter().enumerate() {
                 let is_last = i == worktrees.len() - 1;
-                let connector = if is_last { "└──" } else { "├──" };
+                let connector_str = if is_last { "└──" } else { "├──" };
+                let connector = ui::styled(ui::STYLE_DIM, connector_str);
                 let is_current = current_rel
                     .as_deref()
                     .map(|cr| cr == wt.rel_path)
                     .unwrap_or(false);
-                let marker = if is_current { "*" } else { " " };
-                println!(
-                    "    {} {} {}    [{}] {}",
-                    connector, marker, wt.rel_path, wt.branch, wt.hash
+                let marker = if is_current {
+                    ui::styled(ui::STYLE_MARKER, "*")
+                } else {
+                    " ".to_string()
+                };
+                let branch = ui::styled(ui::STYLE_INFO, &format!("[{}]", wt.branch));
+                let hash = ui::styled(ui::STYLE_DIM, &wt.hash);
+                anstream::println!(
+                    "    {} {} {}    {} {}",
+                    connector,
+                    marker,
+                    wt.rel_path,
+                    branch,
+                    hash
                 );
             }
         }
@@ -153,7 +189,7 @@ pub fn cmd_status(ctx: &AppContext) -> Result<()> {
         && !ws.manifest.is_empty()
     {
         if has_output {
-            println!();
+            anstream::println!();
         }
         has_output = true;
 
@@ -162,11 +198,14 @@ pub fn cmd_status(ctx: &AppContext) -> Result<()> {
             .file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("unknown");
-        println!(
+        anstream::println!(
             "{}",
-            t!(
-                "status.current_workspace",
-                name = format!("{} [{}]", ws_name, ws.branch)
+            ui::styled(
+                ui::STYLE_HEADER,
+                &t!(
+                    "status.current_workspace",
+                    name = format!("{} [{}]", ws_name, ws.branch)
+                )
             )
         );
 
@@ -178,9 +217,9 @@ pub fn cmd_status(ctx: &AppContext) -> Result<()> {
             let store_file = store.join(&entry.filepath);
             let status = file_status(entry, &store_file, &wt_root);
             rows.push(vec![
-                entry.strategy.to_string(),
-                entry.filepath.clone(),
-                status.to_string(),
+                StyledCell::plain(entry.strategy.to_string()),
+                StyledCell::plain(entry.filepath.clone()),
+                StyledCell::new(status, ui::status_style(status)),
             ]);
         }
 
@@ -188,7 +227,7 @@ pub fn cmd_status(ctx: &AppContext) -> Result<()> {
     }
 
     if !has_output {
-        println!("{}", t!("repos.no_repos"));
+        anstream::println!("{}", t!("repos.no_repos"));
     }
 
     Ok(())

@@ -10,6 +10,7 @@ use crate::store::{
     ManifestEntry, Strategy, ensure_store, file_status, path_or_symlink_exists, read_manifest,
     require_store, write_manifest,
 };
+use crate::ui::{self, StyledCell};
 
 pub fn cmd_store_track(cmd: &StoreTrackCmd) -> Result<()> {
     let store = ensure_store()?;
@@ -60,18 +61,27 @@ pub fn cmd_store_track(cmd: &StoreTrackCmd) -> Result<()> {
         if !is_symlink {
             fs::remove_file(&source)?;
             unix_fs::symlink(&store_file, &source)?;
-            println!("{}", t!("store.converted_to_symlink", file = &cmd.file));
+            anstream::println!(
+                "{}",
+                ui::styled(
+                    ui::STYLE_OK,
+                    &t!("store.converted_to_symlink", file = &cmd.file)
+                )
+            );
         }
     } else {
         fs::copy(&source, &store_file).context(t!("store.copy_to_store_failed").to_string())?;
     }
 
-    println!(
+    anstream::println!(
         "{}",
-        t!(
-            "store.tracking_started",
-            strategy = strategy.as_str(),
-            file = &cmd.file
+        ui::styled(
+            ui::STYLE_OK,
+            &t!(
+                "store.tracking_started",
+                strategy = strategy.as_str(),
+                file = &cmd.file
+            )
         )
     );
     Ok(())
@@ -81,12 +91,12 @@ pub fn cmd_store_status() -> Result<()> {
     let store = require_store()?;
     let wt_root = worktree_root().ok();
 
-    println!("Store: {}", crate::context::abbreviate_home(&store));
-    println!();
+    anstream::println!("Store: {}", crate::context::abbreviate_home(&store));
+    anstream::println!();
 
     let entries = read_manifest(&store)?;
     if entries.is_empty() {
-        println!("{}", t!("store.no_tracked_files"));
+        anstream::println!("{}", t!("store.no_tracked_files"));
         return Ok(());
     }
 
@@ -95,9 +105,9 @@ pub fn cmd_store_status() -> Result<()> {
         let store_file = store.join(&entry.filepath);
         let status = file_status(entry, &store_file, &wt_root);
         rows.push(vec![
-            entry.strategy.to_string(),
-            entry.filepath.clone(),
-            status.to_string(),
+            StyledCell::plain(entry.strategy.to_string()),
+            StyledCell::plain(entry.filepath.clone()),
+            StyledCell::new(status, ui::status_style(status)),
         ]);
     }
 
@@ -126,16 +136,22 @@ pub fn cmd_store_push(cmd: &StorePushCmd) -> Result<()> {
 
         let wt_file = wt_root.join(&entry.filepath);
         if !wt_file.is_file() {
-            eprintln!(
+            anstream::eprintln!(
                 "{}",
-                t!("store.skip_not_in_worktree", file = &entry.filepath)
+                ui::styled(
+                    ui::STYLE_WARN,
+                    &t!("store.skip_not_in_worktree", file = &entry.filepath)
+                )
             );
             continue;
         }
 
         let store_file = store.join(&entry.filepath);
         fs::copy(&wt_file, &store_file)?;
-        println!("push: {}", entry.filepath);
+        anstream::println!(
+            "{}",
+            ui::styled(ui::STYLE_OK, &format!("push: {}", entry.filepath))
+        );
         pushed += 1;
     }
 
@@ -143,7 +159,7 @@ pub fn cmd_store_push(cmd: &StorePushCmd) -> Result<()> {
         if let Some(ref target_file) = cmd.file {
             bail!("{}", t!("store.not_copy_tracked", file = target_file));
         } else {
-            println!("{}", t!("store.no_copy_files_to_push"));
+            anstream::println!("{}", t!("store.no_copy_files_to_push"));
         }
     }
 
@@ -166,7 +182,13 @@ pub fn cmd_store_pull(cmd: &StorePullCmd) -> Result<()> {
 
         let store_file = store.join(&entry.filepath);
         if !store_file.is_file() {
-            eprintln!("{}", t!("store.skip_not_in_store", file = &entry.filepath));
+            anstream::eprintln!(
+                "{}",
+                ui::styled(
+                    ui::STYLE_WARN,
+                    &t!("store.skip_not_in_store", file = &entry.filepath)
+                )
+            );
             continue;
         }
 
@@ -174,9 +196,12 @@ pub fn cmd_store_pull(cmd: &StorePullCmd) -> Result<()> {
         let wt_exists = path_or_symlink_exists(&wt_file);
 
         if wt_exists && !cmd.force {
-            eprintln!(
+            anstream::eprintln!(
                 "{}",
-                t!("store.skip_exists_use_force", file = &entry.filepath)
+                ui::styled(
+                    ui::STYLE_WARN,
+                    &t!("store.skip_exists_use_force", file = &entry.filepath)
+                )
             );
             continue;
         }
@@ -192,11 +217,17 @@ pub fn cmd_store_pull(cmd: &StorePullCmd) -> Result<()> {
         match entry.strategy {
             Strategy::Symlink => {
                 unix_fs::symlink(&store_file, &wt_file)?;
-                println!("pull (symlink): {}", entry.filepath);
+                anstream::println!(
+                    "{}",
+                    ui::styled(ui::STYLE_OK, &format!("pull (symlink): {}", entry.filepath))
+                );
             }
             Strategy::Copy => {
                 fs::copy(&store_file, &wt_file)?;
-                println!("pull (copy): {}", entry.filepath);
+                anstream::println!(
+                    "{}",
+                    ui::styled(ui::STYLE_OK, &format!("pull (copy): {}", entry.filepath))
+                );
             }
         }
         pulled += 1;
@@ -206,7 +237,7 @@ pub fn cmd_store_pull(cmd: &StorePullCmd) -> Result<()> {
         if let Some(ref target_file) = cmd.file {
             bail!("{}", t!("store.not_tracked", file = target_file));
         } else {
-            println!("{}", t!("store.no_files_to_pull"));
+            anstream::println!("{}", t!("store.no_files_to_pull"));
         }
     }
 
@@ -244,20 +275,26 @@ fn restore_symlinks_to_files(store: &Path, entry: &ManifestEntry) -> Result<()> 
                 let _ = fs::create_dir_all(parent);
             }
             match fs::copy(&store_file, &target) {
-                Ok(_) => println!(
+                Ok(_) => anstream::println!(
                     "{}",
-                    t!(
-                        "store.symlink_restored",
-                        file = &entry.filepath,
-                        path = wt_path
+                    ui::styled(
+                        ui::STYLE_OK,
+                        &t!(
+                            "store.symlink_restored",
+                            file = &entry.filepath,
+                            path = wt_path
+                        )
                     )
                 ),
-                Err(_) => eprintln!(
+                Err(_) => anstream::eprintln!(
                     "{}",
-                    t!(
-                        "store.restore_copy_failed",
-                        file = &entry.filepath,
-                        path = wt_path
+                    ui::styled(
+                        ui::STYLE_ERROR,
+                        &t!(
+                            "store.restore_copy_failed",
+                            file = &entry.filepath,
+                            path = wt_path
+                        )
                     )
                 ),
             }
@@ -308,6 +345,9 @@ pub fn cmd_store_untrack(cmd: &StoreUntrackCmd) -> Result<()> {
 
     cleanup_empty_parents(&store_file, &store);
 
-    println!("{}", t!("store.untrack_success", file = &cmd.file));
+    anstream::println!(
+        "{}",
+        ui::styled(ui::STYLE_OK, &t!("store.untrack_success", file = &cmd.file))
+    );
     Ok(())
 }

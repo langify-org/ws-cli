@@ -1,0 +1,74 @@
+use anstyle::{AnsiColor, Effects, Style};
+
+// --- Style constants ---
+
+pub const STYLE_HEADER: Style = Style::new().effects(Effects::BOLD);
+pub const STYLE_TABLE_HEADER: Style = Style::new().effects(Effects::BOLD);
+pub const STYLE_DIM: Style = Style::new().effects(Effects::DIMMED);
+pub const STYLE_OK: Style = Style::new().fg_color(Some(anstyle::Color::Ansi(AnsiColor::Green)));
+pub const STYLE_WARN: Style = Style::new().fg_color(Some(anstyle::Color::Ansi(AnsiColor::Yellow)));
+pub const STYLE_ERROR: Style = Style::new().fg_color(Some(anstyle::Color::Ansi(AnsiColor::Red)));
+pub const STYLE_ERROR_BOLD: Style = Style::new()
+    .fg_color(Some(anstyle::Color::Ansi(AnsiColor::Red)))
+    .effects(Effects::BOLD);
+pub const STYLE_INFO: Style = Style::new().fg_color(Some(anstyle::Color::Ansi(AnsiColor::Cyan)));
+pub const STYLE_MARKER: Style = Style::new()
+    .fg_color(Some(anstyle::Color::Ansi(AnsiColor::Green)))
+    .effects(Effects::BOLD);
+
+// --- Helper functions ---
+
+/// Apply a style to text, returning a string with ANSI escape codes.
+pub fn styled(style: Style, text: &str) -> String {
+    format!("{style}{text}{style:#}")
+}
+
+/// Return the appropriate style for a file status value.
+pub fn status_style(status: &str) -> Style {
+    match status {
+        "OK" => STYLE_OK,
+        "MISSING" | "MISSING(store)" => STYLE_ERROR,
+        "ERROR" => STYLE_ERROR_BOLD,
+        "MODIFIED" | "NOT_LINK" | "WRONG_LINK" => STYLE_WARN,
+        "(store only)" => STYLE_DIM,
+        _ => Style::new(),
+    }
+}
+
+/// Return the appropriate style for a repository type value.
+pub fn repo_type_style(repo_type: &str) -> Style {
+    match repo_type {
+        "bare" => STYLE_INFO,
+        "NOT_FOUND" => STYLE_ERROR,
+        _ => Style::new(),
+    }
+}
+
+// --- StyledCell ---
+
+/// A cell that holds both plain text (for width calculation) and styled text (for display).
+pub struct StyledCell {
+    pub plain: String,
+    pub styled: String,
+}
+
+impl StyledCell {
+    /// Create a styled cell.
+    pub fn new(text: impl Into<String>, style: Style) -> Self {
+        let plain = text.into();
+        let styled_text = styled(style, &plain);
+        StyledCell {
+            plain,
+            styled: styled_text,
+        }
+    }
+
+    /// Create a plain (unstyled) cell.
+    pub fn plain(text: impl Into<String>) -> Self {
+        let plain = text.into();
+        StyledCell {
+            styled: plain.clone(),
+            plain,
+        }
+    }
+}
