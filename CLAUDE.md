@@ -67,7 +67,7 @@ locales/
 - `commands/status` → `git`, `store`
 - `commands/store` → `cli`, `git`, `store`
 - `commands/repos` → `cli`, `config`
-- `interactive` → `cli`, `git`, `store`, `commands::worktree`
+- `interactive` → `cli`, `config`, `git`, `store`, `commands::worktree`
 - `main` → `cli`, `commands/*`, `interactive`
 
 ### shared store の仕組み
@@ -77,6 +77,21 @@ locales/
 strategy の使い分け:
 - `symlink` の典型例: `.envrc`, `.tool-versions` など全 worktree で共通の設定ファイル
 - `copy` の典型例: `.mcp.json`, `.env` など worktree ごとにカスタマイズが必要なファイル
+
+### repos のリポジトリルート解決
+
+`ws repos add` は指定パス（またはcwd）からリポジトリルートを自動解決して登録する（`resolve_repo_root()`）。
+
+解決ロジック:
+1. `git rev-parse --git-common-dir` が `.bare` で終わる → その親ディレクトリ（bare worktree パターン）
+2. それ以外 → `git rev-parse --show-toplevel`（通常の clone）
+3. どちらも失敗 → 指定パスをそのまま使用
+
+これにより worktree 内から実行しても bare root が登録され、`ws clone` の自動登録と一致する。
+
+### 対話モードのコンパイル時安全機構
+
+`interactive.rs` の `_ensure_all_commands_in_interactive()` は `WsCommand` の全バリアントをワイルドカードなしで列挙する sentinel 関数。新しいサブコマンドを追加した際に対話モードの更新漏れをコンパイルエラーで検出する。
 
 ## コーディング規約
 
