@@ -1408,8 +1408,9 @@ dependencies = [
 
 [[package]]
 name = "ws"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
+ "anstream",
  "anyhow",
  "assert_cmd",
  "inquire",
@@ -1422,8 +1423,10 @@ dependencies = [
 
 [[package]]
 name = "ws-core"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
+ "anstream",
+ "anstyle",
  "anyhow",
  "clap",
  "pathdiff",
