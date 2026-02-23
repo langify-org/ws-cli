@@ -36,7 +36,7 @@
 
           commonArgs = {
             pname = "ws";
-            version = "0.6.0";
+            version = "0.7.0";
             inherit src;
           };
 
@@ -55,7 +55,7 @@
             ws = ws;
             docs = pkgs.stdenvNoCC.mkDerivation {
               pname = "ws-docs";
-              version = "0.6.0";
+              version = "0.7.0";
               src = ./docs;
               nativeBuildInputs = [ pkgs.mdbook ];
               buildPhase = ''
