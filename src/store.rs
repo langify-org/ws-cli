@@ -7,8 +7,40 @@ use std::path::{Path, PathBuf};
 
 use crate::git;
 
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum Strategy {
+    Symlink,
+    Copy,
+}
+
+impl Strategy {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Symlink => "symlink",
+            Self::Copy => "copy",
+        }
+    }
+}
+
+impl std::fmt::Display for Strategy {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl std::str::FromStr for Strategy {
+    type Err = anyhow::Error;
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        match s {
+            "symlink" => Ok(Self::Symlink),
+            "copy" => Ok(Self::Copy),
+            _ => Err(anyhow::anyhow!("{}", t!("store.invalid_strategy"))),
+        }
+    }
+}
+
 pub(crate) struct ManifestEntry {
-    pub strategy: String,
+    pub strategy: Strategy,
     pub filepath: String,
 }
 
@@ -69,10 +101,10 @@ pub(crate) fn read_manifest(store: &Path) -> Result<Vec<ManifestEntry>> {
         if line.is_empty() {
             continue;
         }
-        if let Some((strategy, filepath)) = line.split_once(':') {
-            if !strategy.is_empty() {
+        if let Some((strategy_str, filepath)) = line.split_once(':') {
+            if let Ok(strategy) = strategy_str.parse::<Strategy>() {
                 entries.push(ManifestEntry {
-                    strategy: strategy.to_string(),
+                    strategy,
                     filepath: filepath.to_string(),
                 });
             }
@@ -92,13 +124,20 @@ pub(crate) fn write_manifest(store: &Path, entries: &[ManifestEntry]) -> Result<
     })?;
 
     for entry in entries {
-        writeln!(file, "{}:{}", entry.strategy, entry.filepath)?;
+        writeln!(file, "{}:{}", entry.strategy.as_str(), entry.filepath)?;
     }
     Ok(())
 }
 
+/// ファイルまたはシンボリックリンク（リンク切れ含む）が存在するか判定。
+/// `Path::exists()` はリンク切れ symlink で false を返すため、
+/// symlink 自体の存在も `symlink_metadata()` で確認する。
+pub(crate) fn path_or_symlink_exists(path: &Path) -> bool {
+    path.exists() || path.symlink_metadata().is_ok()
+}
+
 pub(crate) fn apply_file(
-    strategy: &str,
+    strategy: &Strategy,
     filepath: &str,
     store: &Path,
     target_root: &Path,
@@ -106,7 +145,7 @@ pub(crate) fn apply_file(
     let target = target_root.join(filepath);
     let source = store.join(filepath);
 
-    if target.exists() || target.symlink_metadata().is_ok() {
+    if path_or_symlink_exists(&target) {
         eprintln!("{}", t!("store.skip_exists", file = filepath));
         return Ok(());
     }
@@ -116,15 +155,14 @@ pub(crate) fn apply_file(
     }
 
     match strategy {
-        "symlink" => {
+        Strategy::Symlink => {
             unix_fs::symlink(&source, &target)?;
             println!("  symlink: {}", filepath);
         }
-        "copy" => {
+        Strategy::Copy => {
             fs::copy(&source, &target)?;
             println!("  copy: {}", filepath);
         }
-        _ => {}
     }
 
     Ok(())
@@ -144,41 +182,41 @@ pub(crate) fn file_status(
     };
 
     let wt_file = root.join(&entry.filepath);
-    let wt_exists = wt_file.exists() || wt_file.symlink_metadata().is_ok();
 
-    if !wt_exists {
+    if !path_or_symlink_exists(&wt_file) {
         return "MISSING";
     }
 
-    if entry.strategy == "symlink" {
-        let is_link = wt_file
-            .symlink_metadata()
-            .map(|m| m.file_type().is_symlink())
-            .unwrap_or(false);
+    match entry.strategy {
+        Strategy::Symlink => {
+            let is_link = wt_file
+                .symlink_metadata()
+                .map(|m| m.file_type().is_symlink())
+                .unwrap_or(false);
 
-        if !is_link {
-            return "NOT_LINK";
-        }
+            if !is_link {
+                return "NOT_LINK";
+            }
 
-        let link_target = match fs::read_link(&wt_file) {
-            Ok(t) => t,
-            Err(_) => return "ERROR",
-        };
-        if link_target != *store_file {
-            "WRONG_LINK"
-        } else {
-            "OK"
+            let link_target = match fs::read_link(&wt_file) {
+                Ok(t) => t,
+                Err(_) => return "ERROR",
+            };
+            if link_target != *store_file {
+                "WRONG_LINK"
+            } else {
+                "OK"
+            }
         }
-    } else if entry.strategy == "copy" {
-        let store_content = fs::read(store_file).ok();
-        let wt_content = fs::read(&wt_file).ok();
-        if store_content != wt_content {
-            "MODIFIED"
-        } else {
-            "OK"
+        Strategy::Copy => {
+            let store_content = fs::read(store_file).ok();
+            let wt_content = fs::read(&wt_file).ok();
+            if store_content != wt_content {
+                "MODIFIED"
+            } else {
+                "OK"
+            }
         }
-    } else {
-        "OK"
     }
 }
 
@@ -206,9 +244,9 @@ mod tests {
 
         let entries = read_manifest(&store).unwrap();
         assert_eq!(entries.len(), 2);
-        assert_eq!(entries[0].strategy, "symlink");
+        assert_eq!(entries[0].strategy, Strategy::Symlink);
         assert_eq!(entries[0].filepath, ".envrc");
-        assert_eq!(entries[1].strategy, "copy");
+        assert_eq!(entries[1].strategy, Strategy::Copy);
         assert_eq!(entries[1].filepath, ".mcp.json");
     }
 
@@ -233,7 +271,7 @@ mod tests {
 
         let entries = read_manifest(&store).unwrap();
         assert_eq!(entries.len(), 1);
-        assert_eq!(entries[0].strategy, "symlink");
+        assert_eq!(entries[0].strategy, Strategy::Symlink);
         assert_eq!(entries[0].filepath, "path:with:colon");
     }
 
@@ -242,11 +280,11 @@ mod tests {
         let (_tmp, store) = setup_store();
         let original = vec![
             ManifestEntry {
-                strategy: "symlink".into(),
+                strategy: Strategy::Symlink,
                 filepath: ".envrc".into(),
             },
             ManifestEntry {
-                strategy: "copy".into(),
+                strategy: Strategy::Copy,
                 filepath: ".mcp.json".into(),
             },
         ];
@@ -255,9 +293,9 @@ mod tests {
         let read_back = read_manifest(&store).unwrap();
 
         assert_eq!(read_back.len(), 2);
-        assert_eq!(read_back[0].strategy, "symlink");
+        assert_eq!(read_back[0].strategy, Strategy::Symlink);
         assert_eq!(read_back[0].filepath, ".envrc");
-        assert_eq!(read_back[1].strategy, "copy");
+        assert_eq!(read_back[1].strategy, Strategy::Copy);
         assert_eq!(read_back[1].filepath, ".mcp.json");
     }
 
@@ -268,7 +306,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let store_file = tmp.path().join("nonexistent");
         let entry = ManifestEntry {
-            strategy: "symlink".into(),
+            strategy: Strategy::Symlink,
             filepath: "test".into(),
         };
         assert_eq!(file_status(&entry, &store_file, &None), "MISSING(store)");
@@ -281,7 +319,7 @@ mod tests {
         fs::write(&store_file, "content").unwrap();
 
         let entry = ManifestEntry {
-            strategy: "symlink".into(),
+            strategy: Strategy::Symlink,
             filepath: "test_file".into(),
         };
         assert_eq!(file_status(&entry, &store_file, &None), "(store only)");
@@ -297,7 +335,7 @@ mod tests {
         fs::create_dir_all(&wt_root).unwrap();
 
         let entry = ManifestEntry {
-            strategy: "symlink".into(),
+            strategy: Strategy::Symlink,
             filepath: "missing_file".into(),
         };
         assert_eq!(file_status(&entry, &store_file, &Some(wt_root)), "MISSING");
@@ -314,7 +352,7 @@ mod tests {
         fs::write(wt_root.join(".envrc"), "regular file").unwrap();
 
         let entry = ManifestEntry {
-            strategy: "symlink".into(),
+            strategy: Strategy::Symlink,
             filepath: ".envrc".into(),
         };
         assert_eq!(file_status(&entry, &store_file, &Some(wt_root)), "NOT_LINK");
@@ -334,7 +372,7 @@ mod tests {
         unix_fs::symlink(&wrong_target, wt_root.join(".envrc")).unwrap();
 
         let entry = ManifestEntry {
-            strategy: "symlink".into(),
+            strategy: Strategy::Symlink,
             filepath: ".envrc".into(),
         };
         assert_eq!(
@@ -354,7 +392,7 @@ mod tests {
         unix_fs::symlink(&store_file, wt_root.join(".envrc")).unwrap();
 
         let entry = ManifestEntry {
-            strategy: "symlink".into(),
+            strategy: Strategy::Symlink,
             filepath: ".envrc".into(),
         };
         assert_eq!(file_status(&entry, &store_file, &Some(wt_root)), "OK");
@@ -371,7 +409,7 @@ mod tests {
         fs::write(wt_root.join(".mcp.json"), "modified").unwrap();
 
         let entry = ManifestEntry {
-            strategy: "copy".into(),
+            strategy: Strategy::Copy,
             filepath: ".mcp.json".into(),
         };
         assert_eq!(file_status(&entry, &store_file, &Some(wt_root)), "MODIFIED");
@@ -388,7 +426,7 @@ mod tests {
         fs::write(wt_root.join(".mcp.json"), "same content").unwrap();
 
         let entry = ManifestEntry {
-            strategy: "copy".into(),
+            strategy: Strategy::Copy,
             filepath: ".mcp.json".into(),
         };
         assert_eq!(file_status(&entry, &store_file, &Some(wt_root)), "OK");
@@ -406,7 +444,7 @@ mod tests {
         let target_root = tmp.path().join("target");
         fs::create_dir_all(&target_root).unwrap();
 
-        apply_file("symlink", ".envrc", &store, &target_root).unwrap();
+        apply_file(&Strategy::Symlink, ".envrc", &store, &target_root).unwrap();
 
         let target = target_root.join(".envrc");
         assert!(target.symlink_metadata().unwrap().file_type().is_symlink());
@@ -422,7 +460,7 @@ mod tests {
         let target_root = tmp.path().join("target");
         fs::create_dir_all(&target_root).unwrap();
 
-        apply_file("copy", ".mcp.json", &store, &target_root).unwrap();
+        apply_file(&Strategy::Copy, ".mcp.json", &store, &target_root).unwrap();
 
         let target = target_root.join(".mcp.json");
         assert!(target.is_file());
@@ -440,7 +478,7 @@ mod tests {
         fs::create_dir_all(&target_root).unwrap();
         fs::write(target_root.join(".envrc"), "existing").unwrap();
 
-        apply_file("symlink", ".envrc", &store, &target_root).unwrap();
+        apply_file(&Strategy::Symlink, ".envrc", &store, &target_root).unwrap();
 
         // 既存ファイルが変更されていないこと
         assert_eq!(
@@ -459,7 +497,7 @@ mod tests {
         let target_root = tmp.path().join("target");
         fs::create_dir_all(&target_root).unwrap();
 
-        apply_file("copy", "sub/dir/file", &store, &target_root).unwrap();
+        apply_file(&Strategy::Copy, "sub/dir/file", &store, &target_root).unwrap();
 
         assert!(target_root.join("sub/dir/file").is_file());
     }
