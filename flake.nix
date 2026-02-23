@@ -55,7 +55,11 @@
             packages = with pkgs; [
               cargo-watch
               mdbook
+              rust-analyzer
+              rustPlatform.rustLibSrc
             ];
+
+            RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
           };
         };
     };

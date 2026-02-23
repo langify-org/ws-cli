@@ -1,4 +1,4 @@
-#![allow(dead_code, deprecated)]
+#![allow(dead_code)]
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -112,7 +112,7 @@ impl TestRepo {
 
     /// ws バイナリを bare root の cwd で実行する Command を生成
     pub fn ws_cmd(&self) -> assert_cmd::Command {
-        let mut cmd = assert_cmd::Command::cargo_bin("ws").unwrap();
+        let mut cmd = assert_cmd::cargo_bin_cmd!("ws");
         cmd.current_dir(&self.root);
         cmd.env("LC_ALL", "en");
         cmd
@@ -120,7 +120,7 @@ impl TestRepo {
 
     /// ws バイナリを指定 worktree の cwd で実行する Command を生成
     pub fn ws_cmd_in(&self, worktree: &str) -> assert_cmd::Command {
-        let mut cmd = assert_cmd::Command::cargo_bin("ws").unwrap();
+        let mut cmd = assert_cmd::cargo_bin_cmd!("ws");
         cmd.current_dir(self.root.join(worktree));
         cmd.env("LC_ALL", "en");
         cmd

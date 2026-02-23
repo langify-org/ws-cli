@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 mod common;
 
 use common::TestRepo;
@@ -12,7 +10,7 @@ use tempfile::TempDir;
 fn clone_creates_bare_repo() {
     let tmp = TempDir::new().unwrap();
 
-    let mut cmd = assert_cmd::Command::cargo_bin("ws").unwrap();
+    let mut cmd = assert_cmd::cargo_bin_cmd!("ws");
     cmd.arg("clone")
         .current_dir(tmp.path())
         .env("LC_ALL", "en")
@@ -29,7 +27,7 @@ fn clone_fails_if_bare_exists() {
     // .bare/HEAD を作成して bare repo に見せかける必要はない
     // ws は .bare ディレクトリの存在だけでエラーにする
 
-    let mut cmd = assert_cmd::Command::cargo_bin("ws").unwrap();
+    let mut cmd = assert_cmd::cargo_bin_cmd!("ws");
     cmd.arg("clone")
         .current_dir(tmp.path())
         .env("LC_ALL", "en")

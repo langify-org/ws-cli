@@ -1,12 +1,7 @@
-#![allow(deprecated)]
-
-mod common;
-
-use assert_cmd::Command;
 use predicates::prelude::*;
 
-fn ws() -> Command {
-    let mut cmd = Command::cargo_bin("ws").unwrap();
+fn ws() -> assert_cmd::Command {
+    let mut cmd = assert_cmd::cargo_bin_cmd!("ws");
     cmd.env("LC_ALL", "en");
     cmd
 }

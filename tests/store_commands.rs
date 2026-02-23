@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 mod common;
 
 use common::TestRepo;
