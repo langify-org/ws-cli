@@ -29,14 +29,25 @@
         let
           craneLib = crane.mkLib pkgs;
 
-          ws = craneLib.buildPackage {
+          src = builtins.path {
+            path = ./.;
+            name = "ws-src";
+          };
+
+          commonArgs = {
             pname = "ws";
             version = "0.1.0";
-            src = builtins.path {
-              path = ./.;
-              name = "ws-src";
-            };
+            inherit src;
           };
+
+          # 依存クレートのビルド成果物をキャッシュ
+          cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+
+          # メインパッケージ（テストなし）
+          ws = craneLib.buildPackage (commonArgs // {
+            inherit cargoArtifacts;
+            doCheck = false;
+          });
         in
         {
           packages = {
@@ -53,6 +64,19 @@
               '';
               dontInstall = true;
             };
+          };
+
+          # nix flake check で実行
+          checks = {
+            ws-test = craneLib.cargoTest (commonArgs // {
+              inherit cargoArtifacts;
+              nativeCheckInputs = [ pkgs.git ];
+            });
+            ws-clippy = craneLib.cargoClippy (commonArgs // {
+              inherit cargoArtifacts;
+              cargoClippyExtraArgs = "--all-targets -- -D warnings";
+            });
+            ws-fmt = craneLib.cargoFmt { inherit src; };
           };
 
           devShells.default = craneLib.devShell {

@@ -178,31 +178,6 @@ pub(crate) fn cmd_new(cmd: &NewCmd) -> Result<()> {
     Ok(())
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn generate_name_format() {
-        let name = generate_name();
-        let parts: Vec<&str> = name.split('-').collect();
-        assert_eq!(
-            parts.len(),
-            3,
-            "Expected 3 hyphen-separated words, got: {}",
-            name
-        );
-        for part in &parts {
-            assert!(!part.is_empty(), "Empty part in name: {}", name);
-            assert!(
-                part.chars().all(|c| c.is_alphabetic()),
-                "Non-alphabetic character in: {}",
-                name
-            );
-        }
-    }
-}
-
 pub(crate) fn cmd_list() -> Result<()> {
     let output = crate::git::git_output(&["worktree", "list"])?;
     println!("{}", output);
@@ -226,4 +201,29 @@ pub(crate) fn cmd_rm(cmd: &RmCmd) -> Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn generate_name_format() {
+        let name = generate_name();
+        let parts: Vec<&str> = name.split('-').collect();
+        assert_eq!(
+            parts.len(),
+            3,
+            "Expected 3 hyphen-separated words, got: {}",
+            name
+        );
+        for part in &parts {
+            assert!(!part.is_empty(), "Empty part in name: {}", name);
+            assert!(
+                part.chars().all(|c| c.is_alphabetic()),
+                "Non-alphabetic character in: {}",
+                name
+            );
+        }
+    }
 }
