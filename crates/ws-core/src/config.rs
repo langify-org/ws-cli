@@ -32,15 +32,26 @@ pub fn config_path() -> Result<PathBuf> {
     Ok(config_dir.join("ws").join("config.toml"))
 }
 
+fn expand_tilde(path: &Path) -> PathBuf {
+    let s = path.to_string_lossy();
+    PathBuf::from(shellexpand::tilde(&s).into_owned())
+}
+
 fn load_config_from(path: &Path) -> Result<Config> {
     if !path.exists() {
         return Ok(Config::default());
     }
     let content = std::fs::read_to_string(path)
         .with_context(|| t!("config.read_failed", path = path.display().to_string()).to_string())?;
-    let config: Config = toml::from_str(&content).with_context(|| {
+    let mut config: Config = toml::from_str(&content).with_context(|| {
         t!("config.parse_failed", path = path.display().to_string()).to_string()
     })?;
+
+    // config 内のパスの ~ をホームディレクトリに展開
+    for entry in config.repos.values_mut() {
+        entry.path = expand_tilde(&entry.path);
+    }
+
     Ok(config)
 }
 
