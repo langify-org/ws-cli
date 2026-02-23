@@ -26,23 +26,43 @@ git リポジトリ内で実行した場合に表示（config に未登録でも
 
 リポジトリ外で登録済みリポジトリもない場合は、「登録済みリポジトリはありません」メッセージが表示されます。
 
+## カラー出力
+
+ターミナル接続時は出力がカラー表示されます。パイプやファイルへのリダイレクト時は自動的にカラーコードが除去されます。`NO_COLOR` 環境変数でカラーを無効化できます。
+
+| 要素 | スタイル |
+|------|---------|
+| セクションヘッダーのタイトル | Bold |
+| セクションヘッダーの罫線 (`──`) | Dim |
+| テーブルヘッダー | Bold |
+| テーブルセパレータ (`────`) | Dim |
+| ステータス `OK` | Green |
+| ステータス `MISSING`, `MISSING(store)` | Red |
+| ステータス `ERROR` | Red + Bold |
+| ステータス `MODIFIED`, `NOT_LINK`, `WRONG_LINK` | Yellow |
+| カレントマーカー `*` | Green + Bold |
+| ブランチ名 `[branch]` | Cyan |
+| コミットハッシュ | Dim |
+| リポジトリ種別 `bare` | Cyan |
+| リポジトリ種別 `NOT_FOUND` | Red |
+
 ## 出力例
 
 ```
-Repositories:
+── Repositories ──────────────────────────
   NAME              PATH                                     TYPE
   ────              ────                                     ────
   langify-notebook  ~/Projects/langify-org/langify-notebook  git
   web               ~/Projects/spirinc/web                   bare
 * ws-cli            ~/Projects/langify-org/ws-cli            bare
 
-Current Repository: ws-cli
+── Current Repository: ws-cli ────────────
   Path: ~/Projects/langify-org/ws-cli
   Worktrees:
     ├──   fix-ci    [fix-ci] fb7eff8
     └── * master    [master] 5b33080
 
-Current Workspace: master [master]
+── Current Workspace: master [master] ────
   STRATEGY  FILE       STATUS
   ────────  ────       ──────
   symlink   .mcp.json  OK

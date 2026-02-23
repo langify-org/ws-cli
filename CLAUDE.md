@@ -52,6 +52,7 @@ crates/
       store.rs            shared store のデータ層（Strategy, ManifestEntry, manifest 操作, file_status, path_or_symlink_exists）
       config.rs           設定ファイル（~/.config/ws/config.toml）の読み書き
       context.rs          AppContext（3層の状態を一括構築）+ abbreviate_home() + print_table()
+      ui.rs               カラー出力（スタイル定数, styled(), section_header(), StyledCell）
       commands/
         mod.rs            サブモジュール宣言
         worktree.rs       clone, new, rm
@@ -67,15 +68,16 @@ crates/
 
 依存グラフ（循環なし）:
 - `cli` / `git` — 依存なし（最下層）
-- `store` → `git`
+- `ui` — 依存なし（`anstyle` のみ使用）
+- `store` → `git`, `ui`
 - `config` — 依存なし
-- `context` → `config`, `git`, `store`, `commands/repos`
-- `commands/worktree` → `cli`, `git`, `store`, `config`
-- `commands/status` → `context`, `store`, `commands/repos`
-- `commands/store` → `cli`, `git`, `store`, `context`
-- `commands/repos` → `cli`, `config`, `context`
+- `context` → `config`, `git`, `store`, `ui`, `commands/repos`
+- `commands/worktree` → `cli`, `git`, `store`, `ui`
+- `commands/status` → `context`, `store`, `ui`, `commands/repos`
+- `commands/store` → `cli`, `git`, `store`, `ui`, `context`
+- `commands/repos` → `cli`, `config`, `ui`, `context`
 - `ws-cli/interactive` → `ws_core::cli`, `ws_core::config`, `ws_core::context`, `ws_core::git`, `ws_core::store`, `ws_core::commands::*`
-- `ws-cli/main` → `ws_core::cli`, `ws_core::context`, `ws_core::commands::*`, `interactive`
+- `ws-cli/main` → `ws_core::cli`, `ws_core::context`, `ws_core::ui`, `ws_core::commands::*`, `interactive`
 
 ### AppContext と3層の状態モデル
 
@@ -114,6 +116,22 @@ strategy の使い分け:
 
 `interactive.rs` の `_ensure_all_commands_in_interactive()` は `WsCommand` の全バリアントをワイルドカードなしで列挙する sentinel 関数。新しいサブコマンドを追加した際に対話モードの更新漏れをコンパイルエラーで検出する。
 
+### カラー出力
+
+`anstyle` + `anstream` でターミナルカラーを実現。`clap v4` の transitive dependency のため追加クレートは最小限。
+
+- スタイル定数・ヘルパーは `ui.rs` に集約。各モジュールは `use crate::ui` で利用
+- `StyledCell` で plain（幅計算用）と styled（表示用）を分離し、ANSI-aware なテーブルパディングを実現
+- `anstream::println!` / `anstream::eprintln!` を使用。非TTY環境（パイプ、E2Eテスト）で自動的にANSIコードを除去するため、テストでの明示的な除去は不要
+- `NO_COLOR` 環境変数によるカラー無効化に対応（`anstream` が自動処理）
+- セクションヘッダーは `ui::section_header()` でルーラー付き表示（`── Title ──────` 形式）
+
+カラースキーム:
+- ステータス `OK` → Green, `MISSING`/`MISSING(store)` → Red, `ERROR` → Red+Bold, `MODIFIED`/`NOT_LINK`/`WRONG_LINK` → Yellow
+- セクションヘッダー → Bold（タイトル）+ Dim（罫線）、テーブルヘッダー → Bold、セパレータ → Dim
+- カレントマーカー `*` → Green+Bold、ブランチ名 `[branch]` → Cyan、コミットハッシュ → Dim
+- 成功メッセージ → Green、警告/Skip → Yellow、エラー → Red+Bold
+
 ## コーディング規約
 
 - エラーハンドリングは `anyhow::Result` + `.context()` で統一
@@ -125,3 +143,5 @@ strategy の使い分け:
 - CLI パーサーは `clap v4` derive + `parse_with_i18n()` でランタイムに i18n ヘルプを適用
 - 外部コマンド（git, code）は `std::process::Command` で直接呼び出し
 - 対話的な選択・入力は `inquire` クレートを使用
+- ターミナル出力は `anstream::println!` / `anstream::eprintln!` を使用（`println!` / `eprintln!` を直接使わない）
+- カラースタイルは `ui.rs` のスタイル定数を使用。ハードコードしない

@@ -26,23 +26,43 @@ Shown when running inside a worktree that has a shared store with tracked files.
 
 When running outside any repository with no registered repositories, a "No registered repositories" message is shown.
 
+## Color output
+
+Output is colorized when connected to a terminal. Colors are automatically stripped when piping to another command or file. The `NO_COLOR` environment variable disables colors.
+
+| Element | Style |
+|---------|-------|
+| Section header title | Bold |
+| Section header ruler (`──`) | Dim |
+| Table header | Bold |
+| Table separator (`────`) | Dim |
+| Status `OK` | Green |
+| Status `MISSING`, `MISSING(store)` | Red |
+| Status `ERROR` | Red + Bold |
+| Status `MODIFIED`, `NOT_LINK`, `WRONG_LINK` | Yellow |
+| Current marker `*` | Green + Bold |
+| Branch name `[branch]` | Cyan |
+| Commit hash | Dim |
+| Repository type `bare` | Cyan |
+| Repository type `NOT_FOUND` | Red |
+
 ## Example output
 
 ```
-Repositories:
+── Repositories ──────────────────────────
   NAME              PATH                                     TYPE
   ────              ────                                     ────
   langify-notebook  ~/Projects/langify-org/langify-notebook  git
   web               ~/Projects/spirinc/web                   bare
 * ws-cli            ~/Projects/langify-org/ws-cli            bare
 
-Current Repository: ws-cli
+── Current Repository: ws-cli ────────────
   Path: ~/Projects/langify-org/ws-cli
   Worktrees:
     ├──   fix-ci    [fix-ci] fb7eff8
     └── * master    [master] 5b33080
 
-Current Workspace: master [master]
+── Current Workspace: master [master] ────
   STRATEGY  FILE       STATUS
   ────────  ────       ──────
   symlink   .mcp.json  OK
