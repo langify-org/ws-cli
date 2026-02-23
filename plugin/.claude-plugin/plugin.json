@@ -1,0 +1,11 @@
+{
+  "name": "ws",
+  "description": "Claude Code plugin for ws - git bare clone + worktree workflow manager",
+  "version": "0.1.0",
+  "author": {
+    "name": "langify-org"
+  },
+  "repository": "https://github.com/langify-org/ws-cli",
+  "license": "MIT",
+  "keywords": ["ws", "worktree", "git", "bare-clone", "workspace"]
+}
