@@ -43,11 +43,13 @@ src/
   cli.rs             clap v4 derive による CLI 型定義 + parse_with_i18n()
   git.rs             git コマンド実行ヘルパー
   store.rs           shared store のデータ層（ManifestEntry, manifest 操作, file_status）
+  config.rs          設定ファイル（~/.config/ws/config.toml）の読み書き
   commands/
     mod.rs           サブモジュール宣言
     worktree.rs      clone, new, rm, list, generate_name
     status.rs        status（統合表示）
     store.rs         store track/status/push/pull/untrack
+    repos.rs         repos add/list/rm（リポジトリ登録管理）
   interactive.rs     inquire を使った対話モード
 ```
 
@@ -64,6 +66,7 @@ locales/
 - `commands/worktree` → `cli`, `git`, `store`
 - `commands/status` → `git`, `store`
 - `commands/store` → `cli`, `git`, `store`
+- `commands/repos` → `cli`, `config`
 - `interactive` → `cli`, `git`, `store`, `commands::worktree`
 - `main` → `cli`, `commands/*`, `interactive`
 

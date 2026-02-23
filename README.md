@@ -17,6 +17,7 @@ ws solves these problems and makes worktree-based development seamless.
 
 - **One-step bare clone + worktree setup** — Get started with `ws clone` then `ws new`
 - **Shared store** — Automatically share gitignored files across worktrees (symlink / copy strategies)
+- **Repository registry** — Register existing repositories with `ws repos add` to manage them with ws
 - **Interactive mode** — Build and run commands interactively
 
 ## Bare Clone + Worktree Pattern

@@ -17,6 +17,7 @@ ws はこれらの課題を解決し、worktree ベースの開発を快適に�
 
 - **bare clone + worktree の一括セットアップ** — `ws clone` → `ws new` の2コマンドで開発開始
 - **共有ストア** — gitignored ファイルを worktree 間で自動共有（symlink / copy の2戦略）
+- **リポジトリ登録** — `ws repos add` で既存リポジトリを登録して ws で管理
 - **インタラクティブモード** — 対話的なコマンド選択
 
 ## クイックスタート

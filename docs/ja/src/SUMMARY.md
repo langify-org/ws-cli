@@ -21,3 +21,4 @@
 - [ws status](commands/status.md)
 - [ws i (インタラクティブ)](commands/interactive.md)
 - [ws store](commands/store.md)
+- [ws repos](commands/repos.md)
