@@ -18,12 +18,12 @@ ws i
 
 | Command | Description |
 |---------|-------------|
-| `clone` | Create a bare repository |
 | `new` | Create a workspace |
 | `rm` | Remove a workspace |
-| `list` | List worktrees |
 | `status` | Show overall status |
 | `store` | Manage shared files (has a submenu) |
+| `repos` | Manage registered repositories (has a submenu) |
+| `open` | Open a worktree in an editor |
 
 ## Example
 

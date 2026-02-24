@@ -17,6 +17,7 @@
 
 - [ws new](commands/new.md)
 - [ws rm](commands/rm.md)
+- [ws open](commands/open.md)
 - [ws status](commands/status.md)
 - [ws i (インタラクティブ)](commands/interactive.md)
 - [ws store](commands/store.md)

@@ -18,12 +18,12 @@ ws i
 
 | コマンド | 説明 |
 |---------|------|
-| `clone` | bare リポジトリを作成 |
 | `new` | workspace を作成 |
 | `rm` | workspace を削除 |
-| `list` | worktree 一覧表示 |
 | `status` | 全体の状態表示 |
 | `store` | 共有ファイル管理（サブメニューあり） |
+| `repos` | 登録済みリポジトリ管理（サブメニューあり） |
+| `open` | worktree をエディタで開く |
 
 ## 例
 

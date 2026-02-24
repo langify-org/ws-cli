@@ -21,6 +21,7 @@ ws solves these problems by providing a single CLI for repository registration, 
 - **Repository registry** — Register and manage all your repositories with `ws repos` for system-wide visibility
 - **Bare clone + worktree management** — One-step setup with `ws repos clone` then `ws new`
 - **Shared store** — Automatically share gitignored files across worktrees (symlink / copy strategies)
+- **Quick open** — Open any registered repository's worktree in your editor with `ws open`
 - **Interactive mode** — Build and run commands interactively
 
 ## Shared Store

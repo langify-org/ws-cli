@@ -19,6 +19,7 @@ ws はリポジトリの登録、worktree の管理、gitignored ファイルの
 - **リポジトリレジストリ** — `ws repos` でシステム全体のリポジトリを登録・管理
 - **bare clone + worktree の一括セットアップ** — `ws repos clone` → `ws new` の2コマンドで開発開始
 - **共有ストア** — gitignored ファイルを worktree 間で自動共有（symlink / copy の2戦略）
+- **クイックオープン** — `ws open` で登録済みリポジトリの worktree をエディタで即座に開く
 - **インタラクティブモード** — 対話的なコマンド選択
 
 ## クイックスタート
