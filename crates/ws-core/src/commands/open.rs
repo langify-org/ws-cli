@@ -109,15 +109,15 @@ fn resolve_editor(flag: &Option<String>) -> Result<String> {
     if let Some(editor) = flag {
         return Ok(editor.clone());
     }
-    if let Ok(visual) = std::env::var("VISUAL") {
-        if !visual.is_empty() {
-            return Ok(visual);
-        }
+    if let Ok(visual) = std::env::var("VISUAL")
+        && !visual.is_empty()
+    {
+        return Ok(visual);
     }
-    if let Ok(editor) = std::env::var("EDITOR") {
-        if !editor.is_empty() {
-            return Ok(editor);
-        }
+    if let Ok(editor) = std::env::var("EDITOR")
+        && !editor.is_empty()
+    {
+        return Ok(editor);
     }
     bail!("{}", t!("open.no_editor"));
 }
