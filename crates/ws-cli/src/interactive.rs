@@ -14,6 +14,7 @@ pub(crate) fn interactive_mode() -> Result<()> {
         format!("status    {}", t!("interactive.menu.status")),
         format!("store     {}", t!("interactive.menu.store")),
         format!("repos     {}", t!("interactive.menu.repos")),
+        format!("open      {}", t!("interactive.menu.open")),
     ];
 
     let items_ref: Vec<&str> = top_items.iter().map(|s| s.as_str()).collect();
@@ -41,6 +42,7 @@ pub(crate) fn interactive_mode() -> Result<()> {
         }
         "store" => interactive_store(),
         "repos" => interactive_repos(),
+        "open" => interactive_open(),
         _ => bail!("{}", t!("interactive.unknown_command", cmd = cmd)),
     }
 }
@@ -403,6 +405,75 @@ fn interactive_repos_add() -> Result<()> {
     ws_core::commands::repos::cmd_repos_add(&cmd)
 }
 
+fn interactive_open() -> Result<()> {
+    let config = load_config()?;
+
+    if config.repos.is_empty() {
+        bail!("{}", t!("repos.no_repos"));
+    }
+
+    let names: Vec<String> = config.repos.keys().cloned().collect();
+    let items_ref: Vec<&str> = names.iter().map(|s| s.as_str()).collect();
+    let selected_repo = Select::new(&t!("interactive.open.select_repo"), items_ref)
+        .prompt_skippable()
+        .context(t!("interactive.selection_failed").to_string())?;
+
+    let repo_name = match selected_repo {
+        Some(s) => s.to_string(),
+        None => bail!("{}", t!("interactive.cancelled")),
+    };
+
+    let entry = config.repos.get(&repo_name).unwrap();
+    let repo_root = &entry.path;
+
+    // worktree list を取得
+    let is_bare = repo_root.join(".bare").is_dir();
+    let wt_output = if is_bare {
+        ws_core::git::git_output_in(repo_root, &["--git-dir", ".bare", "worktree", "list"])?
+    } else {
+        ws_core::git::git_output_in(repo_root, &["worktree", "list"])?
+    };
+
+    let entries = ws_core::commands::repos::parse_worktree_list(&wt_output, repo_root);
+    let worktrees: Vec<&ws_core::commands::repos::WorktreeEntry> =
+        entries.iter().filter(|e| !e.is_bare).collect();
+
+    if worktrees.is_empty() {
+        bail!("{}", t!("interactive.open.no_worktrees"));
+    }
+
+    let display_items: Vec<String> = worktrees
+        .iter()
+        .map(|e| {
+            if e.branch.is_empty() {
+                e.rel_path.clone()
+            } else {
+                format!("{} [{}]", e.rel_path, e.branch)
+            }
+        })
+        .collect();
+    let items_ref: Vec<&str> = display_items.iter().map(|s| s.as_str()).collect();
+    let selected_wt = Select::new(&t!("interactive.open.select_worktree"), items_ref)
+        .prompt_skippable()
+        .context(t!("interactive.selection_failed").to_string())?;
+
+    let selected_wt = match selected_wt {
+        Some(s) => s,
+        None => bail!("{}", t!("interactive.cancelled")),
+    };
+
+    // 選択された表示文字列から rel_path を逆引き
+    let wt_name = selected_wt.split_whitespace().next().unwrap_or(selected_wt);
+
+    let cmd = ws_core::cli::OpenCmd {
+        repository: repo_name.clone(),
+        worktree: wt_name.to_string(),
+        editor: None,
+    };
+    eprintln!("> ws open {} {}", repo_name, wt_name);
+    ws_core::commands::open::cmd_open(&cmd)
+}
+
 fn interactive_repos_rm() -> Result<()> {
     if let Ok(config) = load_config()
         && !config.repos.is_empty()
@@ -446,6 +517,7 @@ fn _ensure_all_commands_in_interactive(cmd: &WsCommand) -> &'static str {
     match cmd {
         WsCommand::New(_) => "new",
         WsCommand::Rm(_) => "rm",
+        WsCommand::Open(_) => "open",
         WsCommand::Status(_) => "status",
         WsCommand::Store(_) => "store",
         WsCommand::Repos(_) => "repos",

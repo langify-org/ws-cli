@@ -11,6 +11,7 @@ fn help_shows_all_subcommands() {
     ws().arg("--help").assert().success().stdout(
         predicate::str::contains("new")
             .and(predicate::str::contains("rm"))
+            .and(predicate::str::contains("open"))
             .and(predicate::str::contains("status"))
             .and(predicate::str::contains("store"))
             .and(predicate::str::contains("repos"))
@@ -93,6 +94,13 @@ fn interactive_alias_i_works() {
             .not()
             .and(predicate::str::contains("unrecognized").not()),
     );
+}
+
+#[test]
+fn open_missing_args_fails() {
+    // repository と worktree の両方が必須
+    ws().arg("open").assert().failure();
+    ws().args(["open", "my-repo"]).assert().failure();
 }
 
 #[test]

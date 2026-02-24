@@ -57,9 +57,10 @@ crates/
         mod.rs            サブモジュール宣言
         completions.rs    completions（シェル補完スクリプト生成）
         worktree.rs       clone, new, rm
+        open.rs           open（登録済みリポジトリの worktree をエディタで開く）
         status.rs         status（3セクション統合ダッシュボード: Repositories / Current Repository / Current Workspace）
         store.rs          store track/status/push/pull/untrack
-        repos.rs          repos add/list/rm（リポジトリ登録管理）+ WorktreeEntry/parse_worktree_list（status.rs と共有）
+        repos.rs          repos add/list/rm（リポジトリ登録管理）+ WorktreeEntry/parse_worktree_list（status.rs/open.rs と共有）
   ws-cli/                 バイナリクレート（package name = "ws"）
     src/
       main.rs             エントリポイント + run() ディスパッチ
@@ -75,6 +76,7 @@ crates/
 - `context` → `config`, `git`, `store`, `ui`, `commands/repos`
 - `commands/completions` → `cli`
 - `commands/worktree` → `cli`, `git`, `store`, `ui`
+- `commands/open` → `cli`, `config`, `commands/repos`, `ui`
 - `commands/status` → `context`, `store`, `ui`, `commands/repos`
 - `commands/store` → `cli`, `git`, `store`, `ui`, `context`
 - `commands/repos` → `cli`, `config`, `ui`, `context`

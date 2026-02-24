@@ -47,6 +47,11 @@ cli:
     rm:
       about: "Unregister a repository (does not delete the repository)"
       name: "Name of the repository to unregister"
+  open:
+    about: "Open a worktree in an editor"
+    repository: "Repository name"
+    worktree: "Worktree name"
+    editor: "Editor command (default: $VISUAL or $EDITOR)"
   interactive:
     about: "Build and run a command interactively"
   completions:
@@ -98,6 +103,16 @@ repos:
   removed: "Unregistered: %{name}"
   not_found: "Repository '%{name}' not found"
 
+# commands/open.rs - Open command messages
+open:
+  repo_not_found: "Repository '%{name}' not found in config"
+  repo_path_not_found: "Repository path not found: %{path}"
+  worktree_list_failed: "Failed to list worktrees for '%{name}'"
+  worktree_not_found: "Worktree '%{worktree}' not found in repository '%{name}'"
+  no_editor: "No editor found. Set --editor, $VISUAL, or $EDITOR"
+  editor_failed: "Failed to execute editor: %{editor}"
+  opening: "Opening %{path} with %{editor}"
+
 # config.rs - Config file messages
 config:
   read_failed: "Failed to read config: %{path}"
@@ -138,6 +153,7 @@ interactive:
     status: "Show overall status"
     store: "Manage shared files"
     repos: "Manage registered repositories"
+    open: "Open a worktree in an editor"
   select_command: "Select command:"
   cancelled: "Cancelled"
   selection_failed: "Selection failed"
@@ -194,4 +210,8 @@ interactive:
     select_repo: "Select repository to unregister:"
     name_prompt: "Repository name:"
     empty_name: "Please enter a repository name"
+  open:
+    select_repo: "Select repository:"
+    no_worktrees: "No worktrees available"
+    select_worktree: "Select worktree to open:"
   input_failed: "Input failed"

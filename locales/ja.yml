@@ -47,6 +47,11 @@ cli:
     rm:
       about: "リポジトリの登録を解除する（リポジトリ自体は削除しない）"
       name: "登録解除するリポジトリの名前"
+  open:
+    about: "worktree をエディタで開く"
+    repository: "リポジトリ名"
+    worktree: "worktree 名"
+    editor: "エディタコマンド (default: $VISUAL or $EDITOR)"
   interactive:
     about: "対話的にコマンドを組み立てて実行する"
   completions:
@@ -98,6 +103,16 @@ repos:
   removed: "登録を解除しました: %{name}"
   not_found: "リポジトリ '%{name}' が見つかりません"
 
+# commands/open.rs - open コマンドメッセージ
+open:
+  repo_not_found: "リポジトリ '%{name}' が設定に見つかりません"
+  repo_path_not_found: "リポジトリのパスが見つかりません: %{path}"
+  worktree_list_failed: "'%{name}' の worktree 一覧取得に失敗しました"
+  worktree_not_found: "リポジトリ '%{name}' に worktree '%{worktree}' が見つかりません"
+  no_editor: "エディタが見つかりません。--editor, $VISUAL, $EDITOR のいずれかを設定してください"
+  editor_failed: "エディタの実行に失敗しました: %{editor}"
+  opening: "%{path} を %{editor} で開いています"
+
 # config.rs - 設定ファイルメッセージ
 config:
   read_failed: "設定ファイルの読み込みに失敗しました: %{path}"
@@ -138,6 +153,7 @@ interactive:
     status: "全体の状態表示"
     store: "共有ファイル管理"
     repos: "登録済みリポジトリ管理"
+    open: "worktree をエディタで開く"
   select_command: "コマンドを選択:"
   cancelled: "キャンセルしました"
   selection_failed: "選択に失敗しました"
@@ -194,4 +210,8 @@ interactive:
     select_repo: "登録解除するリポジトリを選択:"
     name_prompt: "リポジトリ名:"
     empty_name: "リポジトリ名を入力してください"
+  open:
+    select_repo: "リポジトリを選択:"
+    no_worktrees: "利用可能な worktree はありません"
+    select_worktree: "開く worktree を選択:"
   input_failed: "入力に失敗しました"

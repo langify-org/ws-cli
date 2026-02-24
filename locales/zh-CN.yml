@@ -47,6 +47,11 @@ cli:
     rm:
       about: "注销仓库（不删除仓库本身）"
       name: "要注销的仓库名称"
+  open:
+    about: "在编辑器中打开 worktree"
+    repository: "仓库名称"
+    worktree: "worktree 名称"
+    editor: "编辑器命令 (默认: $VISUAL 或 $EDITOR)"
   interactive:
     about: "交互式构建并执行命令"
   completions:
@@ -98,6 +103,16 @@ repos:
   removed: "已注销: %{name}"
   not_found: "未找到仓库 '%{name}'"
 
+# commands/open.rs - open 命令消息
+open:
+  repo_not_found: "配置中未找到仓库 '%{name}'"
+  repo_path_not_found: "仓库路径未找到: %{path}"
+  worktree_list_failed: "获取 '%{name}' 的 worktree 列表失败"
+  worktree_not_found: "仓库 '%{name}' 中未找到 worktree '%{worktree}'"
+  no_editor: "未找到编辑器。请设置 --editor、$VISUAL 或 $EDITOR"
+  editor_failed: "执行编辑器失败: %{editor}"
+  opening: "正在用 %{editor} 打开 %{path}"
+
 # config.rs - 配置文件消息
 config:
   read_failed: "读取配置文件失败: %{path}"
@@ -138,6 +153,7 @@ interactive:
     status: "显示整体状态"
     store: "管理共享文件"
     repos: "管理已注册的仓库"
+    open: "在编辑器中打开 worktree"
   select_command: "选择命令:"
   cancelled: "已取消"
   selection_failed: "选择失败"
@@ -194,4 +210,8 @@ interactive:
     select_repo: "选择要注销的仓库:"
     name_prompt: "仓库名称:"
     empty_name: "请输入仓库名称"
+  open:
+    select_repo: "选择仓库:"
+    no_worktrees: "没有可用的 worktree"
+    select_worktree: "选择要打开的 worktree:"
   input_failed: "输入失败"

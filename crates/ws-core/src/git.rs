@@ -54,6 +54,28 @@ pub fn git_output(args: &[&str]) -> Result<String> {
     Ok(String::from_utf8(output.stdout)?.trim().to_string())
 }
 
+pub fn git_output_in(dir: &Path, args: &[&str]) -> Result<String> {
+    let output = Command::new("git")
+        .args(args)
+        .current_dir(dir)
+        .output()
+        .with_context(|| t!("git.exec_failed", args = args.join(" ")).to_string())?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        bail!(
+            "{}",
+            t!(
+                "git.command_failed",
+                args = args.join(" "),
+                stderr = stderr.trim()
+            )
+        );
+    }
+
+    Ok(String::from_utf8(output.stdout)?.trim().to_string())
+}
+
 pub fn worktree_root() -> Result<PathBuf> {
     let root = git_output(&["rev-parse", "--show-toplevel"])
         .context(t!("git.run_inside_worktree").to_string())?;

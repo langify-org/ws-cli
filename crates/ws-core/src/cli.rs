@@ -15,6 +15,7 @@ pub struct Ws {
 pub enum WsCommand {
     New(NewCmd),
     Rm(RmCmd),
+    Open(OpenCmd),
     Status(StatusCmd),
     Store(StoreCmd),
     Repos(ReposCmd),
@@ -48,6 +49,16 @@ pub struct RmCmd {
 
     #[arg(short = 'f', long)]
     pub force: bool,
+}
+
+#[derive(Parser)]
+pub struct OpenCmd {
+    pub repository: String,
+
+    pub worktree: String,
+
+    #[arg(long)]
+    pub editor: Option<String>,
 }
 
 #[derive(Parser)]
@@ -151,6 +162,14 @@ pub fn parse_with_i18n() -> Ws {
             s.about(t!("cli.rm.about").to_string())
                 .mut_arg("directory", |a| a.help(t!("cli.rm.directory").to_string()))
                 .mut_arg("force", |a| a.help(t!("cli.rm.force").to_string()))
+        })
+        .mut_subcommand("open", |s| {
+            s.about(t!("cli.open.about").to_string())
+                .mut_arg("repository", |a| {
+                    a.help(t!("cli.open.repository").to_string())
+                })
+                .mut_arg("worktree", |a| a.help(t!("cli.open.worktree").to_string()))
+                .mut_arg("editor", |a| a.help(t!("cli.open.editor").to_string()))
         })
         .mut_subcommand("status", |s| s.about(t!("cli.status.about").to_string()))
         .mut_subcommand("interactive", |s| {

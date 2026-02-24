@@ -11,6 +11,7 @@ fn run(ws: ws_core::cli::Ws) -> Result<()> {
     match ws.command {
         WsCommand::New(cmd) => ws_core::commands::worktree::cmd_new(&cmd),
         WsCommand::Rm(cmd) => ws_core::commands::worktree::cmd_rm(&cmd),
+        WsCommand::Open(cmd) => ws_core::commands::open::cmd_open(&cmd),
         WsCommand::Status(_) => {
             let ctx = ws_core::context::AppContext::build()?;
             ws_core::commands::status::cmd_status(&ctx)
