@@ -271,3 +271,202 @@ fn untrack_removes_and_restores() {
     let meta = wt.join(".envrc").symlink_metadata().unwrap();
     assert!(!meta.file_type().is_symlink());
 }
+
+// ---- directory: ws store track ----
+
+#[test]
+fn track_symlink_directory() {
+    let repo = TestRepo::new();
+    let wt = repo.main_worktree();
+
+    // worktree にディレクトリを作成
+    fs::create_dir_all(wt.join("nix/secrets")).unwrap();
+    fs::write(wt.join("nix/secrets/key1"), "secret1").unwrap();
+    fs::write(wt.join("nix/secrets/key2"), "secret2").unwrap();
+
+    repo.ws_cmd_in("main")
+        .args(["store", "track", "-s", "symlink", "nix/secrets"])
+        .assert()
+        .success();
+
+    // manifest に登録されている
+    let manifest = fs::read_to_string(repo.store_dir().join("manifest")).unwrap();
+    assert!(manifest.contains("symlink:nix/secrets"));
+
+    // store にマスターコピーが存在（ディレクトリとして）
+    assert!(repo.store_dir().join("nix/secrets").is_dir());
+    assert!(repo.store_dir().join("nix/secrets/key1").is_file());
+
+    // worktree 内が symlink に変換されている
+    let meta = wt.join("nix/secrets").symlink_metadata().unwrap();
+    assert!(meta.file_type().is_symlink());
+
+    // symlink 経由で内容を読める
+    assert_eq!(
+        fs::read_to_string(wt.join("nix/secrets/key1")).unwrap(),
+        "secret1"
+    );
+}
+
+#[test]
+fn track_copy_directory() {
+    let repo = TestRepo::new();
+    let wt = repo.main_worktree();
+
+    fs::create_dir_all(wt.join("config/sub")).unwrap();
+    fs::write(wt.join("config/sub/a.toml"), "key = 1").unwrap();
+
+    repo.ws_cmd_in("main")
+        .args(["store", "track", "-s", "copy", "config/sub"])
+        .assert()
+        .success();
+
+    // manifest に登録されている
+    let manifest = fs::read_to_string(repo.store_dir().join("manifest")).unwrap();
+    assert!(manifest.contains("copy:config/sub"));
+
+    // store にコピーが存在
+    assert!(repo.store_dir().join("config/sub").is_dir());
+    assert!(repo.store_dir().join("config/sub/a.toml").is_file());
+
+    // worktree 内のディレクトリは通常ディレクトリのまま（symlink ではない）
+    let meta = wt.join("config/sub").symlink_metadata().unwrap();
+    assert!(!meta.file_type().is_symlink());
+}
+
+// ---- directory: ws store push ----
+
+#[test]
+fn push_directory() {
+    let repo = TestRepo::new();
+    let wt = repo.main_worktree();
+
+    // copy でディレクトリを track
+    fs::create_dir_all(wt.join("secrets")).unwrap();
+    fs::write(wt.join("secrets/key"), "original").unwrap();
+    repo.ws_cmd_in("main")
+        .args(["store", "track", "-s", "copy", "secrets"])
+        .assert()
+        .success();
+
+    // worktree 側を変更
+    fs::write(wt.join("secrets/key"), "modified").unwrap();
+    fs::write(wt.join("secrets/new_key"), "added").unwrap();
+
+    // push
+    repo.ws_cmd_in("main")
+        .args(["store", "push"])
+        .assert()
+        .success();
+
+    // store が更新されている
+    assert_eq!(
+        fs::read_to_string(repo.store_dir().join("secrets/key")).unwrap(),
+        "modified"
+    );
+    assert_eq!(
+        fs::read_to_string(repo.store_dir().join("secrets/new_key")).unwrap(),
+        "added"
+    );
+}
+
+// ---- directory: ws store pull ----
+
+#[test]
+fn pull_directory() {
+    let repo = TestRepo::new();
+    let wt = repo.main_worktree();
+
+    // symlink でディレクトリを track
+    fs::create_dir_all(wt.join("shared")).unwrap();
+    fs::write(wt.join("shared/data"), "value").unwrap();
+    repo.ws_cmd_in("main")
+        .args(["store", "track", "-s", "symlink", "shared"])
+        .assert()
+        .success();
+
+    // worktree から symlink を削除
+    fs::remove_file(wt.join("shared")).unwrap(); // symlink はファイルとして削除
+    assert!(!wt.join("shared").exists());
+
+    // pull で復元
+    repo.ws_cmd_in("main")
+        .args(["store", "pull"])
+        .assert()
+        .success();
+
+    // symlink が復元されている
+    let meta = wt.join("shared").symlink_metadata().unwrap();
+    assert!(meta.file_type().is_symlink());
+    assert_eq!(fs::read_to_string(wt.join("shared/data")).unwrap(), "value");
+}
+
+#[test]
+fn pull_copy_directory_with_force() {
+    let repo = TestRepo::new();
+    let wt = repo.main_worktree();
+
+    // copy でディレクトリを track
+    fs::create_dir_all(wt.join("conf")).unwrap();
+    fs::write(wt.join("conf/setting"), "original").unwrap();
+    repo.ws_cmd_in("main")
+        .args(["store", "track", "-s", "copy", "conf"])
+        .assert()
+        .success();
+
+    // worktree 側を変更
+    fs::write(wt.join("conf/setting"), "local_change").unwrap();
+
+    // force 付き pull → store の内容で上書き
+    repo.ws_cmd_in("main")
+        .args(["store", "pull", "-f"])
+        .assert()
+        .success();
+
+    assert_eq!(
+        fs::read_to_string(wt.join("conf/setting")).unwrap(),
+        "original"
+    );
+}
+
+// ---- directory: ws store untrack ----
+
+#[test]
+fn untrack_directory() {
+    let repo = TestRepo::new();
+    let wt = repo.main_worktree();
+
+    // symlink でディレクトリを track
+    fs::create_dir_all(wt.join("secrets")).unwrap();
+    fs::write(wt.join("secrets/key"), "secret").unwrap();
+    repo.ws_cmd_in("main")
+        .args(["store", "track", "-s", "symlink", "secrets"])
+        .assert()
+        .success();
+
+    // symlink であることを確認
+    let meta = wt.join("secrets").symlink_metadata().unwrap();
+    assert!(meta.file_type().is_symlink());
+
+    // untrack
+    repo.ws_cmd_in("main")
+        .args(["store", "untrack", "secrets"])
+        .assert()
+        .success();
+
+    // manifest からエントリが消えている
+    let manifest = fs::read_to_string(repo.store_dir().join("manifest")).unwrap();
+    assert!(!manifest.contains("secrets"));
+
+    // store 内のマスターコピーが削除されている
+    assert!(!repo.store_dir().join("secrets").exists());
+
+    // worktree 内が通常ディレクトリに復元されている
+    assert!(wt.join("secrets").exists());
+    let meta = wt.join("secrets").symlink_metadata().unwrap();
+    assert!(!meta.file_type().is_symlink());
+    assert_eq!(
+        fs::read_to_string(wt.join("secrets/key")).unwrap(),
+        "secret"
+    );
+}

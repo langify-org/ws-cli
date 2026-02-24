@@ -7,8 +7,8 @@ use std::path::Path;
 use crate::cli::{StorePullCmd, StorePushCmd, StoreTrackCmd, StoreUntrackCmd};
 use crate::git::{git_output, worktree_root};
 use crate::store::{
-    ManifestEntry, Strategy, ensure_store, file_status, path_or_symlink_exists, read_manifest,
-    require_store, write_manifest,
+    ManifestEntry, Strategy, copy_dir_recursive, ensure_store, file_status, path_or_symlink_exists,
+    read_manifest, require_store, store_entry_exists, write_manifest,
 };
 use crate::ui::{self, StyledCell};
 
@@ -52,11 +52,22 @@ pub fn cmd_store_track(cmd: &StoreTrackCmd) -> Result<()> {
         .map(|m| m.file_type().is_symlink())
         .unwrap_or(false);
 
+    let is_dir = source.is_dir();
+
     if *strategy == Strategy::Symlink {
-        fs::copy(&source, &store_file).context(t!("store.copy_to_store_failed").to_string())?;
+        if is_dir {
+            copy_dir_recursive(&source, &store_file)
+                .context(t!("store.copy_to_store_failed").to_string())?;
+        } else {
+            fs::copy(&source, &store_file).context(t!("store.copy_to_store_failed").to_string())?;
+        }
 
         if !is_symlink {
-            fs::remove_file(&source)?;
+            if is_dir {
+                fs::remove_dir_all(&source)?;
+            } else {
+                fs::remove_file(&source)?;
+            }
             unix_fs::symlink(&store_file, &source)?;
             anstream::println!(
                 "{}",
@@ -66,6 +77,9 @@ pub fn cmd_store_track(cmd: &StoreTrackCmd) -> Result<()> {
                 )
             );
         }
+    } else if is_dir {
+        copy_dir_recursive(&source, &store_file)
+            .context(t!("store.copy_to_store_failed").to_string())?;
     } else {
         fs::copy(&source, &store_file).context(t!("store.copy_to_store_failed").to_string())?;
     }
@@ -132,7 +146,7 @@ pub fn cmd_store_push(cmd: &StorePushCmd) -> Result<()> {
         }
 
         let wt_file = wt_root.join(&entry.filepath);
-        if !wt_file.is_file() {
+        if !wt_file.is_file() && !wt_file.is_dir() {
             anstream::eprintln!(
                 "{}",
                 ui::styled(
@@ -144,7 +158,14 @@ pub fn cmd_store_push(cmd: &StorePushCmd) -> Result<()> {
         }
 
         let store_file = store.join(&entry.filepath);
-        fs::copy(&wt_file, &store_file)?;
+        if wt_file.is_dir() {
+            if store_file.is_dir() {
+                fs::remove_dir_all(&store_file)?;
+            }
+            copy_dir_recursive(&wt_file, &store_file)?;
+        } else {
+            fs::copy(&wt_file, &store_file)?;
+        }
         anstream::println!(
             "{}",
             ui::styled(ui::STYLE_OK, &format!("push: {}", entry.filepath))
@@ -178,7 +199,7 @@ pub fn cmd_store_pull(cmd: &StorePullCmd) -> Result<()> {
         }
 
         let store_file = store.join(&entry.filepath);
-        if !store_file.is_file() {
+        if !store_entry_exists(&store_file) {
             anstream::eprintln!(
                 "{}",
                 ui::styled(
@@ -204,7 +225,11 @@ pub fn cmd_store_pull(cmd: &StorePullCmd) -> Result<()> {
         }
 
         if wt_exists {
-            let _ = fs::remove_file(&wt_file);
+            if wt_file.is_dir() {
+                let _ = fs::remove_dir_all(&wt_file);
+            } else {
+                let _ = fs::remove_file(&wt_file);
+            }
         }
 
         if let Some(parent) = wt_file.parent() {
@@ -220,7 +245,11 @@ pub fn cmd_store_pull(cmd: &StorePullCmd) -> Result<()> {
                 );
             }
             Strategy::Copy => {
-                fs::copy(&store_file, &wt_file)?;
+                if store_file.is_dir() {
+                    copy_dir_recursive(&store_file, &wt_file)?;
+                } else {
+                    fs::copy(&store_file, &wt_file)?;
+                }
                 anstream::println!(
                     "{}",
                     ui::styled(ui::STYLE_OK, &format!("pull (copy): {}", entry.filepath))
@@ -248,7 +277,7 @@ fn restore_symlinks_to_files(store: &Path, entry: &ManifestEntry) -> Result<()> 
     }
 
     let store_file = store.join(&entry.filepath);
-    if !store_file.is_file() {
+    if !store_entry_exists(&store_file) {
         return Ok(());
     }
 
@@ -271,8 +300,15 @@ fn restore_symlinks_to_files(store: &Path, entry: &ManifestEntry) -> Result<()> 
             if let Some(parent) = target.parent() {
                 let _ = fs::create_dir_all(parent);
             }
-            match fs::copy(&store_file, &target) {
-                Ok(_) => anstream::println!(
+            let copy_result: Result<()> = if store_file.is_dir() {
+                copy_dir_recursive(&store_file, &target)
+            } else {
+                fs::copy(&store_file, &target)
+                    .map(|_| ())
+                    .map_err(Into::into)
+            };
+            match copy_result {
+                Ok(()) => anstream::println!(
                     "{}",
                     ui::styled(
                         ui::STYLE_OK,
@@ -336,7 +372,9 @@ pub fn cmd_store_untrack(cmd: &StoreUntrackCmd) -> Result<()> {
     write_manifest(&store, &entries)?;
 
     let store_file = store.join(&cmd.file);
-    if store_file.exists() {
+    if store_file.is_dir() {
+        fs::remove_dir_all(&store_file)?;
+    } else if store_file.exists() {
         fs::remove_file(&store_file)?;
     }
 

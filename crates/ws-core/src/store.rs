@@ -137,6 +137,75 @@ pub fn path_or_symlink_exists(path: &Path) -> bool {
     path.exists() || path.symlink_metadata().is_ok()
 }
 
+/// store 内にエントリ（ファイルまたはディレクトリ）が存在するか判定。
+pub fn store_entry_exists(path: &Path) -> bool {
+    path.is_file() || path.is_dir()
+}
+
+/// ディレクトリを再帰的にコピーする。
+pub fn copy_dir_recursive(src: &Path, dst: &Path) -> Result<()> {
+    fs::create_dir_all(dst)?;
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let src_path = entry.path();
+        let dst_path = dst.join(entry.file_name());
+        if src_path.is_dir() {
+            copy_dir_recursive(&src_path, &dst_path)?;
+        } else {
+            fs::copy(&src_path, &dst_path)?;
+        }
+    }
+    Ok(())
+}
+
+/// 2つのディレクトリの内容を再帰的に比較する（copy strategy の MODIFIED 判定用）。
+fn dirs_equal_recursive(a: &Path, b: &Path) -> bool {
+    let Ok(a_entries) = fs::read_dir(a) else {
+        return false;
+    };
+    let Ok(b_entries) = fs::read_dir(b) else {
+        return false;
+    };
+
+    let mut a_names: Vec<_> = a_entries
+        .filter_map(|e| e.ok())
+        .map(|e| e.file_name())
+        .collect();
+    let mut b_names: Vec<_> = b_entries
+        .filter_map(|e| e.ok())
+        .map(|e| e.file_name())
+        .collect();
+
+    a_names.sort();
+    b_names.sort();
+
+    if a_names != b_names {
+        return false;
+    }
+
+    for name in &a_names {
+        let a_path = a.join(name);
+        let b_path = b.join(name);
+
+        if a_path.is_dir() && b_path.is_dir() {
+            if !dirs_equal_recursive(&a_path, &b_path) {
+                return false;
+            }
+        } else if a_path.is_file() && b_path.is_file() {
+            let a_content = fs::read(&a_path).ok();
+            let b_content = fs::read(&b_path).ok();
+            if a_content != b_content {
+                return false;
+            }
+        } else {
+            // 一方がファイルで他方がディレクトリ → 不一致
+            return false;
+        }
+    }
+
+    true
+}
+
 pub fn apply_file(
     strategy: &Strategy,
     filepath: &str,
@@ -167,7 +236,11 @@ pub fn apply_file(
             );
         }
         Strategy::Copy => {
-            fs::copy(&source, &target)?;
+            if source.is_dir() {
+                copy_dir_recursive(&source, &target)?;
+            } else {
+                fs::copy(&source, &target)?;
+            }
             anstream::println!(
                 "  {}",
                 ui::styled(ui::STYLE_OK, &format!("copy: {}", filepath))
@@ -210,7 +283,7 @@ pub fn file_status(
     store_file: &Path,
     wt_root: &Option<PathBuf>,
 ) -> FileStatus {
-    if !store_file.is_file() {
+    if !store_entry_exists(store_file) {
         return FileStatus::MissingStore;
     }
 
@@ -246,12 +319,24 @@ pub fn file_status(
             }
         }
         Strategy::Copy => {
-            let store_content = fs::read(store_file).ok();
-            let wt_content = fs::read(&wt_file).ok();
-            if store_content != wt_content {
-                FileStatus::Modified
+            if store_file.is_dir() {
+                if wt_file.is_dir() {
+                    if dirs_equal_recursive(store_file, &wt_file) {
+                        FileStatus::Ok
+                    } else {
+                        FileStatus::Modified
+                    }
+                } else {
+                    FileStatus::Modified
+                }
             } else {
-                FileStatus::Ok
+                let store_content = fs::read(store_file).ok();
+                let wt_content = fs::read(&wt_file).ok();
+                if store_content != wt_content {
+                    FileStatus::Modified
+                } else {
+                    FileStatus::Ok
+                }
             }
         }
     }
@@ -558,5 +643,149 @@ mod tests {
         apply_file(&Strategy::Copy, "sub/dir/file", &store, &target_root).unwrap();
 
         assert!(target_root.join("sub/dir/file").is_file());
+    }
+
+    // ---- directory: apply_file ----
+
+    #[test]
+    fn apply_file_symlink_directory() {
+        let tmp = TempDir::new().unwrap();
+        let store = tmp.path().join("store");
+        let store_dir = store.join("nix/secrets");
+        fs::create_dir_all(&store_dir).unwrap();
+        fs::write(store_dir.join("key"), "secret").unwrap();
+
+        let target_root = tmp.path().join("target");
+        fs::create_dir_all(&target_root).unwrap();
+
+        apply_file(&Strategy::Symlink, "nix/secrets", &store, &target_root).unwrap();
+
+        let target = target_root.join("nix/secrets");
+        assert!(target.symlink_metadata().unwrap().file_type().is_symlink());
+        // symlink 先のディレクトリが読める
+        assert_eq!(fs::read_to_string(target.join("key")).unwrap(), "secret");
+    }
+
+    #[test]
+    fn apply_file_copy_directory() {
+        let tmp = TempDir::new().unwrap();
+        let store = tmp.path().join("store");
+        let store_dir = store.join("nix/secrets");
+        fs::create_dir_all(store_dir.join("sub")).unwrap();
+        fs::write(store_dir.join("a"), "val_a").unwrap();
+        fs::write(store_dir.join("sub/b"), "val_b").unwrap();
+
+        let target_root = tmp.path().join("target");
+        fs::create_dir_all(&target_root).unwrap();
+
+        apply_file(&Strategy::Copy, "nix/secrets", &store, &target_root).unwrap();
+
+        let target = target_root.join("nix/secrets");
+        assert!(target.is_dir());
+        assert_eq!(fs::read_to_string(target.join("a")).unwrap(), "val_a");
+        assert_eq!(fs::read_to_string(target.join("sub/b")).unwrap(), "val_b");
+    }
+
+    // ---- directory: file_status ----
+
+    #[test]
+    fn file_status_dir_symlink_ok() {
+        let tmp = TempDir::new().unwrap();
+        let store_dir = tmp.path().join("store_secrets");
+        fs::create_dir_all(&store_dir).unwrap();
+        fs::write(store_dir.join("key"), "secret").unwrap();
+
+        let wt_root = tmp.path().join("worktree");
+        fs::create_dir_all(&wt_root).unwrap();
+        unix_fs::symlink(&store_dir, wt_root.join("secrets")).unwrap();
+
+        let entry = ManifestEntry {
+            strategy: Strategy::Symlink,
+            filepath: "secrets".into(),
+        };
+        assert_eq!(
+            file_status(&entry, &store_dir, &Some(wt_root)),
+            FileStatus::Ok
+        );
+    }
+
+    #[test]
+    fn file_status_dir_copy_ok() {
+        let tmp = TempDir::new().unwrap();
+        let store_dir = tmp.path().join("store_secrets");
+        fs::create_dir_all(&store_dir).unwrap();
+        fs::write(store_dir.join("key"), "secret").unwrap();
+
+        let wt_root = tmp.path().join("worktree");
+        let wt_dir = wt_root.join("secrets");
+        fs::create_dir_all(&wt_dir).unwrap();
+        fs::write(wt_dir.join("key"), "secret").unwrap();
+
+        let entry = ManifestEntry {
+            strategy: Strategy::Copy,
+            filepath: "secrets".into(),
+        };
+        assert_eq!(
+            file_status(&entry, &store_dir, &Some(wt_root)),
+            FileStatus::Ok
+        );
+    }
+
+    #[test]
+    fn file_status_dir_copy_modified() {
+        let tmp = TempDir::new().unwrap();
+        let store_dir = tmp.path().join("store_secrets");
+        fs::create_dir_all(&store_dir).unwrap();
+        fs::write(store_dir.join("key"), "secret").unwrap();
+
+        let wt_root = tmp.path().join("worktree");
+        let wt_dir = wt_root.join("secrets");
+        fs::create_dir_all(&wt_dir).unwrap();
+        fs::write(wt_dir.join("key"), "modified_secret").unwrap();
+
+        let entry = ManifestEntry {
+            strategy: Strategy::Copy,
+            filepath: "secrets".into(),
+        };
+        assert_eq!(
+            file_status(&entry, &store_dir, &Some(wt_root)),
+            FileStatus::Modified
+        );
+    }
+
+    #[test]
+    fn file_status_dir_missing_store() {
+        let tmp = TempDir::new().unwrap();
+        let store_dir = tmp.path().join("nonexistent_dir");
+
+        let entry = ManifestEntry {
+            strategy: Strategy::Copy,
+            filepath: "secrets".into(),
+        };
+        assert_eq!(
+            file_status(&entry, &store_dir, &None),
+            FileStatus::MissingStore
+        );
+    }
+
+    // ---- copy_dir_recursive ----
+
+    #[test]
+    fn copy_dir_recursive_nested() {
+        let tmp = TempDir::new().unwrap();
+        let src = tmp.path().join("src");
+        fs::create_dir_all(src.join("a/b")).unwrap();
+        fs::write(src.join("a/file1"), "content1").unwrap();
+        fs::write(src.join("a/b/file2"), "content2").unwrap();
+
+        let dst = tmp.path().join("dst");
+        copy_dir_recursive(&src, &dst).unwrap();
+
+        assert!(dst.join("a/b").is_dir());
+        assert_eq!(fs::read_to_string(dst.join("a/file1")).unwrap(), "content1");
+        assert_eq!(
+            fs::read_to_string(dst.join("a/b/file2")).unwrap(),
+            "content2"
+        );
     }
 }

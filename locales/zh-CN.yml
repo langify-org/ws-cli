@@ -20,7 +20,7 @@ cli:
     track:
       about: "将文件注册到 store"
       strategy: "策略 (symlink 或 copy)"
-      file: "要跟踪的文件路径"
+      file: "要跟踪的路径（文件或目录）"
     status:
       about: "显示共享文件的详细状态"
     push:
@@ -77,7 +77,7 @@ store:
   manifest_write_failed: "写入 manifest 失败: %{path}"
   skip_exists: "  跳过: %{file} (已存在)"
   invalid_strategy: "strategy 必须是 'symlink' 或 'copy'"
-  file_not_found: "找不到文件: %{file}"
+  file_not_found: "找不到路径: %{file}"
   copy_to_store_failed: "复制到 store 失败"
   converted_to_symlink: "已将 %{file} 转换为符号链接"
   tracking_started: "开始跟踪: %{strategy}:%{file}"

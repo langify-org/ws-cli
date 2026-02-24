@@ -20,7 +20,7 @@ cli:
     track:
       about: "Register a file in the store"
       strategy: "Strategy (symlink or copy)"
-      file: "File path to track"
+      file: "Path to track (file or directory)"
     status:
       about: "Show detailed shared file status"
     push:
@@ -77,7 +77,7 @@ store:
   manifest_write_failed: "Failed to write manifest: %{path}"
   skip_exists: "  Skip: %{file} (already exists)"
   invalid_strategy: "Strategy must be 'symlink' or 'copy'"
-  file_not_found: "File not found: %{file}"
+  file_not_found: "Path not found: %{file}"
   copy_to_store_failed: "Failed to copy to store"
   converted_to_symlink: "Converted %{file} to symlink"
   tracking_started: "Tracking started: %{strategy}:%{file}"

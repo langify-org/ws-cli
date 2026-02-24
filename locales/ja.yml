@@ -20,7 +20,7 @@ cli:
     track:
       about: "ファイルを store に登録する"
       strategy: "strategy (symlink or copy)"
-      file: "追跡するファイルパス"
+      file: "追跡するパス（ファイルまたはディレクトリ）"
     status:
       about: "共有ファイルの状態表示（詳細）"
     push:
@@ -77,7 +77,7 @@ store:
   manifest_write_failed: "manifest の書き込みに失敗しました: %{path}"
   skip_exists: "  スキップ: %{file} (既に存在します)"
   invalid_strategy: "strategy は 'symlink' または 'copy' を指定してください"
-  file_not_found: "ファイルが見つかりません: %{file}"
+  file_not_found: "パスが見つかりません: %{file}"
   copy_to_store_failed: "store へのコピーに失敗しました"
   converted_to_symlink: "%{file} をシンボリックリンクに変換しました"
   tracking_started: "追跡を開始しました: %{strategy}:%{file}"
